@@ -327,7 +327,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 12:06";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 12:09";
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
   const colSnap = (pairs) => ({ docs: pairs.map(([id, d]) => ({ id, data: () => d })) });
@@ -925,10 +925,10 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 12:06";
       const weak = t.name === OUR ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recPos) - pnum(b.recPos)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
       if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>' + (egen ? 'Snitt' : 'Pos.') + '</th><th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td>' + esc(p.recPos ?? '–') + '</td><td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest positivt mottak blant spillere med minst ' + minRec + ' mottak.</div>';
-      const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
-      if (ps.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Poeng og serve</th><th>Poeng</th><th>Serve</th><th>Ess</th><th>Feil</th><th>Blokk</th></tr></thead><tbody>' + ps.slice().sort((a, b) => (b.pts || 0) - (a.pts || 0) || (b.srv || 0) - (a.srv || 0)).map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td class="key">' + (p.pts ?? '–') + '</td><td>' + (p.srv ?? '–') + '</td><td>' + (p.aces ?? '–') + '</td><td>' + (p.srvErr ?? '–') + '</td><td>' + (p.blocks ?? '–') + '</td></tr>').join('') + (T.pts != null ? '<tr class="total"><td>Lag</td><td>' + T.pts + '</td><td>' + (T.srv ?? '–') + '</td><td>' + (T.aces ?? '–') + '</td><td>' + (T.srvErr ?? '–') + '</td><td>' + (T.blocks ?? '–') + '</td></tr>' : '') + '</tbody></table></div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
       if (pa.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Angrep</th><th>Fors.</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th><th>Eff.</th></tr></thead><tbody>' + pa.map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td>' + p.att + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td><td>' + esc(p.eff ?? pct1(p.kills - p.attErr - p.blocked, p.att)) + '</td></tr>').join('') + '</tbody></table></div>';
+      const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
+      if (ps.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Poeng og serve</th><th>Poeng</th><th>Serve</th><th>Ess</th><th>Feil</th><th>Blokk</th></tr></thead><tbody>' + ps.slice().sort((a, b) => (b.pts || 0) - (a.pts || 0) || (b.srv || 0) - (a.srv || 0)).map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td class="key">' + (p.pts ?? '–') + '</td><td>' + (p.srv ?? '–') + '</td><td>' + (p.aces ?? '–') + '</td><td>' + (p.srvErr ?? '–') + '</td><td>' + (p.blocks ?? '–') + '</td></tr>').join('') + (T.pts != null ? '<tr class="total"><td>Lag</td><td>' + T.pts + '</td><td>' + (T.srv ?? '–') + '</td><td>' + (T.aces ?? '–') + '</td><td>' + (T.srvErr ?? '–') + '</td><td>' + (T.blocks ?? '–') + '</td></tr>' : '') + '</tbody></table></div>';
       return s + '</section>';
     }).join('') + '</div>';
     return h;
@@ -1500,4 +1500,4 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 12:06";
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 12:06.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 12:09.</footer></body></html>
