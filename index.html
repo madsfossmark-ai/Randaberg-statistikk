@@ -403,7 +403,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 16:03";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 17:07";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -988,7 +988,7 @@ window.PUBLIC_CTX = null;
   let lastPub = 0;
   const hasSite = () => !window.PUBLIC && !S.dash && !!PUBLISH.sites[CTX.id];
   // Lenker til de åpne statistikksidene på GitHub Pages
-  const SITE_URLS = { main: 'https://madsfossmark-ai.github.io/randaberg-statistikk/', 'u20-nevza-2026': 'https://madsfossmark-ai.github.io/U20-Landslaget/' };
+  const SITE_URLS = { main: 'https://madsfossmark-ai.github.io/Randaberg-statistikk/', 'u20-nevza-2026': 'https://madsfossmark-ai.github.io/U20-Landslaget/' };
   const siteUrl = () => window.PUBLIC ? null : SITE_URLS[CTX.id] || null;
   function sharePanel() {
     const u = siteUrl();
@@ -2144,4 +2144,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 16:03.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 17:07.</footer></body></html>
