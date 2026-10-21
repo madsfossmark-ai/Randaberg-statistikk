@@ -327,7 +327,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 13:12";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
   const colSnap = (pairs) => ({ docs: pairs.map(([id, d]) => ({ id, data: () => d })) });
@@ -917,14 +917,14 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:12";
       const T = t.totals || {};
       let s = '<section class="panel"><div class="panel-head"><h2>' + esc(t.name) + '</h2></div>';
       if (t.missing) s += '<div class="empty">' + esc(t.missing) + '</div>';
-      const k = [['Angrep uttelling', T.kp], ['Angrep snitt (0–2)', T.eff != null ? dec(1 + parseFloat(String(T.eff).replace('−', '-').replace(',', '.')) / 100) : null], [egen ? 'Mottak snitt (0–2)' : 'Positivt mottak', T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
+      const k = [['Angrep uttelling', T.kp], ['Angrep snitt (0–2)', T.eff != null ? dec(1 + parseFloat(String(T.eff).replace('−', '-').replace(',', '.')) / 100) : null], ['Mottak snitt (0–2)', T.recAvg], ['Positivt mottak', egen ? null : T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
       if (k.length) s += '<div class="kpis">' + k.map((x) => '<div class="kpi"><div class="display num">' + esc(x[1]) + '</div><div class="k">' + esc(x[0]) + '</div></div>').join('') + '</div>';
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
-      const weak = t.name === OUR ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recPos) - pnum(b.recPos)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
-      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>' + (egen ? 'Snitt' : 'Pos.') + '</th><th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td>' + esc(p.recPos ?? '–') + '</td><td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
-      if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest positivt mottak blant spillere med minst ' + minRec + ' mottak.</div>';
+      const weak = t.name === OUR ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recAvg) - pnum(b.recAvg)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
+      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>Snitt</th>' + (egen ? '' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td class="key">' + esc(p.recAvg ?? '–') + '</td>' + (egen ? '' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
+      if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest mottakssnitt blant spillere med minst ' + minRec + ' mottak.</div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
       if (pa.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Angrep</th><th>Fors.</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th><th>Snitt</th></tr></thead><tbody>' + pa.map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td>' + p.att + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td><td class="key">' + (p.att ? dec(1 + (p.kills - p.attErr - p.blocked) / p.att) : '–') + '</td></tr>').join('') + '</tbody></table></div>';
       const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
@@ -1500,4 +1500,4 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:12";
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 13:12.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 13:18.</footer></body></html>
