@@ -318,6 +318,15 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 .dir-res button[aria-pressed="true"][data-v="B"] { background: var(--bad); border-color: var(--bad); color: #FFFFFF; }
 .dir-res button[aria-pressed="true"][data-v="D"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 .panel.pending { box-shadow: 0 0 0 2px var(--opp-strong); }
+.resform { display: flex; flex-direction: column; gap: 6px; }
+.res-set { display: grid; grid-template-columns: 70px 64px 16px 64px; gap: 8px; align-items: center; }
+.res-set input { height: 44px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-align: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.res-head .label { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tbl.standings tr.us td { background: var(--accent-soft); font-weight: 700; }
+.po { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 8px; }
+.po-card { display: flex; flex-direction: column; gap: 4px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.po-teams { font-weight: 600; font-size: 16px; } .po-teams .muted { color: var(--muted); font-weight: 400; font-size: 13px; }
+.po-res { font-family: var(--font-display); font-weight: 700; font-size: 20px; } .po-res small { font-family: var(--font-body); font-weight: 400; font-size: 12px; color: var(--muted); }
 .ctx-pick select { appearance: none; -webkit-appearance: none; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235C6270'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid var(--line); border-radius: 8px; height: 34px; padding: 0 30px 0 10px; max-width: 100%; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .chk { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--fg); }
@@ -410,7 +419,14 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   const fmtDate = (iso) => { if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return iso; return d.toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric', month: 'short' }) + (iso.length > 10 ? ' · ' + d.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' }) : ''); };
   const isOurs = (m) => m.home === OUR || m.away === OUR;
   const cur = () => S.matches.find((m) => m.id === S.matchId);
-  const player = (id) => S.roster.find((p) => p.id === id);
+  // Spillere på et annet lag (når vi fører statistikk for andres kamper) har id «o:<lag>:<nr>»
+  const player = (id) => {
+    if (typeof id === 'string' && id.startsWith('o:')) {
+      const [, slug, nr] = id.split(':'); const p = ((S.opps[slug] || {}).players || []).find((x) => String(x.nr) === nr) || {};
+      return { id, nr, name: p.name || '#' + nr, pos: p.pos || '' };
+    }
+    return S.roster.find((p) => p.id === id);
+  };
   const EXTRA = { midt: 'Midtspillere' };
   const pname = (id) => { const p = player(id); return p ? p.name.split(' ')[0] : (EXTRA[id] || '?'); };
   // Kamptyper: serie fra terminlisten, eller egne kamper (cup, europacup, trening)
@@ -420,8 +436,13 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   const roundShort = (m) => m.custom ? (m.short || TSHORT[m.type] || 'Egen') : 'R' + (m.round || '?');
   // Motstanderens tropp lagres per lag og huskes til neste kamp mot samme lag
   const teamSlug = (s) => String(s || '').toLowerCase().replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'lag';
-  const oppTeam = (m) => m.home === OUR ? m.away : m.home;
-  const oppRoster = (m) => ((S.opps[teamSlug(oppTeam(m))] || {}).players || []);
+  const usName = (m) => (m && m.focus) || OUR;
+  const canLive = (m) => isOurs(m) || !!(m && m.focus);
+  const oppTeam = (m) => m.home === usName(m) ? m.away : m.home;
+  const rosterOf = (team) => ((S.opps[teamSlug(team)] || {}).players || []);
+  const oppRoster = (m) => rosterOf(oppTeam(m));
+  const teamRoster = (m) => m && m.focus ? rosterOf(m.focus).map((p) => ({ id: 'o:' + teamSlug(m.focus) + ':' + p.nr, nr: String(p.nr), name: p.name || '#' + p.nr, pos: p.pos || '' })) : S.roster;
+  const isSlot = (t) => /^\d\. plass$/.test(String(t || ''));
   const oppP = (m, nr) => oppRoster(m).find((p) => String(p.nr) === String(nr));
   const oppLabel = (m, nr) => { const p = m && oppP(m, nr); return '#' + nr + (p && p.name ? ' ' + p.name.split(' ')[0] : ''); };
 
@@ -564,6 +585,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     else if (S.view === 'detail' && cur()) html = detailView();
     else if (S.view === 'sheet' && cur()) html = sheetView();
     else if (S.view === 'season') html = seasonView();
+    else if (S.view === 'table') html = tableView();
     else html = listView();
     app.innerHTML = '<div id="err">' + errHtml() + '</div>' + html;
     if (S.view === 'live') fillMini();
@@ -583,7 +605,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     let h = '<div class="listhead"><div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="tabs" role="group" aria-label="Filter">'
       + [['alle', 'Alle'], ['vare', 'Våre'], ['andre', 'Andres']].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + l + '</button>').join('')
-      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
+      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button><button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
     if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (upcoming) {
@@ -599,7 +621,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   function matchRow(m) {
     const ours = isOurs(m);
     const res = (m.setsHome != null && m.setsAway != null && (m.setsHome + m.setsAway) > 0) ? m.setsHome + '–' + m.setsAway : (m.status === 'pågår' ? (m.setsHome || 0) + '–' + (m.setsAway || 0) : '–');
-    const badge = m.status === 'pågår' ? '<span class="badge b-live">Live</span>' : ours ? '<span class="badge b-own">Egenført</span>' : (m.nvbf && m.nvbf.teams ? '<span class="badge b-nvbf">NVBF-statistikk</span>' : '<span class="badge b-nvbf">NVBF</span>');
+    const badge = m.status === 'pågår' ? '<span class="badge b-live">Live</span>' : ours || m.focus ? '<span class="badge b-own">Egenført</span>' : (m.nvbf && m.nvbf.teams ? '<span class="badge b-nvbf">NVBF-statistikk</span>' : m.source === 'nvbf' ? '<span class="badge b-nvbf">NVBF</span>' : '');
     return '<button class="match' + (ours ? ' ours' : '') + '" data-a="open" data-id="' + esc(m.id) + '"><span class="t"><span class="tn">' + esc(m.home) + ' – ' + esc(m.away) + '</span><span class="d">' + esc(fmtDate(m.date)) + (m.custom ? ' · ' + esc(TYPES[m.type] || 'Egen kamp') : '') + '</span></span><span class="res num">' + res + '</span>' + badge + '</button>';
   }
 
@@ -635,12 +657,12 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       + '</div></header>';
   }
   function barSub(m) {
-    const us = m.home === OUR ? (m.setsHome || 0) : (m.setsAway || 0);
-    const them = m.home === OUR ? (m.setsAway || 0) : (m.setsHome || 0);
+    const us = m.home === usName(m) ? (m.setsHome || 0) : (m.setsAway || 0);
+    const them = m.home === usName(m) ? (m.setsAway || 0) : (m.setsHome || 0);
     const sc = setList(m);
-    return OUR + ' ' + us + '–' + them + ' i sett' + (sc ? ' · ' + sc : '') + (m.status === 'ferdig' ? ' · kampen er avsluttet' : '');
+    return usName(m) + ' ' + us + '–' + them + ' i sett' + (sc ? ' · ' + sc : '') + (m.status === 'ferdig' ? ' · kampen er avsluttet' : '');
   }
-  function shortName(n) { return n === OUR ? 'Randaberg' : n.replace(/ (Volleyballklubb|Sportsklubb|Volley Norge)$/, '').replace(/ IL$/, ''); }
+  function shortName(n) { n = String(n || ''); return n === OUR ? n : n.replace(/ (Volleyballklubb|Sportsklubb|Volley Norge)$/, '').replace(/ IL$/, ''); }
   function scoreStr(sc) { return sc && Math.max(sc[0], sc[1]) >= 5 ? sc[0] + '–' + sc[1] : ''; }
   function setList(m) { return (m.setScores || []).map(scoreStr).filter(Boolean).join(', ');
   }
@@ -660,7 +682,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 
   function liveView() {
     const m = cur();
-    const oppName = m.home === OUR ? m.away : m.home;
+    const oppName = m.home === usName(m) ? m.away : m.home;
     const receivers = (m.receivers || []).map(player).filter(Boolean);
     const onCourt = (m.onCourt || []).map(player).filter(Boolean);
     const oppNums = m.oppNumbers || [];
@@ -683,7 +705,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   }
 
   function liveSig(m) {
-    return JSON.stringify([oppRoster(m), !!fsEl(), m.id, m.status, (m.current || {}).set, (m.setScores || []).length, S.endingSet, m.receivers, m.onCourt, m.oppNumbers, S.roster.map((p) => [p.id, p.nr, p.name])]);
+    return JSON.stringify([oppRoster(m), !!fsEl(), m.id, m.status, (m.current || {}).set, (m.setScores || []).length, S.endingSet, m.receivers, m.onCourt, m.oppNumbers, teamRoster(m).map((p) => [p.id, p.nr, p.name])]);
   }
   function ownCount() { return Object.entries(S.logs).filter(([k]) => k.startsWith(deviceId + '-')).reduce((a, [, v]) => a + v.length, 0); }
   function lastChips(evs, oppName) {
@@ -692,7 +714,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   }
   // Oppdaterer bare tall og lister, så knappene ikke byttes ut midt i et trykk
   function updateLive() {
-    const m = cur(); const oppName = m.home === OUR ? m.away : m.home; const evs = allEvents();
+    const m = cur(); const oppName = m.home === usName(m) ? m.away : m.home; const evs = allEvents();
     const sub = document.getElementById('bar-sub'); if (sub && sub.textContent !== barSub(m)) sub.textContent = barSub(m);
     const chips = document.getElementById('last-chips'); if (chips) chips.innerHTML = lastChips(evs, oppName);
     const u = document.getElementById('undo-btn'); if (u) u.disabled = !ownCount();
@@ -785,25 +807,98 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     return h;
   }
 
-  function oppSquadPanel(m) {
-    const name = oppTeam(m), ros = oppRoster(m), rec = new Set((m.oppNumbers || []).map(String));
+  function oppSquadPanel(m, team, withRecv) {
+    const name = team || oppTeam(m), sl = teamSlug(name), ros = rosterOf(name), recOn = withRecv !== false && name === oppTeam(m);
+    const rec = new Set(recOn ? (m.oppNumbers || []).map(String) : []);
     const nums = [...new Set(ros.map((p) => String(p.nr)).concat([...rec]))].sort((a, b) => Number(a) - Number(b));
+    const pOf = (n) => ros.find((x) => String(x.nr) === n) || {};
+    const at = ' data-team="' + esc(name) + '"';
     return '<section class="panel opp"><div class="panel-head"><h2>' + esc(name) + '</h2><span class="status">Draktnummer må fylles ut. Navn og posisjon er valgfritt. Spillerne huskes til neste kamp mot ' + esc(shortName(name)) + '.</span></div>'
-      + (nums.length ? '<div class="tbl-wrap"><table class="squad"><thead><tr><th>Nr</th><th>Navn (valgfritt)</th><th>Posisjon (valgfritt)</th><th class="c">I mottak</th><th class="hide-sm"></th></tr></thead><tbody>'
-        + nums.map((n) => { const p = oppP(m, n) || {}; return '<tr><td><input class="nrin" type="text" inputmode="numeric" maxlength="3" id="onr-' + esc(n) + '" data-a="onr" data-nr="' + esc(n) + '" value="' + esc(n) + '" aria-label="Draktnummer"></td>'
-          + '<td><input type="text" id="onm-' + esc(n) + '" data-a="oname" data-nr="' + esc(n) + '" value="' + esc(p.name || '') + '" placeholder="Navn" aria-label="Navn #' + esc(n) + '"></td>'
-          + '<td><select id="ops-' + esc(n) + '" data-a="opos" data-nr="' + esc(n) + '" aria-label="Posisjon #' + esc(n) + '"><option value="">–</option>' + POS.map((x) => '<option' + (p.pos === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></td>'
-          + '<td class="c"><button class="tog" data-a="orecv" data-nr="' + esc(n) + '" aria-pressed="' + rec.has(n) + '" aria-label="I mottak #' + esc(n) + '">' + (rec.has(n) ? '✓' : '') + '</button></td>'
-          + '<td class="hide-sm"><button class="del" data-a="odel" data-nr="' + esc(n) + '">Fjern</button></td></tr>'; }).join('') + '</tbody></table></div>'
+      + (nums.length ? '<div class="tbl-wrap"><table class="squad"><thead><tr><th>Nr</th><th>Navn (valgfritt)</th><th>Posisjon (valgfritt)</th>' + (recOn ? '<th class="c">I mottak</th>' : '') + '<th class="hide-sm"></th></tr></thead><tbody>'
+        + nums.map((n) => { const p = pOf(n); return '<tr><td><input class="nrin" type="text" inputmode="numeric" maxlength="3" id="onr-' + sl + '-' + esc(n) + '" data-a="onr"' + at + ' data-nr="' + esc(n) + '" value="' + esc(n) + '" aria-label="Draktnummer"></td>'
+          + '<td><input type="text" id="onm-' + sl + '-' + esc(n) + '" data-a="oname"' + at + ' data-nr="' + esc(n) + '" value="' + esc(p.name || '') + '" placeholder="Navn" aria-label="Navn #' + esc(n) + '"></td>'
+          + '<td><select id="ops-' + sl + '-' + esc(n) + '" data-a="opos"' + at + ' data-nr="' + esc(n) + '" aria-label="Posisjon #' + esc(n) + '"><option value="">–</option>' + POS.map((x) => '<option' + (p.pos === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></td>'
+          + (recOn ? '<td class="c"><button class="tog" data-a="orecv" data-nr="' + esc(n) + '" aria-pressed="' + rec.has(n) + '" aria-label="I mottak #' + esc(n) + '">' + (rec.has(n) ? '✓' : '') + '</button></td>' : '')
+          + '<td class="hide-sm"><button class="del" data-a="odel"' + at + ' data-nr="' + esc(n) + '">Fjern</button></td></tr>'; }).join('') + '</tbody></table></div>'
         : '<div class="empty">Ingen spillere lagt inn for ' + esc(name) + ' ennå.</div>')
-      + '<form class="addopp" id="oppaddform"><label for="opp-add-nr" class="label" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Draktnummer</label><input id="opp-add-nr" type="text" inputmode="numeric" placeholder="Nr" maxlength="3" required><input id="opp-add-name" type="text" placeholder="Navn (valgfritt)" style="width:170px"><button type="submit">+ Legg til</button></form></section>';
+      + '<form class="addopp" id="oppaddform-' + sl + '"' + at + '><label for="opp-add-nr-' + sl + '" class="sr">Draktnummer</label><input id="opp-add-nr-' + sl + '" type="text" inputmode="numeric" placeholder="Nr" maxlength="3" required><input id="opp-add-name-' + sl + '" type="text" placeholder="Navn (valgfritt)" style="width:170px"><button type="submit">+ Legg til</button></form></section>';
   }
-  async function saveOpp(m, players) {
-    const id = teamSlug(oppTeam(m));
+  function focusSquadView(m) {
+    const ros = teamRoster(m), rec = new Set(m.receivers || []), court = new Set(m.onCourt || []);
+    let h = '<header class="bar"><button class="link" data-a="to-live">‹ Tilbake til kampen</button><div class="title"><span class="display">Tropp</span><span class="sub">Fører for ' + esc(m.focus) + ' · ' + esc(m.home) + ' – ' + esc(m.away) + ' · ' + court.size + ' på banen · ' + rec.size + ' i mottak</span></div><span class="spacer"></span></header>';
+    h += '<section class="panel"><div class="panel-head"><h2>' + esc(m.focus) + ' i denne kampen</h2><span class="status">Velg hvem som er på banen og i mottak. Nummer og navn endrer du i listen under.</span></div>'
+      + (ros.length ? '<div class="tbl-wrap"><table class="squad"><thead><tr><th>Nr</th><th>Navn</th><th>Posisjon</th><th class="c">På banen</th><th class="c">I mottak</th></tr></thead><tbody>'
+        + ros.map((p) => '<tr><td class="key">' + esc(p.nr) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.pos || '–') + '</td>'
+          + '<td class="c"><button class="tog" data-a="court" data-id="' + esc(p.id) + '" aria-pressed="' + court.has(p.id) + '" aria-label="På banen ' + esc(p.name) + '">' + (court.has(p.id) ? '✓' : '') + '</button></td>'
+          + '<td class="c"><button class="tog" data-a="recv" data-id="' + esc(p.id) + '" aria-pressed="' + rec.has(p.id) + '" aria-label="I mottak ' + esc(p.name) + '"' + (!rec.has(p.id) && rec.size >= 6 ? ' disabled' : '') + '>' + (rec.has(p.id) ? '✓' : '') + '</button></td></tr>').join('') + '</tbody></table></div>'
+        : '<div class="empty">Ingen spillere lagt inn for ' + esc(m.focus) + ' ennå. Legg dem til under.</div>')
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" data-a="to-live">Ferdig</button>' + (Object.keys(S.logs).some((k) => (S.logs[k] || []).length) ? '' : '<button class="secondary" data-a="unfocus">Ikke før statistikk i denne kampen</button>') + '</div></section>';
+    h += oppSquadPanel(m, m.focus, false);
+    h += oppSquadPanel(m);
+    return h;
+  }
+
+  // Andres kamper: registrer resultat, velg lag å føre statistikk for, eller sett lag i sluttspillet fra tabellen
+  function othersPanel(m) {
+    let h = '';
+    if (isSlot(m.home) || isSlot(m.away)) {
+      const st = standings(), a = st[parseInt(m.home, 10) - 1], b = st[parseInt(m.away, 10) - 1];
+      h += '<section class="panel"><div class="panel-head"><h2>Sluttspill</h2><span class="status">Lagene settes fra tabellen.</span></div>'
+        + (a && b ? '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span>Etter tabellen nå: <b>' + esc(a.team) + ' – ' + esc(b.team) + '</b></span><button class="primary" data-a="setslots" data-h="' + esc(a.team) + '" data-w="' + esc(b.team) + '">Sett lagene</button></div>' : '<div class="empty">Tabellen har ikke nok lag ennå.</div>') + '</section>';
+      return h;
+    }
+    const sc = m.setScores || [];
+    h += '<section class="panel"><div class="panel-head"><h2>Resultat</h2><span class="status">Poeng per sett. Tomme sett telles ikke.</span></div><form id="resform" class="resform">'
+      + '<div class="res-set res-head"><span></span><span class="label">' + esc(shortName(m.home)) + '</span><span></span><span class="label">' + esc(shortName(m.away)) + '</span></div>';
+    for (let i = 0; i < 5; i++) h += '<div class="res-set"><span class="label">Sett ' + (i + 1) + '</span><input id="rs-h-' + i + '" type="text" inputmode="numeric" maxlength="2" value="' + (sc[i] ? sc[i][0] : '') + '" aria-label="' + esc(m.home) + ' sett ' + (i + 1) + '"><span>–</span><input id="rs-a-' + i + '" type="text" inputmode="numeric" maxlength="2" value="' + (sc[i] ? sc[i][1] : '') + '" aria-label="' + esc(m.away) + ' sett ' + (i + 1) + '"></div>';
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" type="submit">Lagre resultat</button></div></form></section>';
+    h += '<section class="panel"><div class="panel-head"><h2>Før statistikk</h2><span class="status">Velg laget du vil føre mottak, angrep og serve for. Det andre laget føres som motstander.</span></div><div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + [m.home, m.away].map((t, i) => '<button class="secondary" data-a="focus" data-v="' + (i ? 'away' : 'home') + '">Før for ' + esc(t) + '</button>').join('') + '</div></section>';
+    return h;
+  }
+
+  // Tabell: CEV-poeng (3–0/3–1 gir 3, 3–2 gir 2, 2–3 gir 1), så seire, poeng, settkvotient og ballkvotient
+  function tableMatches() {
+    return S.matches.filter((m) => m.stage !== 'sluttspill' && !isSlot(m.home) && !isSlot(m.away) && !isTest(m) && (!m.custom || m.type === 'turnering' || m.type === 'serie'));
+  }
+  function standings() {
+    const T = {}; const row = (t) => (T[t] ||= { team: t, k: 0, v: 0, tap: 0, p: 0, sv: 0, st: 0, bv: 0, bt: 0 });
+    tableMatches().forEach((m) => {
+      row(m.home); row(m.away);
+      if (m.status !== 'ferdig' || !(m.setsHome + m.setsAway)) return;
+      const H = row(m.home), A = row(m.away), hs = m.setsHome || 0, as = m.setsAway || 0;
+      H.k++; A.k++; H.sv += hs; H.st += as; A.sv += as; A.st += hs;
+      (m.setScores || []).forEach(([x, y]) => { H.bv += x; H.bt += y; A.bv += y; A.bt += x; });
+      const win = hs > as ? H : A, lose = hs > as ? A : H, close = Math.min(hs, as) === 2;
+      win.v++; lose.tap++; win.p += close ? 2 : 3; lose.p += close ? 1 : 0;
+    });
+    const q = (a, b) => b ? a / b : (a ? Infinity : 0);
+    return Object.values(T).sort((a, b) => b.v - a.v || b.p - a.p || q(b.sv, b.st) - q(a.sv, a.st) || q(b.bv, b.bt) - q(a.bv, a.bt) || a.team.localeCompare(b.team, 'nb'));
+  }
+  function tableView() {
+    const st = standings(), q = (a, b) => b ? (Math.round(a / b * 1000) / 1000).toFixed(3).replace('.', ',') : (a ? 'MAX' : '–');
+    const all = tableMatches(), done = all.filter((m) => m.status === 'ferdig').length;
+    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Tabell</span><span class="sub">' + esc(CTX.name) + ' · ' + done + ' av ' + all.length + ' kamper spilt</span></div><span class="spacer"></span></header>';
+    h += '<section class="panel"><div class="tbl-wrap"><table class="tbl standings"><thead><tr><th>#</th><th class="l-al">Lag</th><th>K</th><th>V</th><th>T</th><th>Poeng</th><th>Sett</th><th class="hide-sm">Settkv.</th><th class="hide-sm">Ballkv.</th></tr></thead><tbody>'
+      + st.map((r, i) => '<tr' + (r.team === OUR ? ' class="us"' : '') + '><td>' + (i + 1) + '</td><td class="key l-al">' + esc(shortName(r.team)) + '</td><td>' + r.k + '</td><td>' + r.v + '</td><td>' + r.tap + '</td><td class="key">' + r.p + '</td><td>' + r.sv + '–' + r.st + '</td><td class="hide-sm">' + q(r.sv, r.st) + '</td><td class="hide-sm">' + q(r.bv, r.bt) + '</td></tr>').join('')
+      + '</tbody></table></div><div class="code-legend">Rangering: seire, poeng (3–0 og 3–1 gir 3 poeng, 3–2 gir 2 og 2–3 gir 1), settkvotient, ballkvotient.</div></section>';
+    const po = S.matches.filter((m) => m.stage === 'sluttspill' || isSlot(m.home) || isSlot(m.away));
+    if (po.length) h += '<section class="panel"><div class="panel-head"><h2>Sluttspill</h2></div><div class="po">' + po.map((m) => {
+      const slot = (t) => { if (!isSlot(t)) return esc(t); const r = st[parseInt(t, 10) - 1]; return esc(t) + (r && r.k ? ' <span class="muted">(nå: ' + esc(shortName(r.team)) + ')</span>' : ''); };
+      return '<button class="po-card" data-a="open" data-id="' + esc(m.id) + '"><span class="label">' + esc(m.round || 'Sluttspill') + ' · ' + esc(fmtDate(m.date)) + (m.venue ? ' · ' + esc(m.venue) : '') + '</span><span class="po-teams">' + slot(m.home) + ' – ' + slot(m.away) + '</span><span class="po-res">' + (m.status === 'ferdig' ? (m.setsHome || 0) + '–' + (m.setsAway || 0) + (setList(m) ? ' <small>(' + esc(setList(m)) + ')</small>' : '') : 'Ikke spilt') + '</span></button>';
+    }).join('') + '</div></section>';
+    const days = {}; all.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach((m) => { const d = (m.date || '').slice(0, 10); (days[d] ||= []).push(m); });
+    h += '<section class="panel"><div class="panel-head"><h2>Kamper</h2><span class="status">Trykk en kamp for å registrere resultat eller føre statistikk</span></div><div class="rounds">'
+      + Object.entries(days).map(([d, list]) => '<section class="round"><h2 class="label">' + esc(fmtDate(d)) + '</h2>' + list.map(matchRow).join('') + '</section>').join('') + '</div></section>';
+    return h;
+  }
+
+  async function saveOpp(m, players, team) {
+    team = team || oppTeam(m); const id = teamSlug(team);
     players = players.slice().sort((a, b) => Number(a.nr) - Number(b.nr));
-    S.opps = Object.assign({}, S.opps, { [id]: { name: oppTeam(m), players } }); render();
+    S.opps = Object.assign({}, S.opps, { [id]: { name: team, players } }); render();
     if (!S.db) return;
-    try { await S.db.doc(PFX + 'opponents/' + id).set({ name: oppTeam(m), players }); }
+    try { await S.db.doc(PFX + 'opponents/' + id).set({ name: team, players }); }
     catch (e) { S.error = 'Motstanderens spillere ble ikke lagret (' + e.code + ').'; render(); }
   }
   function setOppNumbers(m, list) { list = [...new Set(list.map(String))].sort((a, b) => Number(a) - Number(b)); m.oppNumbers = list; render(); saveMatch(m.id, { oppNumbers: list }); }
@@ -819,6 +914,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 
   function squadView() {
     const m = cur();
+    if (m.focus) return focusSquadView(m);
     const rec = new Set(m.receivers || []), court = new Set(m.onCourt || []);
     let h = '<header class="bar"><button class="link" data-a="to-live">‹ Tilbake til kampen</button><div class="title"><span class="display">Tropp</span><span class="sub">' + esc(m.home) + ' – ' + esc(m.away) + ' · ' + court.size + ' på banen · ' + rec.size + ' i mottak</span></div><span class="spacer"></span></header>';
     h += '<section class="panel"><div class="panel-head"><h2>Spillere</h2><span class="status">Draktnummer, navn og posisjon gjelder alle kamper. «På banen» og «I mottak» gjelder denne kampen.</span></div>'
@@ -841,7 +937,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   // ---------- Kampark (som Excel-arket) ----------
   function sheetView() {
     const m = cur();
-    const oppName = m.home === OUR ? m.away : m.home;
+    const oppName = m.home === usName(m) ? m.away : m.home;
     const evs = allEvents();
     const maxSet = Math.max(5, ...evs.map((e) => e.set || 1), (m.current && m.current.set) || 1);
     const sets = Array.from({ length: maxSet }, (_, i) => i + 1);
@@ -849,7 +945,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const dstr = d && !isNaN(d) ? d.getDate() + '/' + (d.getMonth() + 1) + '-' + String(d.getFullYear()).slice(2) : '';
     const res = (m.setsHome || 0) + '–' + (m.setsAway || 0) + (setList(m) ? ' (' + setList(m) + ')' : '');
     const byType = (type) => evs.filter((e) => e.type === type);
-    const order = (ids) => { const r = S.roster.map((p) => p.id).filter((id) => ids.includes(id)); ids.forEach((id) => { if (!r.includes(id)) r.push(id); }); return r; };
+    const order = (ids) => { const r = teamRoster(m).map((p) => p.id).filter((id) => ids.includes(id)); ids.forEach((id) => { if (!r.includes(id)) r.push(id); }); return r; };
 
     const cell = (e) => {
       if (e.type === 'att' && e.c === 'B') return '<b class="red">0</b>';
@@ -902,12 +998,12 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const old = btn.textContent; btn.textContent = 'Lager Excel …'; btn.disabled = true;
     try {
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js');
-      const oppName = m.home === OUR ? m.away : m.home;
+      const oppName = m.home === usName(m) ? m.away : m.home;
       const evs = allEvents();
       const maxSet = Math.max(5, ...evs.map((e) => e.set || 1));
       const sets = Array.from({ length: maxSet }, (_, i) => i + 1);
       const byType = (type) => evs.filter((e) => e.type === type);
-      const order = (ids) => { const r = S.roster.map((p) => p.id).filter((id) => ids.includes(id)); ids.forEach((id) => { if (!r.includes(id)) r.push(id); }); return r; };
+      const order = (ids) => { const r = teamRoster(m).map((p) => p.id).filter((id) => ids.includes(id)); ids.forEach((id) => { if (!r.includes(id)) r.push(id); }); return r; };
       const sections = [
         { title: 'Mottak', type: 'rec', ids: order([...new Set(byType('rec').map((e) => e.p).concat(m.receivers || []))]), label: pname, heads: ['Antall', 'Poeng', 'Snitt'], kind: 'num' },
         { title: 'Angrep', type: 'att', ids: order([...new Set(byType('att').map((e) => e.p).concat(m.onCourt || []))]), label: pname, heads: ['Antall', 'Poeng', 'Snitt'], kind: 'num' },
@@ -1031,7 +1127,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const sp = {}; const get = (id) => (sp[id] ||= { id, rec: [], att: [], srv: [] });
     E.forEach((e) => { if (e.type !== 'opp') get(e.p)[e.type].push(String(e.c)); });
     const inServe = E.some((e) => e.type === 'srv' && String(e.c) === 'I');
-    const ord = S.roster.map((p) => p.id); const ix = (id) => { const i = ord.indexOf(id); return i < 0 ? 999 : i; };
+    const ord = teamRoster(m).map((p) => p.id); const ix = (id) => { const i = ord.indexOf(id); return i < 0 ? 999 : i; };
     const T = { rec: [], att: [], srv: [] };
     const players = Object.values(sp).sort((a, b) => ix(a.id) - ix(b.id)).map((p) => {
       const pl = player(p.id) || {}; const o = { nr: pl.nr || '', name: pl.name || pname(p.id) };
@@ -1045,7 +1141,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const totals = { recAvg: avg(T.rec), recPerf: T.rec.length ? pct(cnt(T.rec, '2'), T.rec.length) : undefined, aces: cnt(T.srv, 'E'), srvErr: cnt(T.srv, 'F'), pts: k + cnt(T.srv, 'E') };
     if (T.att.length) Object.assign(totals, { kp: pct(k, T.att.length), eff: pct1(k - f - b, T.att.length) });
     if (inServe) totals.srv = T.srv.length;
-    const oppName = m.home === OUR ? m.away : m.home;
+    const oppName = m.home === usName(m) ? m.away : m.home;
     const oppr = {};
     E.forEach((e) => { if (e.type === 'opp') (oppr[String(e.p)] ||= []).push(String(e.c)); });
     const opp = { name: oppName, players: [], totals: {} };
@@ -1055,18 +1151,19 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       opp.players = nums.map((n) => ({ nr: n, name: (oppP(m, n) || {}).name || '', rec: oppr[n].length, recErr: cnt(oppr[n], '0'), recAvg: avg(oppr[n]), recPerf: pct(cnt(oppr[n], '2'), oppr[n].length) }));
       opp.totals = { recAvg: avg(all), recPerf: pct(cnt(all, '2'), all.length) };
     } else opp.missing = 'Motstanderens mottak ble ikke ført i denne kampen.';
-    return { source: 'egen', teams: [{ name: OUR, players, totals }, opp] };
+    return { source: 'egen', teams: [{ name: usName(m), players, totals }, opp] };
   }
 
   function detailView() {
-    const m = cur(); const ours = isOurs(m);
+    const m = cur(); const ours = canLive(m);
     const own = ours ? ownStats(m, allEvents()) : null; const hasNvbf = !!(m.nvbf && m.nvbf.teams && m.nvbf.teams.length);
     const egen = !!own && !(S.detailSrc === 'nvbf' && hasNvbf); const n = egen ? own : m.nvbf;
     addRecAvg(n);
     let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
       + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (ours ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + (ours && m.custom && !window.PUBLIC ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
+    if (!ours && !window.PUBLIC) h += othersPanel(m);
     if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">NVBF</button></div>';
-    if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? 'Statistikken fra denne kampen er ikke lagt ut ennå.' : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
+    if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? 'Statistikken fra denne kampen er ikke lagt ut ennå.' : CTX.id !== 'main' ? (m.status === 'ferdig' ? 'Resultatet er registrert. Det er ikke ført statistikk i denne kampen.' : 'Kampen er ikke spilt ennå.') : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
     h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
@@ -1077,7 +1174,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
-      const weak = t.name === OUR ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recAvg) - pnum(b.recAvg)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
+      const weak = t.name === usName(m) ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recAvg) - pnum(b.recAvg)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
       if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>Snitt</th>' + (egen ? '' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td class="key">' + esc(p.recAvg ?? '–') + '</td>' + (egen ? '' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest mottakssnitt blant spillere med minst ' + minRec + ' mottak.</div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
@@ -1122,7 +1219,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 
   function summarize(m) {
     const evs = SEASON.logs[m.id] || [];
-    const home = m.home === OUR;
+    const home = m.home === usName(m);
     const us = home ? (m.setsHome || 0) : (m.setsAway || 0);
     const them = home ? (m.setsAway || 0) : (m.setsHome || 0);
     return { m, evs, home, opp: home ? m.away : m.home, us, them, sets: us + them, done: m.status === 'ferdig', live: m.status === 'pågår', st: computeStats(evs) };
@@ -1456,7 +1553,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   function dirUpdate() {
     const m = cur(); if (!DIR.el || !m) return;
     const q = (s) => DIR.el.querySelector(s);
-    const oppName = m.home === OUR ? m.away : m.home;
+    const oppName = m.home === usName(m) ? m.away : m.home;
     const cs = (m.current && m.current.set) || 1;
     const all = dirEvents();
     const nums = dirNums(m);
@@ -1538,8 +1635,8 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       const mm = S.matches.find((x) => x.id === b.dataset.id); if (!mm) return;
       closeSeasonLogs();
       S.matchId = mm.id; S.statSet = 'all';
-      S.view = isOurs(mm) && mm.status !== 'ferdig' && !window.PUBLIC ? 'live' : 'detail'; S.detailSrc = 'egen';
-      if (isOurs(mm)) openLogs(mm.id);
+      S.view = canLive(mm) && mm.status !== 'ferdig' && !window.PUBLIC ? 'live' : 'detail'; S.detailSrc = 'egen';
+      if (canLive(mm)) openLogs(mm.id);
       render(); toTop();
     }
     else if (a === 'back') { S.view = 'list'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); }
@@ -1555,6 +1652,14 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     else if (a === 'toview' && m) { S.view = 'detail'; render(); toTop(); }
     else if (a === 'dsrc') { S.detailSrc = b.dataset.v; render(); }
     else if (a === 'ctx-cancel') { S.showNewCtx = false; render(); }
+    else if (a === 'table') { S.view = 'table'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); toTop(); }
+    else if (a === 'focus' && m) {
+      const team = b.dataset.v === 'away' ? m.away : m.home;
+      const patch = { focus: team, receivers: [], onCourt: [], oppNumbers: [], current: m.current || { set: (m.setScores || []).length + 1, home: 0, away: 0 } };
+      Object.assign(m, patch); S.view = 'squad'; openLogs(m.id); render(); toTop(); saveMatch(m.id, patch);
+    }
+    else if (a === 'unfocus' && m) { const patch = { focus: null, receivers: [], onCourt: [], oppNumbers: [] }; Object.assign(m, patch); S.view = 'detail'; openLogs(null); render(); saveMatch(m.id, patch); }
+    else if (a === 'setslots' && m) { const patch = { home: b.dataset.h, away: b.dataset.w }; Object.assign(m, patch); render(); saveMatch(m.id, patch); }
     else if (a === 'delmatch' && m) {
       if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Trykk igjen for å slette kampen og alle registreringene'; return; }
       deleteMatch(m);
@@ -1563,7 +1668,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     else if (a === 'orecv' && m) { const n = b.dataset.nr, list = (m.oppNumbers || []).map(String); setOppNumbers(m, list.includes(n) ? list.filter((x) => x !== n) : list.concat([n])); }
     else if (a === 'odel' && m) {
       if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; }
-      const n = b.dataset.nr; saveOpp(m, oppRoster(m).filter((p) => String(p.nr) !== n)); setOppNumbers(m, (m.oppNumbers || []).filter((x) => String(x) !== n));
+      const n = b.dataset.nr, tm = b.dataset.team || oppTeam(m); saveOpp(m, rosterOf(tm).filter((p) => String(p.nr) !== n), tm); if (tm === oppTeam(m)) setOppNumbers(m, (m.oppNumbers || []).filter((x) => String(x) !== n));
     }
     else if (a === 'log') { logEvent(b.dataset.t, b.dataset.p, b.dataset.c); b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 300); }
     else if (a === 'undo') { undo(); }
@@ -1591,7 +1696,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       const key = a === 'court' ? 'onCourt' : 'receivers';
       const set = new Set(m[key] || []);
       if (set.has(b.dataset.id)) set.delete(b.dataset.id); else set.add(b.dataset.id);
-      const order = S.roster.map((p) => p.id).filter((id) => set.has(id));
+      const order = teamRoster(m).map((p) => p.id).filter((id) => set.has(id));
       m[key] = order; render(); saveMatch(m.id, { [key]: order });
     }
     else if (a === 'addp') { const id = 'p' + Math.random().toString(36).slice(2, 8); saveRoster(S.roster.concat([{ id, nr: '', name: 'Ny spiller', pos: '' }])); }
@@ -1615,15 +1720,15 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       setTimeout(() => applyCtx(el.value), 0); return;
     }
     if ((a === 'onr' || a === 'oname' || a === 'opos') && cur()) {
-      const m = cur(), nr = el.dataset.nr, val = el.value.trim();
-      const ros = oppRoster(m).map((p) => ({ ...p })); let p = ros.find((x) => String(x.nr) === nr);
+      const m = cur(), nr = el.dataset.nr, val = el.value.trim(), tm = el.dataset.team || oppTeam(m);
+      const ros = rosterOf(tm).map((p) => ({ ...p })); let p = ros.find((x) => String(x.nr) === nr);
       if (!p) { p = { nr }; ros.push(p); }
       if (a === 'onr') {
         const v = val.replace(/[^0-9]/g, '');
         if (!v || (v !== nr && ros.some((x) => String(x.nr) === v))) { S.error = v ? 'Nummer ' + v + ' finnes allerede.' : 'Draktnummer må fylles ut.'; render(); return; }
-        p.nr = v; saveOpp(m, ros);
-        if ((m.oppNumbers || []).map(String).includes(nr)) setOppNumbers(m, m.oppNumbers.map((x) => String(x) === nr ? v : x));
-      } else { p[a === 'oname' ? 'name' : 'pos'] = val; saveOpp(m, ros); }
+        p.nr = v; saveOpp(m, ros, tm);
+        if (tm === oppTeam(m) && (m.oppNumbers || []).map(String).includes(nr)) setOppNumbers(m, m.oppNumbers.map((x) => String(x) === nr ? v : x));
+      } else { p[a === 'oname' ? 'name' : 'pos'] = val; saveOpp(m, ros, tm); }
       return;
     }
     if (a === 'nr' || a === 'name' || a === 'pos') {
@@ -1663,14 +1768,29 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       } catch (e) { S.error = 'Kunne ikke opprette (' + e.code + ').'; render(); }
       return;
     }
-    if (f.id === 'oppaddform' && m) {
-      const v = (document.getElementById('opp-add-nr').value || '').replace(/[^0-9]/g, '');
-      const nm = (document.getElementById('opp-add-name').value || '').trim();
+    if (f.id.startsWith('oppaddform') && m) {
+      const tm = f.dataset.team || oppTeam(m), sl = teamSlug(tm);
+      const v = (document.getElementById('opp-add-nr-' + sl).value || '').replace(/[^0-9]/g, '');
+      const nm = (document.getElementById('opp-add-name-' + sl).value || '').trim();
       if (!v) { S.error = 'Draktnummer må fylles ut.'; render(); return; }
-      const ros = oppRoster(m).map((p) => ({ ...p })); const p = ros.find((x) => String(x.nr) === v);
+      const ros = rosterOf(tm).map((p) => ({ ...p })); const p = ros.find((x) => String(x.nr) === v);
       if (p) { if (nm) p.name = nm; } else ros.push(nm ? { nr: v, name: nm } : { nr: v });
-      saveOpp(m, ros); setOppNumbers(m, (m.oppNumbers || []).concat([v]));
-      const inp = document.getElementById('opp-add-nr'); if (inp) { inp.value = ''; inp.focus(); }
+      saveOpp(m, ros, tm); if (tm === oppTeam(m)) setOppNumbers(m, (m.oppNumbers || []).concat([v]));
+      const inp = document.getElementById('opp-add-nr-' + sl); if (inp) { inp.value = ''; inp.focus(); }
+      return;
+    }
+    if (f.id === 'resform' && m) {
+      const sc = [];
+      for (let i = 0; i < 5; i++) {
+        const h = document.getElementById('rs-h-' + i).value.trim(), a = document.getElementById('rs-a-' + i).value.trim();
+        if (h === '' && a === '') continue;
+        const hn = parseInt(h, 10), an = parseInt(a, 10);
+        if (isNaN(hn) || isNaN(an) || hn === an) { S.error = 'Sett ' + (i + 1) + ': skriv inn poeng for begge lag, og ikke likt.'; render(); return; }
+        sc.push([hn, an]);
+      }
+      const sh = sc.filter((x) => x[0] > x[1]).length, sa = sc.length - sh;
+      Object.assign(m, { setScores: sc, setsHome: sh, setsAway: sa, status: sc.length ? 'ferdig' : 'kommende' }); S.error = ''; render();
+      saveMatch(m.id, { setScores: sc, setsHome: sh, setsAway: sa, status: sc.length ? 'ferdig' : 'kommende' });
       return;
     }
     if (f.id === 'oppform' && m) {
@@ -1695,7 +1815,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   });
 
   async function exportCsv(m) {
-    const oppName = m.home === OUR ? m.away : m.home;
+    const oppName = m.home === usName(m) ? m.away : m.home;
     const rows = [['sett', 'type', 'spiller', 'nr', 'kode', 'tid']];
     allEvents().forEach((e) => {
       const p = (e.type === 'opp' || e.type === 'dir') ? null : player(e.p);
