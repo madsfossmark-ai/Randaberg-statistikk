@@ -163,7 +163,11 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .small-n { color: var(--faint); }
 
 /* Kampliste */
-.listhead { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.listhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.listhead .lh-id { flex: 1 1 auto; min-width: 0; }
+.listhead .menu-wrap { flex: none; }
+.list-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+@media (max-width: 640px) { .menu-btn span { display: none; } .menu-btn { padding: 0 12px; } }
 .listhead h1 { font-family: var(--font-display); font-size: 40px; font-weight: 700; line-height: 1; }
 .tabs { display: inline-flex; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 10px; }
 .tabs button { height: 38px; padding: 0 16px; border: 0; border-radius: 7px; background: transparent; font-weight: 500; }
@@ -246,7 +250,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .avgbar.inl { display: inline-block; vertical-align: middle; width: 32px; margin-left: 6px; }
 /* Søylen ved navnet i registreringen står på egen linje, så den aldri kuttes på smal skjerm */
 .avgbar.blk { display: block; width: 72px; max-width: 100%; height: 5px; margin-top: 4px; }
-tr.weakest .avgbar, tr.total .avgbar, .kpi .avgbar { background: rgba(127,127,127,.2); }
+tr.weakest .avgbar, tr.strongest .avgbar, tr.total .avgbar, .kpi .avgbar { background: rgba(127,127,127,.2); }
 
 /* Skjema */
 .form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: end; }
@@ -393,8 +397,11 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 .tbl th[aria-sort="descending"] button::after { content: " ↓"; } .tbl th[aria-sort="ascending"] button::after { content: " ↑"; }
 .tbl tr.clickrow { cursor: pointer; }
 .tbl tr.weakest td { background: var(--opp-soft); }
+.tbl tr.strongest td { background: rgba(31,122,77,.14); }
+.row.strong-row { background: rgba(31,122,77,.14); box-shadow: 0 0 0 6px rgba(31,122,77,.14); border-radius: 8px; }
 .row.weak-row { background: var(--opp-soft); box-shadow: 0 0 0 6px var(--opp-soft); border-radius: 8px; }
 .weak-tag.reg { display: table; margin: 5px 0 0; font-size: 11px; padding: 2px 8px; }
+.weak-tag.strong { background: var(--good); }
 .weak-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: var(--opp-strong); color: #FFFFFF; padding: 1px 6px; border-radius: 99px; margin-left: 4px; vertical-align: 1px; }
 .kk-controls { display: flex; gap: 10px 14px; align-items: flex-end; flex-wrap: wrap; }
 .kk-pick { min-width: min(100%, 220px); }
@@ -448,7 +455,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 22:13";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 22:33";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -593,6 +600,9 @@ window.PUBLIC_CTX = null;
   };
   const ctxGender = () => CTX.gender === 'menn' || (!CTX.gender && /herre|menn|\bH\d/i.test((CTX.name || '') + ' ' + (CTX.our || ''))) ? 'menn' : 'kvinner';
   const thr = (kind, pos) => { const T = THRESH[ctxGender()]; return kind === 'att' ? (pos === 'Midt' ? T.attMidt : T.att) : kind === 'srv' ? T.srv : T.rec; };
+  // Lav og høy: lavest og høyest snitt blant spillere med nok forsøk (mottak og angrep minst 5, serve minst 3). Krever minst to spillere
+  const extremes = (obj, f, minN) => { const el = Object.entries(obj).filter(([, r]) => r.n >= minN).sort((a, b) => f(a[1]) - f(b[1]) || b[1].n - a[1].n); return el.length > 1 && f(el[0][1]) !== f(el[el.length - 1][1]) ? { lo: el[0][0], hi: el[el.length - 1][0] } : {}; };
+  const loHi = (id, ex) => id === ex.lo ? [' class="weakest"', ' <span class="weak-tag">Lav</span>'] : id === ex.hi ? [' class="strongest"', ' <span class="weak-tag strong">Høy</span>'] : ['', ''];
   // Svakest: lavest snitt blant spillere med nok forsøk (mottak og angrep minst 5, serve minst 3)
   const srvAvg = (r) => 1 + (r.E - r.F) / r.n;
   const weakestOf = (obj, f, minN) => (Object.entries(obj).filter(([, r]) => r.n >= minN).sort((a, b) => f(a[1]) - f(b[1]) || b[1].n - a[1].n)[0] || [])[0];
@@ -862,7 +872,7 @@ window.PUBLIC_CTX = null;
       + '<span><b>Midtspillere.</b> Midtspillere angriper raskere og oftere mot enkeltblokk, og har normalt klart høyere effektivitet enn kant og diagonal. De får derfor en høyere grense. Posisjonen hentes fra troppen.</span>'
       + '<span><b>Mottak.</b> Snittet er 0 for feil, 1 for spillbart og 2 for perfekt, og kan leses som 1 + andel perfekte − andel feil. 1,40 betyr altså 40 prosentpoeng flere perfekte mottak enn feil. Det finnes ingen internasjonal norm for akkurat denne skalaen (vanligst er 0–3), så mottaksgrensene er en faglig vurdering.</span>'
       + '<span><b>Serve.</b> Snittet er 0 for feil, 1 for serve i spill og 2 for ess, altså 1 + (ess − feil) / antall serve. Over 1,00 betyr flere ess enn feil. Grensene er en faglig vurdering, litt lavere for menn fordi hoppserve gir flere feil.</span>'
-      + '<span><b>Svakest.</b> Spilleren med lavest snitt markeres i mottak, angrep og serve, både i registreringen og i tabellene. Bare spillere med minst 5 mottak eller angrep, eller minst 3 serve, er med.</span>'
+      + '<span><b>Lav og høy.</b> Spilleren med lavest snitt markeres med oransje «Lav», og den med høyest snitt med grønn «Høy», i mottak, angrep og serve, både i registreringen og i tabellene. Bare spillere med minst 5 mottak eller angrep, eller minst 3 serve, er med (i kampvisningen gjelder litt høyere krav ut fra volumet i kampen). Motstanderens svakeste mottaker markeres med «Server hit».</span>'
       + '<span><b>Motstanderens mottak</b> bruker de samme fargene. Grønt der betyr at motstanderen tar imot godt, altså at vår serve har lite effekt.</span>'
       + '</div></section>';
     h += '<section class="panel"><div class="panel-head"><h2>Grenser for ' + (g === 'menn' ? 'kvinner' : 'menn') + '</h2></div>' + table(g === 'menn' ? 'kvinner' : 'menn') + '<div class="code-legend">Velges automatisk ut fra laget. Nye sesonger og lag får valget «Klasse» når de opprettes.</div></section>';
@@ -902,10 +912,10 @@ window.PUBLIC_CTX = null;
     const upcoming = S.matches.filter((m) => isOurs(m) && m.status !== 'ferdig').sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
     const rounds = {};
     ms.forEach((m) => { const r = m.custom ? roundLabel(m) + '|' + m.id : roundLabel(m); (rounds[r] ||= []).push(m); });
-    let h = '<div class="listhead"><div class="lh-id">' + crest(OUR, 'md') + '<div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>' + '</div>'
-      + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="tabs" role="group" aria-label="Filter">'
+    let h = '<div class="listhead"><div class="lh-id">' + crest(OUR, 'md') + '<div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>' + '</div>' + menuHtml() + '</div>'
+      + '<div class="list-controls"><div class="tabs" role="group" aria-label="Filter">'
       + [['alle', 'Alle'], ['vare', OUR]].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + esc(l) + '</button>').join('')
-      + '</div><button class="secondary" data-a="table">Tabell</button><button class="primary" data-a="season">Dashboard</button>' + menuHtml() + '</div></div>';
+      + '</div><button class="secondary" data-a="table">Tabell</button><button class="primary" data-a="season">Dashboard</button></div>';
     if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (S.showShare && siteUrl()) h += sharePanel();
@@ -1049,7 +1059,11 @@ window.PUBLIC_CTX = null;
     // Svakeste mottaker hos motstanderen (lavest snitt, minst 5 mottak i kampen) markeres også i registreringen
     const weakOpp = (Object.entries(st.opp).filter(([, r]) => r.n >= 5).sort((a, b) => (a[1].s / a[1].n) - (b[1].s / b[1].n) || b[1].n - a[1].n)[0] || [])[0];
     const recAvg = (r) => r.s / r.n, many = (o) => Object.keys(o).length > 1;
-    const weakOwn = { rec: many(st.rec) ? weakestOf(st.rec, recAvg, 5) : null, att: many(st.att) ? weakestOf(st.att, attAvg, 5) : null, srv: many(st.srv) ? weakestOf(st.srv, srvAvg, 3) : null };
+    // Lav og høy i registreringen gjelder spillerne som står i listen (på banen / i mottak), ikke de som har gått ut
+    const shown = { rec: new Set(), att: new Set(), srv: new Set() };
+    app.querySelectorAll('[data-mini]').forEach((el) => { const [t, id] = [el.dataset.mini.slice(0, el.dataset.mini.indexOf('|')), el.dataset.mini.slice(el.dataset.mini.indexOf('|') + 1)]; if (shown[t]) shown[t].add(id); });
+    const only = (o, t) => Object.fromEntries(Object.entries(o).filter(([id]) => shown[t].has(id)));
+    const ex = { rec: extremes(only(st.rec, 'rec'), recAvg, 5), att: extremes(only(st.att, 'att'), attAvg, 5), srv: extremes(only(st.srv, 'srv'), srvAvg, 3) };
     app.querySelectorAll('[data-mini]').forEach((el) => {
       const i = el.dataset.mini.indexOf('|'); const t = el.dataset.mini.slice(0, i), id = el.dataset.mini.slice(i + 1);
       const r = ({ rec: st.rec, att: st.att, srv: st.srv, opp: st.opp })[t][id];
@@ -1059,9 +1073,10 @@ window.PUBLIC_CTX = null;
         else if (t === 'att') txt = r.n + ' · snitt ' + dec(1 + (r.c2 - r.c0 - r.B) / r.n) + avgBarOnly(1 + (r.c2 - r.c0 - r.B) / r.n, 'blk', 'att', posOf(id));
         else txt = esc(r.n + ' · ' + r.E + ' ess ' + r.F + ' feil') + avgBarOnly(srvAvg(r), 'blk', 'srv');
       }
-      const weak = t === 'opp' ? id === weakOpp : id === weakOwn[t];
-      if (weak) txt += '<span class="weak-tag reg">' + (t === 'opp' ? 'Server hit' : 'Svakest') + '</span>';
-      const row = el.closest('.row'); if (row) row.classList.toggle('weak-row', weak);
+      const weak = t === 'opp' ? id === weakOpp : !!ex[t] && id === ex[t].lo, strong = t !== 'opp' && !!ex[t] && id === ex[t].hi;
+      if (weak) txt += '<span class="weak-tag reg">' + (t === 'opp' ? 'Server hit' : 'Lav') + '</span>';
+      if (strong) txt += '<span class="weak-tag strong reg">Høy</span>';
+      const row = el.closest('.row'); if (row) { row.classList.toggle('weak-row', weak); row.classList.toggle('strong-row', strong); }
       el.innerHTML = txt;
     });
   }
@@ -1128,20 +1143,20 @@ window.PUBLIC_CTX = null;
       + '<div class="seg" role="group" aria-label="Utvalg"><button data-a="statset" data-v="all" aria-pressed="' + (S.statSet === 'all') + '">Kamp</button>' + sets.map((s) => { const sc = scoreStr((m.setScores || [])[s - 1]); return '<button data-a="statset" data-v="' + s + '" aria-pressed="' + (String(S.statSet) === String(s)) + '">Sett ' + s + (sc ? ' · ' + sc : '') + '</button>'; }).join('') + '</div></div>';
 
     const recRows = Object.entries(st.rec).sort((a, b) => b[1].n - a[1].n);
-    const weakOwn = recRows.length > 1 ? (recRows.filter(([, r]) => r.n >= 5).sort((a, b) => a[1].s / a[1].n - b[1].s / b[1].n)[0] || [])[0] : null;
+    const exRec = extremes(st.rec, (r) => r.s / r.n, 5);
     const avgCell = (v) => avgBar(v);
     h += '<div class="stats-body"><div class="stat-block"><div class="label" style="color:var(--accent)">Mottak</div>';
     if (!recRows.length) h += '<div class="empty">Ingen mottak registrert.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Snitt</th><th>Feil</th><th>Spillbart</th><th>Perfekt</th></tr></thead><tbody>'
-      + recRows.map(([id, r]) => '<tr' + (id === weakOwn ? ' class="weakest"' : '') + '><td class="key">' + esc(pname(id)) + (id === weakOwn ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgCell(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c1, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
+      + recRows.map(([id, r]) => '<tr' + loHi(id, exRec)[0] + '><td class="key">' + esc(pname(id)) + loHi(id, exRec)[1] + '</td><td>' + r.n + '</td><td class="key">' + avgCell(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c1, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
       + '<tr class="total"><td>Lag</td><td>' + st.tRec.n + '</td><td>' + avgBar(st.tRec.s / st.tRec.n) + '</td><td>' + pct(st.tRec.c0, st.tRec.n) + '</td><td>' + pct(st.tRec.c1, st.tRec.n) + '</td><td>' + pct(st.tRec.c2, st.tRec.n) + '</td></tr></tbody></table></div>';
 
     const attRows = Object.entries(st.att).sort((a, b) => b[1].n - a[1].n);
-    const weakAtt = attRows.length > 1 ? weakestOf(st.att, attAvg, 5) : null;
+    const exAtt = extremes(st.att, attAvg, 5);
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Angrep</div>';
     if (!attRows.length) h += '<div class="empty">Ingen angrep registrert.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th>Blokk</th><th>Uttelling</th></tr></thead><tbody>'
-      + attRows.map(([id, r]) => '<tr' + (id === weakAtt ? ' class="weakest"' : '') + '><td class="key">' + esc(pname(id)) + (id === weakAtt ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgBar(1 + (r.c2 - r.c0 - r.B) / r.n, null, 'att', posOf(id)) + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
+      + attRows.map(([id, r]) => '<tr' + loHi(id, exAtt)[0] + '><td class="key">' + esc(pname(id)) + loHi(id, exAtt)[1] + '</td><td>' + r.n + '</td><td class="key">' + avgBar(1 + (r.c2 - r.c0 - r.B) / r.n, null, 'att', posOf(id)) + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
       + '<tr class="total"><td>Lag</td><td>' + st.tAtt.n + '</td><td>' + avgBar(1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n, null, 'att') + '</td><td>' + st.tAtt.c2 + '</td><td>' + st.tAtt.c0 + '</td><td>' + st.tAtt.B + '</td><td>' + pct(st.tAtt.c2, st.tAtt.n) + '</td></tr></tbody></table></div>';
 
     const t = st.tSrv;
@@ -1151,9 +1166,9 @@ window.PUBLIC_CTX = null;
       + '<div class="kpi"><div class="display num">' + t.F + '</div><div class="k">Feil · ' + pct(t.F, t.n) + '</div></div>'
       + '<div class="kpi"><div class="display num">' + pct(t.n - t.F, t.n) + '</div><div class="k">I spill eller ess</div></div></div>';
     const srvRows = Object.entries(st.srv).sort((a, b) => b[1].n - a[1].n);
-    const weakSrv = srvRows.length > 1 ? weakestOf(st.srv, srvAvg, 3) : null;
+    const exSrv = extremes(st.srv, srvAvg, 3);
     if (srvRows.length) h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Snitt</th><th>Ess</th><th>Feil</th><th>Ess %</th><th>Feil %</th></tr></thead><tbody>'
-      + srvRows.map(([id, r]) => '<tr' + (id === weakSrv ? ' class="weakest"' : '') + '><td class="key">' + esc(pname(id)) + (id === weakSrv ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgBar(srvAvg(r), null, 'srv') + '</td><td>' + r.E + '</td><td>' + r.F + '</td><td>' + pct(r.E, r.n) + '</td><td>' + pct(r.F, r.n) + '</td></tr>').join('') + '</tbody></table></div>';
+      + srvRows.map(([id, r]) => '<tr' + loHi(id, exSrv)[0] + '><td class="key">' + esc(pname(id)) + loHi(id, exSrv)[1] + '</td><td>' + r.n + '</td><td class="key">' + avgBar(srvAvg(r), null, 'srv') + '</td><td>' + r.E + '</td><td>' + r.F + '</td><td>' + pct(r.E, r.n) + '</td><td>' + pct(r.F, r.n) + '</td></tr>').join('') + '</tbody></table></div>';
 
     const oppRows = Object.entries(st.opp).sort((a, b) => (a[1].s / a[1].n) - (b[1].s / b[1].n) || b[1].n - a[1].n);
     const weakOpp = (oppRows.find(([, r]) => r.n >= 5) || [])[0];
@@ -1550,11 +1565,14 @@ window.PUBLIC_CTX = null;
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
-      const weak = t.name === usName(m) ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recAvg) - pnum(b.recAvg)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
-      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Snitt</th><th>Feil</th>' + (egen ? '<th>Spillb.</th>' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td><td>' + (p.recErr ?? '–') + '</td>' + (egen ? '<td>' + esc(p.recPlay ?? '–') + '</td>' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
-      if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest mottakssnitt blant spillere med minst ' + minRec + ' mottak.</div>';
+      const pick = (arr, cnt, f, minN) => { const el = arr.filter((p) => cnt(p) >= minN).sort((a, b) => f(a) - f(b) || cnt(b) - cnt(a)); return el.length > 1 && f(el[0]) !== f(el[el.length - 1]) ? { lo: el[0], hi: el[el.length - 1] } : {}; };
+      const exR = pick(pr, (p) => p.rec, (p) => pnum(p.recAvg), minRec);
+      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Snitt</th><th>Feil</th>' + (egen ? '<th>Spillb.</th>' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + loHi(p, exR)[0] + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + loHi(p, exR)[1] + '</td><td>' + p.rec + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td><td>' + (p.recErr ?? '–') + '</td>' + (egen ? '<td>' + esc(p.recPlay ?? '–') + '</td>' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
-      if (pa.length) s += '<div class="tbl-wrap"><table class="tbl t-att"><thead><tr><th>Angrep</th><th>Fors.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th></tr></thead><tbody>' + pa.map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td>' + p.att + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att, null, 'att', t.name === OUR ? posByNr(p.nr) : '') : '–') + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td></tr>').join('') + '</tbody></table></div>';
+      const attTot = pa.reduce((a, p) => a + (p.att || 0), 0), minAtt = Math.max(5, Math.round(attTot * 0.1));
+      const exA = pick(pa, (p) => p.att || 0, (p) => 1 + (p.kills - p.attErr - p.blocked) / p.att, minAtt);
+      if (pa.length) s += '<div class="tbl-wrap"><table class="tbl t-att"><thead><tr><th>Angrep</th><th>Fors.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th></tr></thead><tbody>' + pa.map((p) => '<tr' + loHi(p, exA)[0] + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + loHi(p, exA)[1] + '</td><td>' + p.att + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att, null, 'att', t.name === OUR ? posByNr(p.nr) : '') : '–') + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td></tr>').join('') + '</tbody></table></div>';
+      if (exR.lo || exA.lo) s += '<div class="code-legend"><span class="weak-tag">Lav</span> <span class="weak-tag strong">Høy</span> lavest og høyest snitt blant spillere med minst ' + minRec + ' mottak eller ' + minAtt + ' angrep.</div>';
       const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
       if (ps.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Poeng og serve</th><th>Poeng</th><th>Serve</th><th>Ess</th><th>Feil</th><th>Blokk</th></tr></thead><tbody>' + ps.slice().sort((a, b) => (b.pts || 0) - (a.pts || 0) || (b.srv || 0) - (a.srv || 0)).map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td class="key">' + (p.pts ?? '–') + '</td><td>' + (p.srv ?? '–') + '</td><td>' + (p.aces ?? '–') + '</td><td>' + (p.srvErr ?? '–') + '</td><td>' + (p.blocks ?? '–') + '</td></tr>').join('') + (T.pts != null ? '<tr class="total"><td>Lag</td><td>' + T.pts + '</td><td>' + (T.srv ?? '–') + '</td><td>' + (T.aces ?? '–') + '</td><td>' + (T.srvErr ?? '–') + '</td><td>' + (T.blocks ?? '–') + '</td></tr>' : '') + '</tbody></table></div>';
       return s + '</section>';
@@ -2238,4 +2256,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 22:13.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 22:33.</footer></body></html>
