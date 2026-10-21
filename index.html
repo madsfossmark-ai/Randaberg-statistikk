@@ -341,6 +341,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
 window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
+window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
   const colSnap = (pairs) => ({ docs: pairs.map(([id, d]) => ({ id, data: () => d })) });
@@ -394,7 +395,8 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 (() => {
   // Sesong eller lag: hver kontekst har egne kamper, egen tropp og egne motstandere.
   // Hovedkonteksten ligger i roten av databasen; de andre under ctx/<id>/.
-  const MAIN_CTX = { id: 'main', name: 'Randaberg · Mizunoligaen kvinner 26/27', our: 'Randaberg', prefix: '',
+  // Den åpne lesesiden kan bygges for en annen sesong eller et annet lag (window.PUBLIC_CTX)
+  const MAIN_CTX = window.PUBLIC_CTX || { id: 'main', name: 'Randaberg · Mizunoligaen kvinner 26/27', our: 'Randaberg', prefix: '',
     teams: ['Finstad Sportsklubb', 'Førde Volleyballklubb', 'Koll IL', 'ØKSIL', 'OSI', 'Oslo Volley', 'TIF Viking', 'ToppVolley Norge'] };
   let CTX = MAIN_CTX, PFX = '', OUR = 'Randaberg';
   const POS = ['Opplegger', 'Diagonal', 'Kant', 'Midt', 'Libero'];
