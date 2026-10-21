@@ -290,6 +290,16 @@ html.dash [data-a="new-toggle"], html.dash [data-a="publish"], html.dash [data-a
 .menu-item { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; min-height: 46px; padding: 0 14px; border-radius: 8px; font-weight: 600; font-size: 15px; color: var(--fg); }
 .menu-item:hover, .menu-item:focus-visible { background: var(--sunk); }
 .menu-item:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.top-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 700px) { .top-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1350px) { .top-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.top-card { background: var(--sunk); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.top-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.top-list li { display: grid; grid-template-columns: 18px auto minmax(0, 1fr) auto; align-items: center; gap: 8px; background: var(--surface); border-radius: 8px; padding: 6px 8px; }
+.top-list li.us { background: var(--accent-soft); }
+.top-rank { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--muted); text-align: center; }
+.top-name { display: flex; flex-direction: column; min-width: 0; } .top-name b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .top-name small, .top-val small { font-size: 11px; color: var(--muted); }
+.top-val { display: flex; flex-direction: column; align-items: flex-end; font-weight: 700; } .top-val b { font-family: var(--font-display); font-size: 20px; }
 .acc-hits { display: flex; flex-wrap: wrap; gap: 6px; }
 .notice.info { background: var(--accent-soft); }
 .notice { background: var(--opp-soft); color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
@@ -466,7 +476,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 22:43";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 23:16";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -1288,10 +1298,52 @@ window.PUBLIC_CTX = null;
       const slot = (t) => { if (!isSlot(t)) return esc(t); const r = st[parseInt(t, 10) - 1]; return esc(t) + (r && r.k ? ' <span class="muted">(nå: ' + esc(shortName(r.team)) + ')</span>' : ''); };
       return '<button class="po-card" data-a="open" data-id="' + esc(m.id) + '"><span class="label">' + esc(m.round || 'Sluttspill') + ' · ' + esc(fmtDate(m.date)) + (m.venue ? ' · ' + esc(m.venue) : '') + '</span><span class="po-teams">' + slot(m.home) + ' – ' + slot(m.away) + '</span><span class="po-res">' + (m.status === 'ferdig' ? (m.setsHome || 0) + '–' + (m.setsAway || 0) + (setList(m) ? ' <small>(' + esc(setList(m)) + ')</small>' : '') : 'Ikke spilt') + '</span></button>';
     }).join('') + '</div></section>';
-    const days = {}; all.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach((m) => { const d = (m.date || '').slice(0, 10); (days[d] ||= []).push(m); });
-    h += '<section class="panel"><div class="panel-head"><h2>Kamper</h2><span class="status">' + (S.dash ? 'Trykk en kamp for å se den' : 'Trykk en kamp for å registrere resultat eller føre statistikk') + '</span></div><div class="rounds">'
-      + Object.entries(days).map(([d, list]) => '<section class="round"><h2 class="label">' + esc(fmtDate(d)) + '</h2>' + list.map(matchRow).join('') + '</section>').join('') + '</div></section>';
+    h += topListsView();
     return h;
+  }
+
+  // Topplister for serien/turneringen: NVBF-statistikk der den finnes, ellers egen føring (også kamper der vi har ført for et annet lag)
+  function topListsData() {
+    const P = {}, pn = (v) => v == null ? null : parseFloat(String(v).replace('−', '-').replace('%', '').replace(',', '.'));
+    let src = 0;
+    tableMatches().filter((m) => m.status === 'ferdig').forEach((m) => {
+      let n = m.nvbf && m.nvbf.teams && m.nvbf.teams.length ? m.nvbf : null;
+      if (!n && canLive(m) && SEASON.logs[m.id] && SEASON.logs[m.id].length) n = ownStats(m, SEASON.logs[m.id]);
+      if (!n) return; src++; addRecAvg(n);
+      n.teams.forEach((t) => (t.players || []).forEach((p) => {
+        const key = t.name + '|' + (p.name ? String(p.name).replace(/ \(L\)$/, '') : '#' + p.nr);
+        const r = (P[key] ||= { team: t.name, name: p.name ? String(p.name).replace(/ \(L\)$/, '') : '#' + p.nr, nr: p.nr, games: new Set(), rec: 0, recSum: 0, att: 0, kills: 0, attErr: 0, blocked: 0, srv: 0, aces: 0, srvErr: 0, srvKnown: 0, pts: 0 });
+        r.games.add(m.id); if (p.nr) r.nr = p.nr;
+        if (p.rec) { const a = pn(p.recAvg); if (a != null && !isNaN(a)) { r.rec += p.rec; r.recSum += a * p.rec; } }
+        if (p.att) { r.att += p.att; r.kills += p.kills || 0; r.attErr += p.attErr || 0; r.blocked += p.blocked || 0; }
+        if (p.srv != null) { r.srv += p.srv; r.srvKnown += p.srv; }
+        r.aces += p.aces || 0; r.srvErr += p.srvErr || 0; r.pts += p.pts || 0;
+      }));
+    });
+    return { players: Object.values(P), matches: src };
+  }
+  function topListsView() {
+    const { players, matches } = topListsData(), mode = S.topMode || 'snitt';
+    if (!matches) return '<section class="panel"><div class="panel-head"><h2>Topplister</h2></div><div class="empty">Ingen spilte kamper med statistikk ennå.</div></section>';
+    const minOf = (f) => Math.max(10, Math.round(0.25 * Math.max(0, ...players.map(f))));
+    const lists = [
+      { t: 'Angrep', kind: 'att', n: (r) => r.att, v: (r) => 1 + (r.kills - r.attErr - r.blocked) / r.att, vol: (r) => r.kills, volL: 'poeng', unit: 'angrep' },
+      { t: 'Mottak', kind: 'rec', n: (r) => r.rec, v: (r) => r.recSum / r.rec, vol: (r) => r.rec, volL: 'mottak', unit: 'mottak' },
+      { t: 'Serve', kind: 'srv', n: (r) => r.srvKnown, v: (r) => 1 + (r.aces - r.srvErr) / r.srvKnown, vol: (r) => r.aces, volL: 'ess', unit: 'serve' },
+      { t: 'Poeng totalt', kind: null, n: (r) => r.pts, v: null, vol: (r) => r.pts, volL: 'poeng', unit: 'poeng' }
+    ];
+    const card = (L) => {
+      const byVol = mode === 'volum' || !L.v, min = L.v ? minOf(L.n) : 1;
+      const rows = players.filter((r) => byVol ? L.vol(r) > 0 : L.n(r) >= min).sort((a, b) => byVol ? (L.vol(b) - L.vol(a) || L.n(a) - L.n(b)) : (L.v(b) - L.v(a) || L.n(b) - L.n(a))).slice(0, 5);
+      return '<div class="top-card"><div class="label" style="color:var(--accent)">' + L.t + '</div>'
+        + (rows.length ? '<ol class="top-list">' + rows.map((r, i) => '<li' + (r.team === OUR ? ' class="us"' : '') + '><span class="top-rank">' + (i + 1) + '</span>' + crest(r.team, 'sm') + '<span class="top-name"><b>' + esc(r.name) + '</b><small>' + esc(shortName(r.team)) + ' · ' + r.games.size + ' kamp' + (r.games.size === 1 ? '' : 'er') + '</small></span>'
+          + '<span class="top-val">' + (byVol ? '<b class="num">' + L.vol(r) + '</b><small>' + L.volL + '</small>' : avgBar(L.v(r), null, L.kind) + '<small>' + L.n(r) + ' ' + L.unit + '</small>') + '</span></li>').join('') + '</ol>'
+          : '<div class="empty">For lite data ennå.</div>')
+        + (L.v && !byVol ? '<div class="code-legend">Snitt 0–2, minst ' + min + ' ' + L.unit + '.</div>' : '') + '</div>';
+    };
+    return '<section class="panel"><div class="panel-head"><h2>Topplister · topp 5</h2><div class="seg" role="group" aria-label="Rangering"><button data-a="topmode" data-v="snitt" aria-pressed="' + (mode === 'snitt') + '">Beste snitt</button><button data-a="topmode" data-v="volum" aria-pressed="' + (mode === 'volum') + '">Flest</button></div></div>'
+      + '<div class="top-grid">' + lists.map(card).join('') + '</div>'
+      + '<div class="code-legend">Fra ' + matches + ' spilte kamper i ' + esc(CTX.name) + '. NVBF-statistikk der den finnes, ellers egen føring fra benken. Serve med snitt krever at serve i spill er ført. ' + legendLink() + '</div></section>';
   }
 
   async function saveOpp(m, players, team) {
@@ -1601,14 +1653,14 @@ window.PUBLIC_CTX = null;
 
   function openSeasonLogs() {
     if (!S.db) return;
-    S.matches.filter(isOurs).forEach((m) => {
+    S.matches.filter((m) => isOurs(m) || canLive(m)).forEach((m) => {
       if (SEASON.unsubs[m.id] || m.status === 'kommende') return;
       SEASON.unsubs[m.id] = S.db.collection(PFX + 'matches/' + m.id + '/log').onSnapshot((snap) => {
         const evs = [];
         snap.docs.forEach((d) => evs.push(...(d.data().events || []))); learnNames(evs, null);
         evs.sort((a, b) => a.t - b.t);
         SEASON.logs[m.id] = evs;
-        if (S.view === 'season') render();
+        if (S.view === 'season' || S.view === 'table') render();
       }, (e) => { S.error = 'Registreringene kunne ikke lastes (' + e.code + ').'; render(); });
     });
   }
@@ -1815,7 +1867,7 @@ window.PUBLIC_CTX = null;
   // Lagres som vanlige registreringer med type 'dir' i samme logg: x1,y1 treffpunkt, x2,y2 landing, k = 'line' | 'dip', c = K/F/B/D
   const DCOL = ['#2F6FE0', '#2FAE52', '#D9473E', '#E8891C', '#8B4FD6', '#18A3B2', '#D64F9A', '#5C6270'];
   const DRES = { K: 'Kill', F: 'Feil', B: 'Blokk', D: 'Forsvart' };
-  const DIR = { open: false, el: null, active: null, view: 'lines', who: 'all', set: 'all', drawing: null };
+  const DIR = { open: false, el: null, active: null, view: 'lines', who: 'all', set: 'all', kind: 'all', drawing: null };
   const NS = 'http://www.w3.org/2000/svg';
   const svgEl = (t, attrs) => { const n = document.createElementNS(NS, t); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
@@ -1846,9 +1898,18 @@ window.PUBLIC_CTX = null;
       let d = a2 - a1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; turn += Math.abs(d);
     }
     const chord = Math.hypot(e[0] - s[0], e[1] - s[1]);
-    if (!(chord / L < 0.72 || turn > Math.PI * 1.6)) return { k: 'line', x1: s[0], y1: s[1], x2: e[0], y2: e[1] };
-    const half = pts.slice(Math.floor(pts.length / 2));
-    return { k: 'dip', x1: s[0], y1: s[1], x2: Math.round(half.reduce((t, p) => t + p[0], 0) / half.length), y2: Math.round(half.reduce((t, p) => t + p[1], 0) / half.length) };
+    if (!(chord / L < 0.72 || turn > Math.PI * 1.6)) { const [x2, y2] = dirSnap(e); return { k: 'line', x1: s[0], y1: s[1], x2, y2 }; }
+    // Dip: landingen er der fingeren slippes, som for en vanlig pil
+    const [x2, y2] = dirSnap(e);
+    return { k: 'dip', x1: s[0], y1: s[1], x2, y2 };
+  }
+  // Landing nær baklinjen eller sidelinjene trekkes inn på linjen (ballen er inne når den treffer linjen)
+  const COURT = { left: 2, right: 898, back: 1108 }, SNAP = 22;
+  function dirSnap([x, y]) {
+    if (Math.abs(y - COURT.back) <= SNAP) y = COURT.back;
+    if (y > 210 && Math.abs(x - COURT.left) <= SNAP) x = COURT.left;
+    if (y > 210 && Math.abs(x - COURT.right) <= SNAP) x = COURT.right;
+    return [x, y];
   }
   function dipPath(e) {
     const dx = e.x2 - e.x1, dy = e.y2 - e.y1, d = Math.hypot(dx, dy) || 1;
@@ -1875,9 +1936,9 @@ window.PUBLIC_CTX = null;
     catch (e) { S.error = 'Utfallet ble ikke lagret (' + e.code + ').'; render(); }
   }
 
-  const COURT_SVG = '<svg id="dir-svg" viewBox="0 0 900 1120" aria-label="Bane. Dra fra treffpunkt til landing. En krusedull blir dip.">'
+  const COURT_SVG = '<svg id="dir-svg" viewBox="0 0 900 1200" aria-label="Bane. Dra fra treffpunkt til landing. En krusedull blir dip.">'
     + '<defs id="dir-defs"></defs>'
-    + '<rect x="0" y="0" width="900" height="1120" fill="var(--court-free)"></rect>'
+    + '<rect x="0" y="0" width="900" height="1200" fill="var(--court-free)"></rect>'
     + '<rect x="0" y="0" width="900" height="210" fill="var(--court-opp)" opacity=".6"></rect>'
     + '<line x1="0" y1="110" x2="900" y2="110" stroke="var(--court-line)" stroke-width="4" stroke-dasharray="14 12" opacity=".8"></line>'
     + '<text x="12" y="98" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="22" fill="var(--court-line)">MOTSTANDERS SIDE</text>'
@@ -1899,14 +1960,14 @@ window.PUBLIC_CTX = null;
     el.className = 'dir-ov'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Slagretning');
     el.innerHTML = '<header class="bar"><div class="title"><span class="display">Slagretning</span><span class="sub" id="dir-sub"></span></div><span class="spacer"></span>'
       + '<div class="bar-actions"><button class="barbtn" data-d="undo">Angre siste</button><button class="barbtn primary-bar" data-d="close">Ferdig</button></div></header>'
-      + '<div class="dir-body"><div class="dir-court">' + COURT_SVG + '<div class="code-legend">Dra fra treffpunktet til landingen. En strek blir en rett pil. En krusedull blir dip, med samme symbol hver gang.</div></div>'
+      + '<div class="dir-body"><div class="dir-court">' + COURT_SVG + '<div class="code-legend">Dra fra treffpunktet til landingen. En strek blir en rett pil. En krusedull blir dip, med samme symbol hver gang. Landingen er der du slipper fingeren.</div></div>'
       + '<div class="dir-side">'
       + '<section class="panel opp"><div class="panel-head"><h2>Spiller</h2></div><div class="dir-pl" id="dir-pl"></div>'
       + '<form class="addopp" id="dir-form"><label for="dir-nr" class="label" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Draktnummer</label><input id="dir-nr" type="text" inputmode="numeric" placeholder="Nr" maxlength="3"><button type="submit">+ Nummer</button></form></section>'
       + '<section class="panel" id="dir-lastp"><div class="panel-head"><h2>Siste slag</h2></div><div class="status" id="dir-last"></div><div class="dir-res" id="dir-res">'
       + Object.entries(DRES).map(([k, l]) => '<button data-d="res" data-v="' + k + '" aria-pressed="false">' + l + '</button>').join('') + '</div></section>'
-      + '<section class="panel"><div class="panel-head"><h2>Visning</h2></div><div class="seg" id="dir-view"></div><div class="seg" id="dir-who"></div><div class="seg" id="dir-sets"></div></section>'
-      + '<section class="panel"><div class="panel-head"><h2>Oppsummering</h2></div><div class="tbl-wrap"><table class="tbl" id="dir-stats"></table></div><div class="code-legend">Diagonal og linje regnes ut fra pilens vinkel. Soner er på vår banehalvdel: 4-3-2 foran, 5-6-1 bak.</div></section>'
+      + '<section class="panel"><div class="panel-head"><h2>Visning</h2></div><div class="seg" id="dir-view"></div><div class="seg" id="dir-who"></div><div class="seg" id="dir-kind"></div><div class="seg" id="dir-sets"></div></section>'
+      + '<section class="panel"><div class="panel-head"><h2>Oppsummering</h2></div><div class="tbl-wrap"><table class="tbl" id="dir-stats"></table></div><div class="code-legend">Diagonal og linje regnes ut fra pilens vinkel. Soner er på vår banehalvdel: 4-3-2 foran, 5-6-1 bak. I Soner er slag en fylt sirkel og dip en hul ruter, og hver sone viser antall slag og dip. Velg «Bare slag» eller «Bare dip» for å se hvor spilleren foretrekker hvert av dem.</div></section>'
       + '</div></div>';
     document.body.appendChild(el);
     DIR.el = el; DIR.open = true;
@@ -1953,6 +2014,7 @@ window.PUBLIC_CTX = null;
     else if (a === 'res') { const last = dirOwnLast(); if (!last) return; dirPatchLast({ c: last.ev.c === b.dataset.v ? '' : b.dataset.v }); }
     else if (a === 'view') { DIR.view = b.dataset.v; dirUpdate(); }
     else if (a === 'who') { DIR.who = b.dataset.v; dirUpdate(); }
+    else if (a === 'kind') { DIR.kind = b.dataset.v; dirUpdate(); }
     else if (a === 'set') { DIR.set = b.dataset.v; dirUpdate(); }
   }
   function dirAddNum(ev) {
@@ -1976,6 +2038,7 @@ window.PUBLIC_CTX = null;
     const seg = (id, d, opts, curV) => { q(id).innerHTML = opts.map(([v, l]) => '<button data-d="' + d + '" data-v="' + v + '" aria-pressed="' + (String(curV) === String(v)) + '">' + l + '</button>').join(''); };
     seg('#dir-view', 'view', [['lines', 'Piler'], ['heat', 'Soner']], DIR.view);
     seg('#dir-who', 'who', [['all', 'Alle spillere'], ['active', 'Valgt spiller']], DIR.who);
+    seg('#dir-kind', 'kind', [['all', 'Slag og dip'], ['hit', 'Bare slag'], ['dip', 'Bare dip']], DIR.kind);
     const sets = [...new Set(all.map((e) => e.set).concat([cs]))].sort((a, b) => a - b);
     seg('#dir-sets', 'set', [['all', 'Kamp']].concat(sets.map((s) => [s, 'Sett ' + s])), DIR.set);
     // Siste eget slag
@@ -1984,24 +2047,31 @@ window.PUBLIC_CTX = null;
     q('#dir-lastp').classList.toggle('pending', !!le && !le.c);
     DIR.el.querySelectorAll('#dir-res button').forEach((b) => { b.setAttribute('aria-pressed', String(!!le && le.c === b.dataset.v)); b.disabled = !le; });
     // Utvalg
-    const vis = all.filter((e) => (DIR.set === 'all' || String(e.set) === String(DIR.set)) && (DIR.who === 'all' || String(e.p) === String(DIR.active)));
+    const isDip = (e) => e.k === 'dip';
+    const visAll = all.filter((e) => (DIR.set === 'all' || String(e.set) === String(DIR.set)) && (DIR.who === 'all' || String(e.p) === String(DIR.active)));
+    const vis = visAll.filter((e) => DIR.kind === 'all' || (DIR.kind === 'dip') === isDip(e));
     // Piler
     const defs = q('#dir-defs'); defs.innerHTML = '';
     nums.forEach((n, i) => { const mk = svgEl('marker', { id: 'dah-' + i, viewBox: '0 0 10 10', refX: '6', refY: '5', markerWidth: '4', markerHeight: '4', orient: 'auto-start-reverse' }); mk.appendChild(svgEl('path', { d: 'M0,0 L10,5 L0,10 z', fill: dirColor(n) })); defs.appendChild(mk); });
     const layer = q('#dir-layer'), zones = q('#dir-zones'); layer.innerHTML = ''; zones.innerHTML = '';
     const lastT = all.length ? all[all.length - 1].t : -1;
     if (DIR.view === 'heat') {
-      const cnt = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }; let tot = 0;
-      vis.forEach((e) => { const z = dirZone(e); if (z) { cnt[z]++; tot++; } });
+      const cnt = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }, hit = { ...cnt }, dip = { ...cnt }; let tot = 0;
+      vis.forEach((e) => { const z = dirZone(e); if (z) { cnt[z]++; tot++; (isDip(e) ? dip : hit)[z]++; } });
+      const fill = DIR.kind === 'dip' ? '#1B4592' : '#B3261E';
       const pos = { 4: [0, 210], 3: [300, 210], 2: [600, 210], 5: [0, 510], 6: [300, 510], 1: [600, 510] };
       Object.entries(pos).forEach(([z, [x, y]]) => {
         const h = y === 210 ? 300 : 600, share = tot ? cnt[z] / tot : 0;
-        zones.appendChild(svgEl('rect', { x, y, width: 300, height: h, fill: '#B3261E', 'fill-opacity': (share * 0.85).toFixed(2) }));
+        zones.appendChild(svgEl('rect', { x, y, width: 300, height: h, fill, 'fill-opacity': (share * 0.85).toFixed(2) }));
         zones.appendChild(svgEl('line', { x1: x, y1: y, x2: x, y2: y + h, stroke: 'var(--court-line)', 'stroke-width': 2, 'stroke-dasharray': '8 10', opacity: '.6' }));
         const t1 = svgEl('text', { x: x + 150, y: y + h / 2, 'text-anchor': 'middle', 'font-family': 'Barlow Condensed, Arial Narrow, sans-serif', 'font-size': 64, 'font-weight': 700, fill: 'var(--court-net)' }); t1.textContent = tot ? Math.round(share * 100) + ' %' : '–'; zones.appendChild(t1);
         const t2 = svgEl('text', { x: x + 150, y: y + h / 2 + 38, 'text-anchor': 'middle', 'font-family': 'Barlow Condensed, Arial Narrow, sans-serif', 'font-size': 26, fill: 'var(--court-net)', opacity: '.7' }); t2.textContent = 'Sone ' + z + ' · ' + cnt[z]; zones.appendChild(t2);
+        if (DIR.kind === 'all') { const t3 = svgEl('text', { x: x + 150, y: y + h / 2 + 70, 'text-anchor': 'middle', 'font-family': 'Barlow Condensed, Arial Narrow, sans-serif', 'font-size': 26, 'font-weight': 700, fill: 'var(--court-net)' }); t3.textContent = 'Slag ' + hit[z] + ' · Dip ' + dip[z]; zones.appendChild(t3); }
       });
-      vis.forEach((e) => layer.appendChild(svgEl('circle', { cx: e.x2, cy: e.y2, r: 13, fill: dirColor(e.p), stroke: '#FFFFFF', 'stroke-width': 3 })));
+      // Slag: fylt sirkel. Dip: hul ruter
+      vis.forEach((e) => layer.appendChild(isDip(e)
+        ? svgEl('rect', { x: e.x2 - 12, y: e.y2 - 12, width: 24, height: 24, transform: 'rotate(45 ' + e.x2 + ' ' + e.y2 + ')', fill: '#FFFFFF', stroke: dirColor(e.p), 'stroke-width': 6 })
+        : svgEl('circle', { cx: e.x2, cy: e.y2, r: 13, fill: dirColor(e.p), stroke: '#FFFFFF', 'stroke-width': 3 })));
     } else {
       vis.forEach((e) => {
         const col = dirColor(e.p), isLast = e.t === lastT, dip = e.k === 'dip';
@@ -2080,7 +2150,8 @@ window.PUBLIC_CTX = null;
     else if (a === 'acc-grant' && S.accPick) { const sel = document.getElementById('acc-ctx'); const g = Object.assign({}, S.grants || {}, { [S.accPick.id]: sel ? sel.value : CTX.id }); S.accPick = null; S.accHits = []; saveGrants(g); }
     else if (a === 'acc-del') { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; } const g = Object.assign({}, S.grants || {}); delete g[b.dataset.id]; saveGrants(g); }
     else if (a === 'clear-info') { S.info = ''; render(); }
-    else if (a === 'table') { S.view = 'table'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); toTop(); }
+    else if (a === 'table') { S.view = 'table'; S.matchId = null; openLogs(null); openSeasonLogs(); render(); toTop(); }
+    else if (a === 'topmode') { S.topMode = b.dataset.v; render(); }
     else if (a === 'focus' && m) {
       const team = b.dataset.v === 'away' ? m.away : m.home;
       const patch = { focus: team, receivers: [], onCourt: [], oppNumbers: [], current: m.current || { set: (m.setScores || []).length + 1, home: 0, away: 0 } };
@@ -2267,4 +2338,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 22:43.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 23:16.</footer></body></html>
