@@ -409,7 +409,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 17:41";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 19:57";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -546,14 +546,24 @@ window.PUBLIC_CTX = null;
   const dec = (x) => (Math.round(x * 100) / 100).toFixed(2).replace('.', ',');
   // Snitt (0–2) med søyle: under 1,00 rød, 1,00–1,20 gul, over 1,20 grønn
   const avgNum = (v) => typeof v === 'number' ? v : parseFloat(String(v ?? '').replace('−', '-').replace(',', '.'));
-  const avgLvl = (n) => { n = Math.round(n * 100) / 100; return n < 1 ? 'lo' : n <= 1.2 ? 'mid' : 'hi'; };
-  function avgBarOnly(v, cls) {
+  // Fargegrenser per kjønn: [rød under, grønn over]. Kvinner har lavere angrepseffektivitet enn menn (ca. 0,07–0,10),
+  // og litt bedre mottak. Midtspillere har høyere angrepssnitt enn andre. Se «Fargeforklaring» i menyen
+  const THRESH = {
+    kvinner: { att: [1.10, 1.25], attMidt: [1.15, 1.35], rec: [1.20, 1.40] },
+    menn: { att: [1.15, 1.30], attMidt: [1.25, 1.45], rec: [1.15, 1.35] }
+  };
+  const ctxGender = () => CTX.gender === 'menn' || (!CTX.gender && /herre|menn|\bH\d/i.test((CTX.name || '') + ' ' + (CTX.our || ''))) ? 'menn' : 'kvinner';
+  const thr = (kind, pos) => { const T = THRESH[ctxGender()]; return kind === 'att' ? (pos === 'Midt' ? T.attMidt : T.att) : T.rec; };
+  const avgLvl = (n, kind, pos) => { n = Math.round(n * 100) / 100; const [lo, hi] = thr(kind, pos); return n < lo ? 'lo' : n <= hi ? 'mid' : 'hi'; };
+  const posOf = (id) => (player(id) || {}).pos || '';
+  const posByNr = (nr) => ((S.roster || []).find((x) => !x.archived && String(x.nr) === String(nr)) || {}).pos || '';
+  function avgBarOnly(v, cls, kind, pos) {
     const n = avgNum(v); if (v == null || !isFinite(n)) return '';
-    return '<span class="avgbar ' + avgLvl(n) + (cls ? ' ' + cls : '') + '" aria-hidden="true"><i style="width:' + Math.max(3, Math.min(100, n / 2 * 100)) + '%"></i></span>';
+    return '<span class="avgbar ' + avgLvl(n, kind, pos) + (cls ? ' ' + cls : '') + '" aria-hidden="true"><i style="width:' + Math.max(3, Math.min(100, n / 2 * 100)) + '%"></i></span>';
   }
-  function avgBar(v, txt) {
+  function avgBar(v, txt, kind, pos) {
     const n = avgNum(v); if (v == null || !isFinite(n)) return txt != null ? txt : '–';
-    return '<span class="avg">' + (txt != null ? txt : dec(n)) + avgBarOnly(n) + '</span>';
+    return '<span class="avg">' + (txt != null ? txt : dec(n)) + avgBarOnly(n, '', kind, pos) + '</span>';
   }
   const fmtDate = (iso) => { if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return iso; return d.toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric', month: 'short' }) + (iso.length > 10 ? ' · ' + d.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' }) : ''); };
   const isOurs = (m) => m.home === OUR || m.away === OUR;
@@ -668,6 +678,7 @@ window.PUBLIC_CTX = null;
     return '<form class="panel" id="ctxform" aria-label="Ny sesong eller lag"><div class="panel-head"><h2>Ny sesong eller lag</h2><span class="status">Får egne kamper, egen tropp og egen sesongstatistikk. Det du har nå, ligger urørt og kan velges i menyen.</span></div><div class="form">'
       + '<div class="field"><label for="ctx-name">Navn</label><input id="ctx-name" type="text" required placeholder="F.eks. Randaberg · Mizunoligaen kvinner 27/28"></div>'
       + '<div class="field"><label for="ctx-our">Vårt lag heter</label><input id="ctx-our" type="text" required value="' + esc(OUR) + '"></div>'
+      + '<div class="field"><label for="ctx-gender">Klasse</label><select id="ctx-gender"><option value="kvinner"' + (ctxGender() === 'kvinner' ? ' selected' : '') + '>Kvinner</option><option value="menn"' + (ctxGender() === 'menn' ? ' selected' : '') + '>Menn</option></select></div>'
       + '<label class="chk" for="ctx-copy"><input id="ctx-copy" type="checkbox"> Ta med spillertroppen fra «' + esc(CTX.name) + '»</label>'
       + '<div style="display:flex;gap:8px"><button class="primary" type="submit">Opprett</button><button class="secondary" type="button" data-a="ctx-cancel">Avbryt</button></div></div></form>';
   }
@@ -760,6 +771,7 @@ window.PUBLIC_CTX = null;
     else if (S.view === 'season') html = seasonView();
     else if (S.view === 'table') html = tableView();
     else if (S.view === 'access' && S.canAdmin) html = accessView();
+    else if (S.view === 'legend') html = legendView();
     else if (S.view === 'watch' && cur()) html = cur().status === 'ferdig' ? detailView() : watchView();
     else html = listView();
     app.innerHTML = '<div id="err">' + errHtml() + '</div>' + html;
@@ -790,6 +802,26 @@ window.PUBLIC_CTX = null;
   }
 
   // Lagmerker: klubblogoer ligger i config/logos (lagt inn av Claude), vist i hvit medaljong
+
+  // Fargeforklaring: hva rød, gul og grønn betyr, og hvorfor grensene er som de er
+  const legendLink = () => '<button class="textbtn" data-a="legend" style="padding:0;font-size:12px">Hva betyr fargene?</button>';
+  function legendView() {
+    const g = ctxGender(), f = (x) => dec(x);
+    const sw = (c) => '<span class="avgbar ' + c + ' inl" style="margin:0 6px 0 0;width:28px"><i style="width:100%"></i></span>';
+    const row = (lbl, t) => '<tr><td class="key l-al">' + lbl + '</td><td>' + sw('hi') + 'over ' + f(t[1]) + '</td><td>' + sw('mid') + f(t[0]) + '–' + f(t[1]) + '</td><td>' + sw('lo') + 'under ' + f(t[0]) + '</td></tr>';
+    const table = (k) => { const T = THRESH[k]; return '<div class="tbl-wrap"><table class="tbl legend"><thead><tr><th class="l-al">' + (k === 'menn' ? 'Menn' : 'Kvinner') + '</th><th>Grønn</th><th>Gul</th><th>Rød</th></tr></thead><tbody>' + row('Angrep, alle', T.att) + row('Angrep, midtspillere', T.attMidt) + row('Mottak', T.rec) + '</tbody></table></div>'; };
+    let h = '<header class="bar"><button class="link" data-a="back">‹ Tilbake</button><div class="title"><span class="display">Fargeforklaring</span><span class="sub">' + esc(CTX.name) + ' · grenser for ' + g + '</span></div><span class="spacer"></span></header>';
+    h += '<section class="panel"><div class="panel-head"><h2>Slik leses søylene</h2></div><div class="status">Alle snitt er på skalaen 0–2, og søylen viser hvor langt opp på skalaen snittet ligger. Fargen viser nivået: grønn er godt, gul er middels og rød er svakt. Grensene er ulike for angrep og mottak, for midtspillere og for kvinner og menn. Laget du står i, bruker grensene for <b>' + g + '</b>.</div>' + table(g) + '</section>';
+    h += '<section class="panel"><div class="panel-head"><h2>Hvorfor disse grensene</h2></div><div class="status" style="display:flex;flex-direction:column;gap:8px">'
+      + '<span><b>Angrep.</b> Snittet er 1 + (poeng − feil − blokkert) / antall angrep. Det er den vanlige internasjonale angrepseffektiviteten pluss 1, så 1,25 tilsvarer en effektivitet på 0,250. Tommelfingerregler fra USA sier at under 0,100 er svakt, 0,200–0,250 er middels og 0,250–0,300 er godt.</span>'
+      + '<span><b>Kvinner og menn.</b> Studier fra europeiske mesterskap og fra amerikansk collegevolleyball viser at menn har omtrent 0,07–0,10 høyere angrepseffektivitet, mest fordi de får flere poeng. Kvinner er litt bedre i mottak, trolig fordi menn server hardere. Derfor er angrepsgrensene lavere og mottaksgrensene litt høyere for kvinner.</span>'
+      + '<span><b>Midtspillere.</b> Midtspillere angriper raskere og oftere mot enkeltblokk, og har normalt klart høyere effektivitet enn kant og diagonal. De får derfor en høyere grense. Posisjonen hentes fra troppen.</span>'
+      + '<span><b>Mottak.</b> Snittet er 0 for feil, 1 for spillbart og 2 for perfekt, og kan leses som 1 + andel perfekte − andel feil. 1,40 betyr altså 40 prosentpoeng flere perfekte mottak enn feil. Det finnes ingen internasjonal norm for akkurat denne skalaen (vanligst er 0–3), så mottaksgrensene er en faglig vurdering.</span>'
+      + '<span><b>Motstanderens mottak</b> bruker de samme fargene. Grønt der betyr at motstanderen tar imot godt, altså at vår serve har lite effekt.</span>'
+      + '</div></section>';
+    h += '<section class="panel"><div class="panel-head"><h2>Grenser for ' + (g === 'menn' ? 'kvinner' : 'menn') + '</h2></div>' + table(g === 'menn' ? 'kvinner' : 'menn') + '<div class="code-legend">Velges automatisk ut fra laget. Nye sesonger og lag får valget «Klasse» når de opprettes.</div></section>';
+    return h;
+  }
 
   // Tilgang: knytt personer med lesetilgang til ett lag (lagrer bare person-id)
   function accessView() {
@@ -845,6 +877,7 @@ window.PUBLIC_CTX = null;
       + (S.canAdmin && !S.dash ? '<button class="menu-item" role="menuitem" data-a="access">Tilgang</button>' : '')
       + (hasSite() ? '<button class="menu-item" role="menuitem" data-a="publish">Publiser åpen side</button>' : '')
       + (siteUrl() ? '<button class="menu-item" role="menuitem" data-a="share">Del lenke til åpen side</button>' : '')
+      + '<button class="menu-item" role="menuitem" data-a="legend">Fargeforklaring</button>'
       + fsBtn('menu-item');
     return '<div class="menu-wrap"><button class="secondary menu-btn" data-a="menu" aria-haspopup="true" aria-expanded="' + !!S.menuOpen + '" aria-label="Meny"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Meny</span></button>'
       + (S.menuOpen ? '<div class="menu-pop" role="menu">' + items + '</div>' : '') + '</div>';
@@ -972,7 +1005,7 @@ window.PUBLIC_CTX = null;
       let txt = '';
       if (r && r.n) {
         if (t === 'rec' || t === 'opp') txt = r.n + ' · snitt ' + dec(r.s / r.n) + avgBarOnly(r.s / r.n, 'inl');
-        else if (t === 'att') txt = r.n + ' · snitt ' + dec(1 + (r.c2 - r.c0 - r.B) / r.n) + avgBarOnly(1 + (r.c2 - r.c0 - r.B) / r.n, 'inl');
+        else if (t === 'att') txt = r.n + ' · snitt ' + dec(1 + (r.c2 - r.c0 - r.B) / r.n) + avgBarOnly(1 + (r.c2 - r.c0 - r.B) / r.n, 'inl', 'att', posOf(id));
         else txt = esc(r.n + ' · ' + r.E + ' ess ' + r.F + ' feil');
       }
       el.innerHTML = txt;
@@ -1053,8 +1086,8 @@ window.PUBLIC_CTX = null;
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Angrep</div>';
     if (!attRows.length) h += '<div class="empty">Ingen angrep registrert.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Poeng</th><th>Feil</th><th>Blokk</th><th>Uttelling</th><th>Snitt</th></tr></thead><tbody>'
-      + attRows.map(([id, r]) => '<tr><td class="key">' + esc(pname(id)) + '</td><td>' + r.n + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td>' + pct(r.c2, r.n) + '</td><td class="key">' + avgBar(1 + (r.c2 - r.c0 - r.B) / r.n) + '</td></tr>').join('')
-      + '<tr class="total"><td>Lag</td><td>' + st.tAtt.n + '</td><td>' + st.tAtt.c2 + '</td><td>' + st.tAtt.c0 + '</td><td>' + st.tAtt.B + '</td><td>' + pct(st.tAtt.c2, st.tAtt.n) + '</td><td>' + avgBar(1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n) + '</td></tr></tbody></table></div>';
+      + attRows.map(([id, r]) => '<tr><td class="key">' + esc(pname(id)) + '</td><td>' + r.n + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td>' + pct(r.c2, r.n) + '</td><td class="key">' + avgBar(1 + (r.c2 - r.c0 - r.B) / r.n, null, 'att', posOf(id)) + '</td></tr>').join('')
+      + '<tr class="total"><td>Lag</td><td>' + st.tAtt.n + '</td><td>' + st.tAtt.c2 + '</td><td>' + st.tAtt.c0 + '</td><td>' + st.tAtt.B + '</td><td>' + pct(st.tAtt.c2, st.tAtt.n) + '</td><td>' + avgBar(1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n, null, 'att') + '</td></tr></tbody></table></div>';
 
     const t = st.tSrv;
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Serve</div><div class="kpis">'
@@ -1078,16 +1111,17 @@ window.PUBLIC_CTX = null;
     h += '</div></div>';
     if (m.legacy) h += legacyBlock(m.legacy);
     h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (S.dl ? '<button class="secondary" data-a="export">Eksporter til regneark (CSV)</button>' : '') + '</div>';
-    h += '<div class="code-legend">Egenført 0–1–2-score. Angrep: feil og blokkert = 0, i spill = 1, poeng = 2.</div></section>';
+    h += '<div class="code-legend">Egenført 0–1–2-score. Angrep: feil og blokkert = 0, i spill = 1, poeng = 2. ' + legendLink() + '</div></section>';
     return h;
   }
 
   function legacyBlock(L) {
     let h = '<div class="label">Importert egenført statistikk' + (L.note ? ' · ' + esc(L.note) : '') + '</div>';
     [['Mottak', L.rec], ['Angrep', L.att]].forEach(([t, rows]) => {
+      const kind = t === 'Angrep' ? 'att' : 'rec';
       if (!rows || !rows.length) return;
       h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>' + t + '</th><th>Ant.</th><th>Score</th><th>Snitt</th></tr></thead><tbody>'
-        + rows.map((r) => '<tr><td class="key">' + esc(r.name) + '</td><td>' + r.n + '</td><td>' + r.sum + '</td><td class="key">' + avgBar(r.sum / r.n) + '</td></tr>').join('') + '</tbody></table></div>';
+        + rows.map((r) => '<tr><td class="key">' + esc(r.name) + '</td><td>' + r.n + '</td><td>' + r.sum + '</td><td class="key">' + avgBar(r.sum / r.n, null, kind, posByNr(r.nr)) + '</td></tr>').join('') + '</tbody></table></div>';
     });
     return h;
   }
@@ -1450,13 +1484,13 @@ window.PUBLIC_CTX = null;
     if (!ours && !S.dash) h += othersPanel(m);
     if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">NVBF</button></div>';
     if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? (S.dash && !window.PUBLIC ? 'Det er ikke ført statistikk i denne kampen ennå.' : 'Statistikken fra denne kampen er ikke lagt ut ennå.') : CTX.id !== 'main' ? (m.status === 'ferdig' ? 'Resultatet er registrert. Det er ikke ført statistikk i denne kampen.' : 'Kampen er ikke spilt ennå.') : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
-    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + '</div>';
+    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + ' ' + legendLink() + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
       let s = '<section class="panel"><div class="panel-head"><h2>' + esc(t.name) + '</h2></div>';
       if (t.missing) s += '<div class="empty">' + esc(t.missing) + '</div>';
       const k = [['Angrep uttelling', T.kp], ['Angrep snitt (0–2)', T.eff != null ? dec(1 + parseFloat(String(T.eff).replace('−', '-').replace(',', '.')) / 100) : null], ['Mottak snitt (0–2)', T.recAvg], ['Positivt mottak', egen ? null : T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
-      if (k.length) s += '<div class="kpis">' + k.map((x) => '<div class="kpi"><div class="display num">' + esc(x[1]) + '</div>' + (/snitt/.test(x[0]) ? avgBarOnly(x[1], 'wide') : '') + '<div class="k">' + esc(x[0]) + '</div></div>').join('') + '</div>';
+      if (k.length) s += '<div class="kpis">' + k.map((x) => '<div class="kpi"><div class="display num">' + esc(x[1]) + '</div>' + (/snitt/.test(x[0]) ? avgBarOnly(x[1], 'wide', /Angrep/.test(x[0]) ? 'att' : 'rec') : '') + '<div class="k">' + esc(x[0]) + '</div></div>').join('') + '</div>';
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
@@ -1464,7 +1498,7 @@ window.PUBLIC_CTX = null;
       if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>Snitt</th>' + (egen ? '' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td>' + (egen ? '' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest mottakssnitt blant spillere med minst ' + minRec + ' mottak.</div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
-      if (pa.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Angrep</th><th>Fors.</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th><th>Snitt</th></tr></thead><tbody>' + pa.map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td>' + p.att + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att) : '–') + '</td></tr>').join('') + '</tbody></table></div>';
+      if (pa.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Angrep</th><th>Fors.</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th><th>Snitt</th></tr></thead><tbody>' + pa.map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td>' + p.att + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att, null, 'att', t.name === OUR ? posByNr(p.nr) : '') : '–') + '</td></tr>').join('') + '</tbody></table></div>';
       const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
       if (ps.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Poeng og serve</th><th>Poeng</th><th>Serve</th><th>Ess</th><th>Feil</th><th>Blokk</th></tr></thead><tbody>' + ps.slice().sort((a, b) => (b.pts || 0) - (a.pts || 0) || (b.srv || 0) - (a.srv || 0)).map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td class="key">' + (p.pts ?? '–') + '</td><td>' + (p.srv ?? '–') + '</td><td>' + (p.aces ?? '–') + '</td><td>' + (p.srvErr ?? '–') + '</td><td>' + (p.blocks ?? '–') + '</td></tr>').join('') + (T.pts != null ? '<tr class="total"><td>Lag</td><td>' + T.pts + '</td><td>' + (T.srv ?? '–') + '</td><td>' + (T.aces ?? '–') + '</td><td>' + (T.srvErr ?? '–') + '</td><td>' + (T.blocks ?? '–') + '</td></tr>' : '') + '</tbody></table></div>';
       return s + '</section>';
@@ -1580,12 +1614,12 @@ window.PUBLIC_CTX = null;
 
     if (!reg.length) h += '<div class="notice">Ingen kamper er ført i appen ennå. Tallene fylles inn automatisk fra første kamp dere fører fra benken.' + (hasTest && !SEASON.inclTest ? ' Trykk «Vis testkampen» for å se hvordan det ser ut.' : '') + '</div>';
 
-    const tile = (lbl, big, sub, v) => '<div class="tile"><span class="label">' + lbl + '</span><span class="big">' + big + '</span>' + (v != null ? avgBarOnly(v, 'wide') : '') + '<span class="sub">' + sub + '</span></div>';
+    const tile = (lbl, big, sub, v, kind) => '<div class="tile"><span class="label">' + lbl + '</span><span class="big">' + big + '</span>' + (v != null ? avgBarOnly(v, 'wide', kind) : '') + '<span class="sub">' + sub + '</span></div>';
     const recAvg = METRICS[0].f(pool), attEff = METRICS[2].f(pool), oppAvg = METRICS[4].f(pool);
     h += '<section class="tiles" aria-label="Nøkkeltall">'
       + tile('Seire–tap', wins + '–' + losses, 'Sett ' + setsW + '–' + setsL)
       + tile('Mottak snitt', d2(recAvg), 'Perfekt ' + p0(METRICS[1].f(pool)) + (last ? ' · siste ' + d2(METRICS[0].f(last.st)) : ''), recAvg)
-      + tile('Angrepssnitt', d2(attEff), 'Uttelling ' + p0(METRICS[3].f(pool)) + (last ? ' · siste ' + d2(METRICS[2].f(last.st)) : ''), attEff)
+      + tile('Angrepssnitt', d2(attEff), 'Uttelling ' + p0(METRICS[3].f(pool)) + (last ? ' · siste ' + d2(METRICS[2].f(last.st)) : ''), attEff, 'att')
       + tile('Ess per sett', pool.tSrv.n ? d1(pool.tSrv.E / regSets) : '–', 'Servefeil per sett ' + (pool.tSrv.n ? d1(pool.tSrv.F / regSets) : '–'))
       + tile('Motstanders mottak', d2(oppAvg), 'Lavere er bedre for vår serve', oppAvg)
       + '</section>';
@@ -1615,7 +1649,7 @@ window.PUBLIC_CTX = null;
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Runde</th><th class="l-al">Motstander</th><th>Res.</th><th>Mottak</th><th>Perf.</th><th>Ang. snitt</th><th>Utt.</th><th>Ess</th><th>Servefeil</th><th>Mot. mottak</th></tr></thead><tbody>'
       + played.map((r) => {
         const st = r.st, has = r.evs.length > 0;
-        const cells = has ? ['<td>' + avgBar(METRICS[0].f(st), d2(METRICS[0].f(st))) + '</td>', '<td>' + p0(METRICS[1].f(st)) + '</td>', '<td>' + avgBar(METRICS[2].f(st), d2(METRICS[2].f(st))) + '</td>', '<td>' + p0(METRICS[3].f(st)) + '</td>', '<td>' + st.tSrv.E + '</td>', '<td>' + st.tSrv.F + '</td>', '<td>' + avgBar(METRICS[4].f(st), d2(METRICS[4].f(st))) + '</td>'].join('') : '<td colspan="7" class="muted">Ikke ført i appen</td>';
+        const cells = has ? ['<td>' + avgBar(METRICS[0].f(st), d2(METRICS[0].f(st))) + '</td>', '<td>' + p0(METRICS[1].f(st)) + '</td>', '<td>' + avgBar(METRICS[2].f(st), d2(METRICS[2].f(st)), 'att', SEASON.player !== 'team' ? posOf(SEASON.player) : '') + '</td>', '<td>' + p0(METRICS[3].f(st)) + '</td>', '<td>' + st.tSrv.E + '</td>', '<td>' + st.tSrv.F + '</td>', '<td>' + avgBar(METRICS[4].f(st), d2(METRICS[4].f(st))) + '</td>'].join('') : '<td colspan="7" class="muted">Ikke ført i appen</td>';
         return '<tr class="clickrow" data-a="open" data-id="' + esc(r.m.id) + '"><td>' + esc(roundShort(r.m)) + '</td><td class="key l-al">' + (r.home ? '' : '@ ') + esc(shortName(r.opp)) + '</td><td class="' + (r.done ? (r.us > r.them ? 'w' : 'l') : '') + '">' + r.us + '–' + r.them + '</td>' + cells + '</tr>';
       }).join('') + '</tbody></table></div>';
     h += '</section>';
@@ -1636,9 +1670,9 @@ window.PUBLIC_CTX = null;
     h += '<section class="panel" aria-labelledby="h-spillere"><div class="panel-head"><h2 id="h-spillere">Spillere hittil</h2><span class="status">Summert over alle førte kamper · trykk en kolonne for å sortere</span></div>';
     if (!prow.length) h += '<div class="empty">Ingen spillerregistreringer ennå.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + cols.map(([c, l]) => '<th aria-sort="' + (c === k ? (dir < 0 ? 'descending' : 'ascending') : 'none') + '"><button data-a="psort" data-k="' + c + '">' + l + '</button></th>').join('') + '</tr></thead><tbody>'
-      + prow.map((p) => '<tr class="clickrow" data-a="kkpick" data-id="' + esc(p.id) + '" title="Vis kamp for kamp"><td class="key">' + (p.nr ? '#' + esc(p.nr) + ' ' : '') + esc(p.name) + '</td><td>' + p.games + '</td><td>' + p.recN + '</td><td class="key">' + avgBar(p.recAvg, d2(p.recAvg)) + '</td><td>' + p0(p.recPerf) + '</td><td>' + p.attN + '</td><td>' + p.attK + '</td><td class="key">' + avgBar(p.attEff, d2(p.attEff)) + '</td><td>' + p.srvN + '</td><td>' + p.srvE + '</td><td>' + p.srvF + '</td></tr>').join('')
+      + prow.map((p) => '<tr class="clickrow" data-a="kkpick" data-id="' + esc(p.id) + '" title="Vis kamp for kamp"><td class="key">' + (p.nr ? '#' + esc(p.nr) + ' ' : '') + esc(p.name) + '</td><td>' + p.games + '</td><td>' + p.recN + '</td><td class="key">' + avgBar(p.recAvg, d2(p.recAvg)) + '</td><td>' + p0(p.recPerf) + '</td><td>' + p.attN + '</td><td>' + p.attK + '</td><td class="key">' + avgBar(p.attEff, d2(p.attEff), 'att', posOf(p.id)) + '</td><td>' + p.srvN + '</td><td>' + p.srvE + '</td><td>' + p.srvF + '</td></tr>').join('')
       + '</tbody></table></div><div class="code-legend">Trykk en spiller for å se henne kamp for kamp. Snitt og prosent er regnet av summen av alle registreringer, ikke snitt av kampsnitt.</div>';
-    h += '</section><div class="code-legend">Egenført 0–1–2-koding fra benken. Kamper som ikke er ført i appen telles i resultatet, men ikke i snittene. Ikke det samme som NVBF/DataProject-tallene.</div></div>';
+    h += '</section><div class="code-legend">Egenført 0–1–2-koding fra benken. Kamper som ikke er ført i appen telles i resultatet, men ikke i snittene. Ikke det samme som NVBF/DataProject-tallene. ' + legendLink() + '</div></div>';
     return h;
   }
 
@@ -1915,6 +1949,8 @@ window.PUBLIC_CTX = null;
     const b = ev.target.closest('[data-a]'); if (!b || b.disabled) return;
     const a = b.dataset.a; const m = cur();
     if (a === 'menu') { S.menuOpen = !S.menuOpen; render(); return; }
+    if (a === 'legend') { S.menuOpen = false; S.legendBack = { view: S.view, matchId: S.matchId }; S.view = 'legend'; render(); toTop(); return; }
+    if (a === 'back' && S.view === 'legend' && S.legendBack) { S.view = S.legendBack.view; S.matchId = S.legendBack.matchId; S.legendBack = null; render(); toTop(); return; }
     if (S.menuOpen) { S.menuOpen = false; if (b.closest('.menu-pop') && a === 'fs') render(); }
     if (a === 'clear-err') { S.error = ''; render(); }
     else if (a === 'fs') { toggleFs(); }
@@ -2065,7 +2101,7 @@ window.PUBLIC_CTX = null;
       const name = document.getElementById('ctx-name').value.trim(), our = document.getElementById('ctx-our').value.trim();
       if (!name || !our) { S.error = 'Fyll inn navn og vårt lag.'; render(); return; }
       const id = teamSlug(name).slice(0, 40) + '-' + Date.now().toString(36);
-      const ctx = { id, name, our, prefix: 'ctx/' + id + '/', teams: [] };
+      const ctx = { id, name, our, gender: document.getElementById('ctx-gender').value, prefix: 'ctx/' + id + '/', teams: [] };
       try {
         if (document.getElementById('ctx-copy').checked && S.roster.length) await S.db.doc(ctx.prefix + 'config/roster').set({ players: S.roster.filter((p) => !p.archived) });
         const list = S.contexts.filter((c) => c.id !== 'main').concat([ctx]);
@@ -2137,4 +2173,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 17:41.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 19:57.</footer></body></html>
