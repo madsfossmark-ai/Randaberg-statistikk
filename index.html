@@ -327,7 +327,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 12:05";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 12:06";
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
   const colSnap = (pairs) => ({ docs: pairs.map(([id, d]) => ({ id, data: () => d })) });
@@ -922,7 +922,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 12:05";
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
-      const weak = egen ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recPos) - pnum(b.recPos)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
+      const weak = t.name === OUR ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recPos) - pnum(b.recPos)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
       if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>' + (egen ? 'Snitt' : 'Pos.') + '</th><th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td>' + esc(p.recPos ?? '–') + '</td><td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest positivt mottak blant spillere med minst ' + minRec + ' mottak.</div>';
       const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
@@ -1500,4 +1500,4 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 12:05";
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 12:05.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 12:06.</footer></body></html>
