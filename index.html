@@ -327,7 +327,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 12:01";
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
   const colSnap = (pairs) => ({ docs: pairs.map(([id, d]) => ({ id, data: () => d })) });
@@ -790,7 +790,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
       + block(esc(oppName) + ' mottak', 'opp', oppIds, (n) => '#' + n, ['Antall', 'Poeng', 'Snitt'], sumAvg)
       + '</tbody></table>';
 
-    return '<header class="bar"><button class="link" data-a="to-live">' + (window.PUBLIC ? '‹ Kamper' : '‹ Tilbake til kampen') + '</button><div class="title"><span class="display">Kampark</span><span class="sub">' + esc(m.home) + ' – ' + esc(m.away) + '</span></div><span class="spacer"></span>'
+    return '<header class="bar"><button class="link" data-a="to-live">‹ Tilbake til kampen</button><div class="title"><span class="display">Kampark</span><span class="sub">' + esc(m.home) + ' – ' + esc(m.away) + '</span></div><span class="spacer"></span>'
       + '<div class="bar-actions"><button class="barbtn primary-bar" data-a="xlsx">Last ned Excel</button><button class="barbtn" data-a="pdf">PDF</button>' + (S.dl ? '<button class="barbtn" data-a="export">CSV</button>' : '') + '</div></header>'
       + '<div class="sk-wrap"><div id="sk-sheet" class="sk-sheet">' + t + '</div></div>';
   }
@@ -898,7 +898,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
       const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const W = 297 - 16, H = 210 - 16;
       const ratio = Math.min(W / canvas.width, H / canvas.height);
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 8, 8, canvas.width * ratio, canvas.height * ratio);
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 8, 8, canvas.width * ratio, canvas.height * ratio);
       const name = ('kampark-' + m.home + '-' + m.away).replace(/[^\wæøåÆØÅ-]+/g, '-') + '.pdf';
       await S.dl.save({ filename: name, data: pdf.output('blob') });
     } catch (e) {
@@ -908,23 +908,23 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
   }
 
   function detailView() {
-    const m = cur(); const n = m.nvbf;
+    const m = cur(); const n = m.nvbf || (window.PUBLIC ? m.own : null); const egen = !!(n && n.source === 'egen');
     let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
-      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + '</header>';
+      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (window.PUBLIC && m.own ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + '</header>';
     if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
-    h += '<div class="status">Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid') + '</div>';
+    h += '<div class="status">' + (egen ? 'Ført fra benken av Randaberg Volleyball. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
       let s = '<section class="panel"><div class="panel-head"><h2>' + esc(t.name) + '</h2></div>';
       if (t.missing) s += '<div class="empty">' + esc(t.missing) + '</div>';
-      const k = [['Angrep uttelling', T.kp], ['Angrep effektivitet', T.eff], ['Positivt mottak', T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
+      const k = [['Angrep uttelling', T.kp], ['Angrep effektivitet', T.eff], [egen ? 'Mottak snitt (0–2)' : 'Positivt mottak', T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
       if (k.length) s += '<div class="kpis">' + k.map((x) => '<div class="kpi"><div class="display num">' + esc(x[1]) + '</div><div class="k">' + esc(x[0]) + '</div></div>').join('') + '</div>';
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
       const weak = pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recPos) - pnum(b.recPos)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
-      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>Pos.</th><th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td>' + esc(p.recPos ?? '–') + '</td><td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
-      if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest positivt mottak blant spillere med minst ' + minRec + ' mottak.</div>';
+      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>' + (egen ? 'Snitt' : 'Pos.') + '</th><th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td>' + esc(p.recPos ?? '–') + '</td><td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
+      if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest ' + (egen ? 'mottakssnitt' : 'positivt mottak') + ' blant spillere med minst ' + minRec + ' mottak.</div>';
       const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
       if (ps.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Poeng og serve</th><th>Poeng</th><th>Serve</th><th>Ess</th><th>Feil</th><th>Blokk</th></tr></thead><tbody>' + ps.slice().sort((a, b) => (b.srv || 0) - (a.srv || 0) || (b.pts || 0) - (a.pts || 0)).map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td class="key">' + (p.pts ?? '–') + '</td><td>' + (p.srv ?? '–') + '</td><td>' + (p.aces ?? '–') + '</td><td>' + (p.srvErr ?? '–') + '</td><td>' + (p.blocks ?? '–') + '</td></tr>').join('') + (T.pts != null ? '<tr class="total"><td>Lag</td><td>' + T.pts + '</td><td>' + (T.srv ?? '–') + '</td><td>' + (T.aces ?? '–') + '</td><td>' + (T.srvErr ?? '–') + '</td><td>' + (T.blocks ?? '–') + '</td></tr>' : '') + '</tbody></table></div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
@@ -1383,8 +1383,8 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
       const mm = S.matches.find((x) => x.id === b.dataset.id); if (!mm) return;
       closeSeasonLogs();
       S.matchId = mm.id; S.statSet = 'all';
-      S.view = isOurs(mm) ? (window.PUBLIC ? 'sheet' : 'live') : 'detail';
-      if (S.view === 'live' || S.view === 'sheet') openLogs(mm.id);
+      S.view = isOurs(mm) && !window.PUBLIC ? 'live' : 'detail';
+      if (isOurs(mm)) openLogs(mm.id);
       render(); toTop();
     }
     else if (a === 'back') { S.view = 'list'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); }
@@ -1395,7 +1395,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
     else if (a === 'psort') { const k = b.dataset.k; if (SEASON.sortK === k) SEASON.sortDir = -SEASON.sortDir; else { SEASON.sortK = k; SEASON.sortDir = k === 'name' ? 1 : -1; } render(); }
     else if (a === 'dir' && m) { dirOpen(); }
     else if (a === 'squad') { S.view = 'squad'; render(); toTop(); }
-    else if (a === 'to-live') { if (window.PUBLIC) { S.view = 'list'; S.matchId = null; openLogs(null); } else S.view = 'live'; render(); toTop(); }
+    else if (a === 'to-live') { S.view = 'live'; render(); toTop(); }
     else if (a === 'log') { logEvent(b.dataset.t, b.dataset.p, b.dataset.c); b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 300); }
     else if (a === 'undo') { undo(); }
     else if (a === 'statset') { S.statSet = b.dataset.v; render(); }
@@ -1433,7 +1433,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
     }
     else if (a === 'export' && m) exportCsv(m);
     else if (a === 'sheet') { S.view = 'sheet'; render(); toTop(); }
-    else if (a === 'pdf' && m) exportPdf(m, b);
+    else if (a === 'pdf' && m) { if (window.PUBLIC && !document.getElementById('sk-sheet')) { const hold = document.createElement('div'); hold.style.cssText = 'position:absolute;left:-30000px;top:0'; hold.innerHTML = sheetView(); document.body.appendChild(hold); exportPdf(m, b).finally(() => hold.remove()); } else exportPdf(m, b); }
     else if (a === 'xlsx' && m) exportXlsx(m, b);
   });
 
@@ -1500,4 +1500,4 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 11:45";
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 11:45.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 12:01.</footer></body></html>
