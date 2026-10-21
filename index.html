@@ -12,7 +12,7 @@
 :root {
   --bg: #F2F1EC; --surface: #FFFFFF; --sunk: #E7E5DE; --line: #D9D6CD;
   --fg: #16181D; --muted: #4A4F5A; --faint: #6B7080;
-  --accent: #1B4592; --accent-soft: #DCE4F5; --accent-fg: #FFFFFF;
+  --accent: #1B4592; --accent-soft: #DCE4F5; --accent-fg: #FFFFFF; --accent-ink: #122F66; --accent-bar: #2F63C4; --hero: #1B4592;
   --opp: #8A3E0F; --opp-soft: #F5DFCF; --opp-strong: #C85E1C;
   --bad: #B3261E; --block: #7A1A14; --neutral: #5C6270; --good: #1F7A4D;
   --bar: #16181D; --bar-fg: #FFFFFF; --bar-muted: #B8BCC6;
@@ -58,7 +58,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .score .team { font-size: 13px; color: var(--bar-muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .score .pts { font-family: var(--font-display); font-size: 40px; font-weight: 700; min-width: 50px; text-align: center; }
 .sbtn { width: 46px; height: 46px; border-radius: 10px; border: 1px solid #3A3F49; background: transparent; color: #FFFFFF; font-size: 22px; }
-.sbtn.plus-us { background: #2F63C4; border-color: #2F63C4; }
+.sbtn.plus-us { background: var(--accent-bar); border-color: var(--accent-bar); }
 .sbtn.plus-them { background: var(--opp-strong); border-color: var(--opp-strong); }
 .barbtn { height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #3A3F49; background: transparent; color: #FFFFFF; font-weight: 600; font-size: 14px; }
 .sets { font-family: var(--font-display); font-size: 18px; color: var(--bar-muted); }
@@ -73,7 +73,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 
 .score-wrap { display: flex; align-items: center; gap: 18px; }
 .setpill { font-family: var(--font-display); font-weight: 700; font-size: 30px; padding: 2px 14px; border-radius: 10px; background: #2A2E37; }
-.barbtn.primary-bar { background: #2F63C4; border-color: #2F63C4; }
+.barbtn.primary-bar { background: var(--accent-bar); border-color: var(--accent-bar); }
 .setform { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .setin { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--bar-muted); }
 .setin input { width: 64px; height: 46px; box-sizing: border-box; border: 1px solid #3A3F49; border-radius: 10px; background: #2A2E37; color: #FFFFFF; text-align: center; font-family: var(--font-display); font-size: 26px; font-weight: 700; }
@@ -144,22 +144,81 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .tabs button[aria-pressed="true"] { background: var(--surface); font-weight: 600; }
 .primary { height: 46px; padding: 0 18px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
 .secondary { height: 46px; padding: 0 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 600; }
-.next { background: var(--accent); color: var(--accent-fg); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.next { background: var(--hero); color: #FFFFFF; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.next .nx-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.next .nx-top .label { color: inherit; opacity: .85; }
+.next .nx-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px; }
+.next .nx-team { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.next .nx-team.r { justify-content: flex-end; text-align: right; }
+.next .nx-team .display { font-size: 32px; min-width: 0; }
+.next .nx-vs { font-family: var(--font-display); font-weight: 700; font-size: 20px; opacity: .75; }
+.next .nx-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 640px) { .next .nx-teams { grid-template-columns: minmax(0, 1fr); gap: 10px; } .next .nx-vs { display: none; } .next .nx-team.r { flex-direction: row-reverse; justify-content: flex-end; text-align: left; } .next .nx-team .display { font-size: 24px; } .next .crest.lg { width: 40px; height: 47px; font-size: 17px; } .next .flag.lg { width: 48px; height: 32px; } }
 .next .display { font-size: 30px; }
 .next .meta { font-size: 13px; opacity: .85; }
-.next button { height: 48px; padding: 0 18px; border: 0; border-radius: 10px; background: var(--surface); color: var(--accent); font-weight: 600; }
+.next button { height: 48px; padding: 0 18px; border: 0; border-radius: 10px; background: #FFFFFF; color: var(--hero); font-weight: 600; }
 .rounds { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; align-items: start; }
 .round { display: flex; flex-direction: column; gap: 6px; }
-.match { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; background: var(--surface); border: 0; border-radius: 10px; padding: 10px 12px; min-height: 52px; }
+.match { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; background: var(--sunk); border: 0; border-radius: 10px; padding: 7px 12px; min-height: 46px; color: var(--muted); }
+.match.ours { background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--line); border-radius: 12px; padding: 10px 12px; min-height: 58px; }
+.match .tn { display: flex; align-items: center; gap: 7px; }
+.match .tn .nmx { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .match .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.match .tn { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.match.ours .tn { font-weight: 600; }
+.match .tn { font-size: 14px; white-space: nowrap; overflow: hidden; }
+.match.ours .tn { font-weight: 600; font-size: 15px; }
+.match:not(.ours) .res { font-size: 18px; }
 .match .d { font-size: 12px; color: var(--muted); }
 .match .res { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
 .badge { font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 99px; white-space: nowrap; }
 .b-own { background: var(--accent-soft); color: var(--accent); }
 .b-nvbf { background: var(--sunk); color: var(--muted); }
 .b-live { background: var(--good); color: #FFFFFF; }
+.b-win { background: var(--accent); color: var(--accent-fg); text-transform: uppercase; letter-spacing: .04em; padding: 4px 9px; }
+.b-loss { background: transparent; color: var(--opp); box-shadow: inset 0 0 0 1.5px var(--opp); text-transform: uppercase; letter-spacing: .04em; padding: 4px 9px; }
+/* Lagmerker: klubblogo når den er lastet opp, ellers skjold med forbokstaver. Landslag: flagg */
+.crest { flex: none; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF; font-family: var(--font-display); font-weight: 700; line-height: 1; box-shadow: inset 0 0 0 2px rgba(255,255,255,.3); }
+.crest.sh { border-radius: 22% 22% 50% 50% / 18% 18% 42% 42%; }
+.crest.slot { background: var(--sunk); color: var(--muted); box-shadow: inset 0 0 0 1.5px var(--line); }
+.crest.img { background: transparent; box-shadow: none; }
+.crest.img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.crest.xs { width: 16px; height: 19px; font-size: 8px; } .crest.sm { width: 22px; height: 26px; font-size: 10px; } .crest.md { width: 34px; height: 40px; font-size: 15px; } .crest.lg { width: 56px; height: 66px; font-size: 24px; }
+.flag { flex: none; position: relative; overflow: hidden; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.18); display: inline-block; }
+.flag i { position: absolute; display: block; }
+.flag.xs { width: 20px; height: 13px; } .flag.sm { width: 26px; height: 17px; } .flag.md { width: 42px; height: 28px; border-radius: 4px; } .flag.lg { width: 66px; height: 44px; border-radius: 6px; }
+.next .crest.lg:not(.img) { box-shadow: inset 0 0 0 3px rgba(255,255,255,.45); }
+.next .flag.lg { box-shadow: 0 0 0 2px rgba(255,255,255,.6); }
+.lh-id { display: flex; align-items: center; gap: 12px; }
+.tm { display: inline-flex; align-items: center; gap: 8px; min-width: 0; vertical-align: middle; }
+/* Resultattavle i live-visningen */
+.board { background: var(--bar); color: var(--bar-fg); border-radius: 18px; padding: 14px 20px 18px; display: flex; flex-direction: column; gap: 12px; }
+.board .b-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.board .b-top .link { color: #C9D6F0; background: none; border: 0; padding: 8px 4px; font-size: 14px; }
+.board .b-top .sub { font-size: 13px; color: var(--bar-muted); }
+.board .b-mid { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 20px; }
+.board .b-team { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.board .b-team.r { justify-content: flex-end; text-align: right; }
+.board .b-team .display { font-size: 34px; }
+.board .b-team .sw { font-size: 13px; color: var(--bar-muted); }
+.board .b-score { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.board .b-score .label { color: var(--bar-muted); }
+.board .b-pts { font-family: var(--font-display); font-weight: 700; font-size: 72px; line-height: 1; display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
+.board .b-pts .sep { font-size: 44px; color: #4A4F5A; }
+.board .b-sets { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.board .b-sets span { height: 28px; padding: 0 12px; border-radius: 14px; display: inline-flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 16px; box-shadow: inset 0 0 0 1px #3A3F4A; color: var(--bar-muted); }
+.board .b-sets span.won { background: var(--accent-bar); box-shadow: none; color: #FFFFFF; }
+.board .b-sets span.lost { box-shadow: inset 0 0 0 1.5px var(--opp-strong); color: #FFFFFF; }
+.board .b-sets span.now { box-shadow: inset 0 0 0 1.5px #FFFFFF; color: #FFFFFF; }
+@media (max-width: 700px) { .board { padding: 12px 14px 14px; } .board .b-mid { gap: 10px; } .board .b-team { flex-direction: column; align-items: flex-start; gap: 6px; } .board .b-team.r { flex-direction: column-reverse; align-items: flex-end; } .board .b-team .display { font-size: 18px; } .board .b-pts { font-size: 48px; } .board .crest.lg { width: 40px; height: 47px; font-size: 17px; } .board .flag.lg { width: 48px; height: 32px; } }
+/* Mottakssnitt som liten søyle under tallet */
+.avg { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.avgbar { width: 48px; height: 4px; border-radius: 2px; background: var(--sunk); overflow: hidden; display: block; }
+.avgbar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+tr.weakest .avgbar i { background: var(--opp-strong); }
+.logo-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--sunk); flex-wrap: wrap; }
+.logo-row .nm2 { flex: 1; min-width: 140px; font-weight: 600; }
+.filebtn { position: relative; overflow: hidden; display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--accent); color: var(--accent); font-weight: 600; font-size: 14px; cursor: pointer; }
+.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.filebtn:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 /* Skjema */
 .form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: end; }
@@ -180,6 +239,9 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .squad td.c { text-align: center; }
 .del { background: none; border: 0; color: var(--bad); font-size: 13px; font-weight: 600; padding: 8px; }
 .status { font-size: 13px; color: var(--muted); }
+html.dash [data-a="new-toggle"], html.dash [data-a="publish"], html.dash [data-a="edit"], html.dash [data-a="delmatch"], html.dash [data-a="export"], html.dash [data-a="access"] { display: none !important; }
+.watch-score { font-size: 34px; font-weight: 700; color: var(--bar-fg); margin-left: 10px; font-variant-numeric: tabular-nums; }
+.acc-hits { display: flex; flex-wrap: wrap; gap: 6px; }
 .notice.info { background: var(--accent-soft); }
 .notice { background: var(--opp-soft); color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
 
@@ -341,7 +403,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 14:48";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 15:46";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -366,7 +428,7 @@ window.PUBLIC_CTX = null;
     return {
       onSnapshot(cb, err) {
         dataP.then((D) => {
-          const d = path === 'config/roster' ? { players: D.roster } : null;
+          const d = path === 'config/roster' ? { players: D.roster } : path === 'config/logos' && D.logos ? { logos: D.logos } : null;
           cb({ exists: !!d, data: () => d || {} });
         }).catch(fail(err));
         return () => {};
@@ -400,6 +462,61 @@ window.PUBLIC_CTX = null;
   const MAIN_CTX = window.PUBLIC_CTX || { id: 'main', name: 'Randaberg · Mizunoligaen kvinner 26/27', our: 'Randaberg', prefix: '',
     teams: ['Finstad Sportsklubb', 'Førde Volleyballklubb', 'Koll IL', 'ØKSIL', 'OSI', 'Oslo Volley', 'TIF Viking', 'ToppVolley Norge'] };
   let CTX = MAIN_CTX, PFX = '', OUR = 'Randaberg';
+  // Hver sesong/lag har sin aksentfarge: Randaberg blå, landslaget rødt. Motstander er alltid oransje
+  const THEMES = {
+    blue: { a: '#1B4592', soft: '#DCE4F5', ink: '#122F66', bar: '#2F63C4', hero: '#1B4592', aD: '#7FA3E8', softD: '#23314F', inkD: '#C9D6F0', heroD: '#203F7E' },
+    red: { a: '#B0162E', soft: '#F6D5DA', ink: '#7E0F21', bar: '#C8243C', hero: '#B0162E', aD: '#F0899A', softD: '#3E1B22', inkD: '#F6D5DA', heroD: '#8E1226' }
+  };
+  function ctxTheme(c) { return THEMES[c && c.theme] || (c && (c.our === 'Norge' || /^u\d/.test(c.id || '')) ? THEMES.red : THEMES.blue); }
+  function applyTheme() {
+    const t = ctxTheme(CTX); let el = document.getElementById('ctx-theme');
+    if (!el) { el = document.createElement('style'); el.id = 'ctx-theme'; document.head.appendChild(el); }
+    const light = '--accent:' + t.a + ';--accent-soft:' + t.soft + ';--accent-ink:' + t.ink + ';--accent-bar:' + t.bar + ';--hero:' + t.hero + ';';
+    const dark = '--accent:' + t.aD + ';--accent-soft:' + t.softD + ';--accent-ink:' + t.inkD + ';--accent-bar:' + t.bar + ';--hero:' + t.heroD + ';';
+    el.textContent = 'html:root{' + light + '}@media (prefers-color-scheme: dark){html:root:not([data-theme="light"]){' + dark + '}}html:root[data-theme="dark"]{' + dark + '}';
+  }
+  applyTheme();
+
+  // Lagmerker. Opplastede logoer (config/logos) går foran; ellers skjold med forbokstaver og fast farge, og flagg for landslag
+  const CREST = { 'Randaberg': ['RB', null], 'Finstad Sportsklubb': ['FI', '#2F6B3A'], 'Førde Volleyballklubb': ['FØ', '#B5651D'], 'Koll IL': ['KO', '#7A1A14'], 'ØKSIL': ['ØK', '#44505F'],
+    'OSI': ['OSI', '#6B2C91'], 'Oslo Volley': ['OV', '#0E7C86'], 'TIF Viking': ['TV', '#8C6D1F'], 'ToppVolley Norge': ['TN', '#1F2A44'] };
+  const CREST_PAL = ['#2F6B3A', '#B5651D', '#7A1A14', '#44505F', '#6B2C91', '#0E7C86', '#8C6D1F', '#1F2A44', '#5B3A29', '#3D5A80'];
+  // Flagg i en 30×20-ramme: [bakgrunn, [farge, x, bredde, y, høyde] for korset, eventuelt indre kors]
+  const FLAGS = {
+    Norge: ['#BA0C2F', ['#FFFFFF', 8.2, 5.5, 7.5, 5], ['#00205B', 9.5, 2.75, 8.75, 2.5]],
+    Sverige: ['#006AA7', ['#FECC00', 9.4, 3.75, 8, 4]],
+    Danmark: ['#C8102E', ['#FFFFFF', 9.7, 3.2, 8.6, 2.9]],
+    Finland: ['#FFFFFF', ['#002F6C', 8.3, 5, 7.3, 5.5]],
+    England: ['#FFFFFF', ['#CE1124', 13.5, 3, 8, 4]],
+    Island: ['#02529C', ['#FFFFFF', 7.9, 5, 7.5, 5], ['#DC1E35', 9.1, 2.5, 8.75, 2.5]],
+    'Færøyene': ['#FFFFFF', ['#0065BD', 7.9, 5, 7.5, 5], ['#EF303E', 9.1, 2.5, 8.75, 2.5]]
+  };
+  function flagHtml(f, size) {
+    const bars = (c) => '<i style="background:' + c[0] + ';left:' + (c[1] / 30 * 100) + '%;width:' + (c[2] / 30 * 100) + '%;top:0;bottom:0"></i><i style="background:' + c[0] + ';top:' + (c[3] / 20 * 100) + '%;height:' + (c[4] / 20 * 100) + '%;left:0;right:0"></i>';
+    return '<span class="flag ' + size + '" style="background:' + f[0] + '" aria-hidden="true">' + bars(f[1]) + (f[2] ? bars(f[2]) : '') + '</span>';
+  }
+  function initials(t) {
+    const w = String(t).replace(/ (IL|Sportsklubb|Volleyballklubb|Volleyball|VBK|Volley Norge)$/, '').split(/[\s-]+/).filter(Boolean);
+    return (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || '?').slice(0, 2)).toUpperCase();
+  }
+  function crest(team, size) {
+    size = size || 'sm'; team = String(team || '');
+    const logo = (S.logos || {})[team];
+    if (logo) return '<span class="crest img ' + size + '" aria-hidden="true"><img src="' + esc(logo) + '" alt=""></span>';
+    if (FLAGS[team]) return flagHtml(FLAGS[team], size);
+    if (isSlot(team)) return '<span class="crest sh slot ' + size + '" aria-hidden="true">' + esc(parseInt(team, 10)) + '</span>';
+    const c = CREST[team]; let h = 0; for (const ch of team) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const col = team === OUR ? 'var(--hero)' : (c && c[1]) || CREST_PAL[h % CREST_PAL.length];
+    return '<span class="crest sh ' + size + '" style="background:' + col + '" aria-hidden="true">' + esc(c ? c[0] : initials(team)) + '</span>';
+  }
+  const teamTag = (t, size, label) => '<span class="tm">' + crest(t, size) + '<span class="nmx">' + esc(label == null ? t : label) + '</span></span>';
+  // Utfall sett fra vårt lag
+  function outcome(m) {
+    if (m.status !== 'ferdig' || !((m.setsHome || 0) + (m.setsAway || 0))) return null;
+    const us = usName(m); if (m.home !== us && m.away !== us) return null;
+    const our = m.home === us ? m.setsHome : m.setsAway, their = m.home === us ? m.setsAway : m.setsHome;
+    return our > their ? 'win' : 'loss';
+  }
   const POS = ['Opplegger', 'Diagonal', 'Kant', 'Midt', 'Libero'];
   const app = document.getElementById('app');
 
@@ -407,7 +524,9 @@ window.PUBLIC_CTX = null;
     db: null, dl: null, ready: false, offline: false,
     roster: [], matches: [], logs: {}, logUnsub: null, opps: {}, contexts: [MAIN_CTX], ctxReady: false, showNewCtx: false,
     view: 'list', matchId: null, filter: 'alle', statSet: 'all',
-    showNew: false, flash: null, error: ''
+    showNew: false, flash: null, error: '',
+    // Dashboard: lesetilgang uten registrering (den åpne siden, eller personer med «Kan se»-tilgang)
+    dash: !!window.PUBLIC, user: null, myId: null, canAdmin: false, grants: null, noAccess: false, names: {}, accHits: [], accPick: null
   };
 
   let deviceId = null;
@@ -457,15 +576,39 @@ window.PUBLIC_CTX = null;
   async function boot() {
     try { S.db = await window.claude?.use?.('db'); } catch (e) { S.db = null; }
     try { S.dl = await window.claude?.use?.('downloads'); } catch (e) { S.dl = null; }
+    if (!window.PUBLIC) {
+      try { S.user = await window.claude?.use?.('user'); } catch (e) { S.user = null; }
+      if (S.user) {
+        const [w, owner, adm, id] = await Promise.all([S.user.can('data.write'), S.user.isOwner(), S.user.canEdit(), S.user.id()]);
+        S.dash = w === false && !owner; S.canAdmin = !!(owner || adm); S.myId = id;
+      }
+    }
+    document.documentElement.classList.toggle('dash', S.dash);
     if (!S.db) { S.offline = true; S.ready = true; render(); return; }
     let saved = null; try { saved = localStorage.getItem('rv-ctx'); } catch (e) {}
+    if (!window.PUBLIC) S.db.doc('config/access').onSnapshot((snap) => {
+      S.grants = snap.exists ? (snap.data().grants || {}) : {}; if (S.dash) resolveDashCtx(); else render();
+    }, () => { S.grants = {}; if (S.dash) resolveDashCtx(); });
     S.db.doc('config/contexts').onSnapshot((snap) => {
       const list = snap.exists ? (snap.data().list || []) : [];
       S.contexts = [MAIN_CTX].concat(list.filter((c) => c && c.id && c.id !== 'main'));
+      if (S.dash && !window.PUBLIC) { S.ctxLoaded = true; resolveDashCtx(); return; }
       if (!S.ctxReady) { S.ctxReady = true; applyCtx(saved || 'main'); }
       else if (!S.contexts.some((c) => c.id === CTX.id)) applyCtx('main');
       else { CTX = S.contexts.find((c) => c.id === CTX.id); render(); }
     }, () => { if (!S.ctxReady) { S.ctxReady = true; applyCtx('main'); } });
+  }
+
+  // En som bare kan se, får laget som er knyttet til dem under «Tilgang»
+  function resolveDashCtx() {
+    if (!S.ctxLoaded || S.grants == null) return;
+    const id = S.myId && S.grants[S.myId];
+    if (!id || !S.contexts.some((c) => c.id === id)) {
+      ctxUnsubs.forEach((u) => { try { u(); } catch (e) {} }); ctxUnsubs = [];
+      S.noAccess = true; S.ready = true; S.ctxReady = true; render(); return;
+    }
+    S.noAccess = false;
+    if (!S.ctxReady || CTX.id !== id) { S.ctxReady = true; applyCtx(id); } else render();
   }
 
   let ctxUnsubs = [];
@@ -475,6 +618,7 @@ window.PUBLIC_CTX = null;
     try { localStorage.setItem('rv-ctx', CTX.id); } catch (e) {}
     ctxUnsubs.forEach((u) => { try { u(); } catch (e) {} }); ctxUnsubs = [];
     closeSeasonLogs(); openLogs(null);
+    applyTheme(); S.logos = {};
     S.roster = []; S.matches = []; S.opps = {}; S.ready = false; S.view = 'list'; S.matchId = null; S.showNew = false; S.showNewCtx = false;
     SEASON.player = 'team';
     render(); toTop();
@@ -486,6 +630,7 @@ window.PUBLIC_CTX = null;
       S.roster = snap.exists ? (snap.data().players || []).map((p) => ({ ...p })) : [];
       S.ready = true; render();
     }, (e) => { S.error = 'Kunne ikke laste troppen (' + e.code + ').'; render(); }));
+    keep(S.db.doc(PFX + 'config/logos').onSnapshot((snap) => { S.logos = snap.exists ? (snap.data().logos || {}) : {}; render(); }, () => {}));
     keep(S.db.collection(PFX + 'opponents').onSnapshot((snap) => {
       const o = {}; snap.docs.forEach((d) => { o[d.id] = JSON.parse(JSON.stringify(d.data())); }); S.opps = o; render();
     }, () => {}));
@@ -497,7 +642,7 @@ window.PUBLIC_CTX = null;
   }
 
   function ctxPicker() {
-    if (window.PUBLIC || S.offline) return '<span class="label">' + esc(CTX.name) + '</span>';
+    if (window.PUBLIC || S.offline || S.dash) return '<span class="label">' + esc(CTX.name) + '</span>';
     return '<label class="ctx-pick" for="ctx-pick"><span class="sr">Sesong eller lag</span><select id="ctx-pick" data-a="ctx">'
       + S.contexts.map((c) => '<option value="' + esc(c.id) + '"' + (c.id === CTX.id ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('')
       + '<option value="__new">+ Ny sesong eller lag …</option></select></label>';
@@ -589,6 +734,7 @@ window.PUBLIC_CTX = null;
     const keepVal = active && active.tagName === 'INPUT' ? active.value : null;
     let html = '';
     if (S.offline) html = offlineView();
+    else if (S.dash && S.noAccess) html = noAccessView();
     else if (!S.ready) html = '<div class="panel"><div class="empty">Laster kamper …</div></div>';
     else if (S.view === 'live' && cur()) html = liveView();
     else if (S.view === 'squad' && cur()) html = squadView();
@@ -596,11 +742,93 @@ window.PUBLIC_CTX = null;
     else if (S.view === 'sheet' && cur()) html = sheetView();
     else if (S.view === 'season') html = seasonView();
     else if (S.view === 'table') html = tableView();
+    else if (S.view === 'access' && S.canAdmin) html = accessView();
+    else if (S.view === 'logos' && !S.dash) html = logosView();
+    else if (S.view === 'watch' && cur()) html = cur().status === 'ferdig' ? detailView() : watchView();
     else html = listView();
     app.innerHTML = '<div id="err">' + errHtml() + '</div>' + html;
     if (S.view === 'live') fillMini();
     dirSync();
     if (keepId) { const el = document.getElementById(keepId); if (el) { if (keepVal != null && el.tagName === 'INPUT') el.value = keepVal; el.focus(); try { if (selStart != null && el.setSelectionRange) el.setSelectionRange(selStart, selStart); } catch (e) {} } }
+  }
+
+  function noAccessView() {
+    return '<div class="panel"><h2 class="display" style="font-size:28px">Kampstatistikk</h2><div class="empty">Du har lesetilgang, men er ikke knyttet til et lag ennå. Be den som delte appen med deg, om å gi deg tilgang til laget under «Tilgang».</div></div>';
+  }
+  // Live-visning for den som bare ser på: resultat, siste registreringer og løpende statistikk
+  function watchView() {
+    const m = cur(), oppName = oppTeam(m), evs = allEvents(), c = m.current || { set: 1 };
+    return scoreBoard(m, c)
+      + '<div class="lastbar"><span class="label">Siste</span><div class="chips">' + lastChips(evs, oppName) + '</div></div>'
+      + statsPanel(m, evs, oppName);
+  }
+  function scoreBoard(m, c) {
+    const sc = m.setScores || [], us = usName(m), weHome = m.home === us;
+    const pills = sc.map((s, i) => { s = Array.isArray(s) ? s : [s.home, s.away]; const won = weHome ? s[0] > s[1] : s[1] > s[0]; return '<span class="' + (won ? 'won' : 'lost') + '">S' + (i + 1) + ' ' + s[0] + '–' + s[1] + '</span>'; }).join('')
+      + '<span class="now">S' + c.set + ' ' + (c.home || 0) + '–' + (c.away || 0) + '</span>';
+    return '<section class="board" aria-label="Resultat"><div class="b-top"><button class="link" data-a="back">‹ Kamper</button><span class="spacer"></span><span class="badge b-live">LIVE</span><span class="sub">' + esc(roundLabel(m)) + (m.venue ? ' · ' + esc(m.venue) : '') + '</span><span class="spacer"></span>' + fsBtn('barbtn') + '</div>'
+      + '<div class="b-mid"><div class="b-team">' + crest(m.home, 'lg') + '<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span class="display">' + esc(m.home) + '</span><span class="sw">Sett vunnet: ' + (m.setsHome || 0) + '</span></div></div>'
+      + '<div class="b-score"><span class="label">Sett ' + c.set + '</span><div class="b-pts"><span>' + (c.home || 0) + '</span><span class="sep">:</span><span>' + (c.away || 0) + '</span></div></div>'
+      + '<div class="b-team r"><div style="display:flex;flex-direction:column;gap:4px;min-width:0;align-items:flex-end"><span class="display">' + esc(m.away) + '</span><span class="sw">Sett vunnet: ' + (m.setsAway || 0) + '</span></div>' + crest(m.away, 'lg') + '</div></div>'
+      + '<div class="b-sets">' + pills + '</div></section>';
+  }
+
+  // Lagmerker: last opp klubblogoer (lagres nedskalert i databasen, så de også kommer med på den åpne siden)
+  function logoTeams() {
+    const set = new Set([OUR].concat(CTX.teams || []));
+    S.matches.forEach((m) => [m.home, m.away].forEach((t) => { if (t && !isSlot(t)) set.add(t); }));
+    return [...set].sort((a, b) => (a === OUR ? -1 : b === OUR ? 1 : a.localeCompare(b, 'nb')));
+  }
+  function logosView() {
+    const L = S.logos || {};
+    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Lagmerker</span><span class="sub">' + esc(CTX.name) + '</span></div><span class="spacer"></span></header>';
+    h += '<section class="panel"><div class="panel-head"><h2>Klubblogoer</h2></div><div class="status">Last opp logoen til hvert lag (PNG, JPG, SVG eller WebP). Den skaleres ned og vises i kamplisten, tabellen og live-visningen, også for dem som ser på. Uten logo vises et skjold med forbokstaver' + (Object.keys(FLAGS).some((f) => logoTeams().includes(f)) ? ', og landslag får flagg' : '') + '. Bruk bare logoer klubbene har godkjent.</div>'
+      + logoTeams().map((t) => '<div class="logo-row">' + crest(t, 'md') + '<span class="nm2">' + esc(t) + (L[t] ? '' : ' <span class="code-legend">· ' + (FLAGS[t] ? 'flagg' : 'skjold') + '</span>') + '</span>'
+        + '<label class="filebtn">' + (L[t] ? 'Bytt logo' : 'Last opp logo') + '<input type="file" accept="image/*" data-a="logo-up" data-team="' + esc(t) + '" aria-label="Logo for ' + esc(t) + '"></label>'
+        + (L[t] ? '<button class="del" data-a="logo-del" data-team="' + esc(t) + '">Fjern</button>' : '') + '</div>').join('') + '</section>';
+    return h;
+  }
+  async function saveLogo(team, dataUrl) {
+    const L = Object.assign({}, S.logos || {}); if (dataUrl) L[team] = dataUrl; else delete L[team];
+    S.logos = L; render();
+    try { await S.db.doc(PFX + 'config/logos').set({ logos: L }); } catch (e) { S.error = 'Logoen ble ikke lagret (' + e.code + ').'; render(); }
+  }
+  function shrinkLogo(file) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const max = 128, k = Math.min(1, max / Math.max(img.naturalWidth || max, img.naturalHeight || max));
+        const w = Math.max(1, Math.round((img.naturalWidth || max) * k)), hh = Math.max(1, Math.round((img.naturalHeight || max) * k));
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = hh; cv.getContext('2d').drawImage(img, 0, 0, w, hh);
+        URL.revokeObjectURL(url); let d = cv.toDataURL('image/png'); if (d.length > 60000) d = cv.toDataURL('image/webp', 0.85); res(d);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bilde')); };
+      img.src = url;
+    });
+  }
+
+  // Tilgang: knytt personer med lesetilgang til ett lag (lagrer bare person-id)
+  function accessView() {
+    const g = S.grants || {}, ids = Object.keys(g);
+    const missing = ids.filter((id) => !(id in S.names));
+    if (S.user && missing.length) S.user.profiles(missing).then((ps) => { Object.values(ps).forEach((p) => { S.names[p.id] = p.name || ''; }); render(); });
+    const ctxSel = (id, sel) => '<select id="' + id + '" aria-label="Lag">' + S.contexts.map((c) => '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select>';
+    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Tilgang</span><span class="sub">Hvem som ser hvilket lag</span></div><span class="spacer"></span></header>';
+    h += '<section class="panel"><div class="panel-head"><h2>Slik gir du tilgang</h2></div><div class="status">1. Del appen med personen via Del-menyen øverst, med tilgangen «Kan se». 2. Knytt personen til et lag her. De ser da bare det laget, live, uten registreringsknapper. Personer med redigeringstilgang ser alle lag og kan føre.</div></section>';
+    h += '<section class="panel"><div class="panel-head"><h2>Personer med dashboard</h2></div>' + (ids.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Person</th><th class="l-al">Lag</th><th></th></tr></thead><tbody>'
+      + ids.map((id) => '<tr><td class="key">' + esc(S.names[id] || (id in S.names ? 'Ukjent person' : '…')) + '</td><td class="l-al">' + esc((S.contexts.find((c) => c.id === g[id]) || { name: g[id] }).name) + '</td><td><button class="del" data-a="acc-del" data-id="' + esc(id) + '">Fjern</button></td></tr>').join('') + '</tbody></table></div>'
+      : '<div class="empty">Ingen er knyttet til et lag ennå.</div>') + '</section>';
+    h += '<section class="panel"><div class="panel-head"><h2>Legg til person</h2></div><div class="form">'
+      + '<div class="field"><label for="acc-q">Søk etter navn</label><input id="acc-q" type="text" autocomplete="off" placeholder="Skriv navn"></div>'
+      + '<div class="field"><label for="acc-ctx">Lag</label>' + ctxSel('acc-ctx', CTX.id) + '</div></div>'
+      + (S.accPick ? '<div class="status">Valgt: <b>' + esc(S.accPick.name) + '</b> <button class="primary" data-a="acc-grant">Gi tilgang til laget</button></div>' : '')
+      + (S.accHits.length ? '<div class="acc-hits">' + S.accHits.map((p) => '<button class="secondary" data-a="acc-pick" data-id="' + esc(p.id) + '">' + esc(p.name) + (p.guest ? ' (gjest)' : '') + '</button>').join('') + '</div>' : '<div class="code-legend">Søket finner personer i organisasjonen. Gjester utenfor organisasjonen dukker opp når appen er delt med dem.</div>')
+      + '</section>';
+    return h;
+  }
+  async function saveGrants(grants) {
+    S.grants = grants; render();
+    try { await S.db.doc('config/access').set({ grants }); } catch (e) { S.error = 'Tilgangen ble ikke lagret (' + e.code + ').'; render(); }
   }
 
   function offlineView() {
@@ -612,27 +840,33 @@ window.PUBLIC_CTX = null;
     const upcoming = S.matches.filter((m) => isOurs(m) && m.status !== 'ferdig').sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
     const rounds = {};
     ms.forEach((m) => { const r = m.custom ? roundLabel(m) + '|' + m.id : roundLabel(m); (rounds[r] ||= []).push(m); });
-    let h = '<div class="listhead"><div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>'
+    let h = '<div class="listhead"><div class="lh-id">' + crest(OUR, 'md') + '<div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>' + '</div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="tabs" role="group" aria-label="Filter">'
       + [['alle', 'Alle'], ['vare', 'Våre'], ['andre', 'Andres']].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + l + '</button>').join('')
-      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button>' + (hasSite() ? '<button class="secondary" data-a="publish" title="Oppdater den åpne statistikksiden">Publiser</button>' : '') + '<button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
+      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button>' + (S.canAdmin && !S.dash ? '<button class="secondary" data-a="access">Tilgang</button>' : '') + (!S.dash ? '<button class="secondary" data-a="logos">Lagmerker</button>' : '') + (hasSite() ? '<button class="secondary" data-a="publish" title="Oppdater den åpne statistikksiden">Publiser</button>' : '') + '<button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
     if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (upcoming) {
-      h += '<section class="next" aria-label="Neste kamp"><div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px"><span class="label" style="color:inherit;opacity:.8">' + (upcoming.status === 'pågår' ? 'Pågår nå' : 'Neste kamp') + ' · ' + esc(roundLabel(upcoming)) + '</span>'
-        + '<div class="display">' + esc(upcoming.home) + ' – ' + esc(upcoming.away) + '</div><div class="meta">' + esc(fmtDate(upcoming.date)) + (upcoming.venue ? ' · ' + esc(upcoming.venue) : '') + '</div></div>'
-        + '<button data-a="open" data-id="' + esc(upcoming.id) + '">' + (upcoming.status === 'pågår' ? 'Fortsett registrering' : 'Start registrering') + '</button></section>';
+      h += nextHero(upcoming, upcoming.status === 'pågår');
     }
     if (!ms.length) h += '<div class="panel"><div class="empty">Ingen kamper her ennå. Legg til en med «Ny kamp».</div></div>';
     h += '<div class="rounds">' + Object.entries(rounds).map(([r, list]) => '<section class="round"><h2 class="label">' + esc(r.split('|')[0]) + '</h2>' + list.map(matchRow).join('') + '</section>').join('') + '</div>';
     return h;
   }
 
+  function nextHero(m, live) {
+    const sc = live ? ' · ' + (m.setsHome || 0) + '–' + (m.setsAway || 0) + ' i sett' : '';
+    return '<section class="next" aria-label="Neste kamp"><div class="nx-top"><span class="label">' + (live ? 'Pågår nå' : 'Neste kamp') + ' · ' + esc(roundLabel(m)) + sc + '</span><span class="spacer"></span><span>' + esc(fmtDate(m.date)) + (m.venue ? ' · ' + esc(m.venue) : '') + '</span></div>'
+      + '<div class="nx-teams"><div class="nx-team">' + crest(m.home, 'lg') + '<span class="display">' + esc(m.home) + '</span></div><span class="nx-vs">MOT</span><div class="nx-team r"><span class="display">' + esc(m.away) + '</span>' + crest(m.away, 'lg') + '</div></div>'
+      + '<div class="nx-foot"><button data-a="open" data-id="' + esc(m.id) + '">' + (S.dash ? (live ? 'Følg kampen live' : 'Se kampen') : live ? 'Fortsett registrering' : 'Start registrering') + '</button></div></section>';
+  }
+
   function matchRow(m) {
     const ours = isOurs(m);
     const res = (m.setsHome != null && m.setsAway != null && (m.setsHome + m.setsAway) > 0) ? m.setsHome + '–' + m.setsAway : (m.status === 'pågår' ? (m.setsHome || 0) + '–' + (m.setsAway || 0) : '–');
-    const badge = m.status === 'pågår' ? '<span class="badge b-live">Live</span>' : ours || m.focus ? '<span class="badge b-own">Egenført</span>' : (m.nvbf && m.nvbf.teams ? '<span class="badge b-nvbf">NVBF-statistikk</span>' : m.source === 'nvbf' ? '<span class="badge b-nvbf">NVBF</span>' : '');
-    return '<button class="match' + (ours ? ' ours' : '') + '" data-a="open" data-id="' + esc(m.id) + '"><span class="t"><span class="tn">' + esc(m.home) + ' – ' + esc(m.away) + '</span><span class="d">' + esc(fmtDate(m.date)) + (m.custom ? ' · ' + esc(TYPES[m.type] || 'Egen kamp') : '') + '</span></span><span class="res num">' + res + '</span>' + badge + '</button>';
+    const oc = ours ? outcome(m) : null;
+    const badge = m.status === 'pågår' ? '<span class="badge b-live">Live</span>' : oc ? '<span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss">Tap') + '</span>' : ours ? '' : m.focus ? '<span class="badge b-own">Egenført</span>' : (m.nvbf && m.nvbf.teams ? '<span class="badge b-nvbf">NVBF-statistikk</span>' : m.source === 'nvbf' ? '<span class="badge b-nvbf">NVBF</span>' : '');
+    return '<button class="match' + (ours ? ' ours' : '') + '" data-a="open" data-id="' + esc(m.id) + '"><span class="t"><span class="tn">' + (ours ? crest(m.home, 'sm') + '<span class="nmx">' + esc(m.home) + ' – ' + esc(m.away) + '</span>' + crest(m.away, 'sm') : crest(m.home, 'xs') + '<span class="nmx">' + esc(m.home) + ' – ' + esc(m.away) + '</span>' + crest(m.away, 'xs')) + '</span><span class="d">' + esc(fmtDate(m.date)) + (m.custom ? ' · ' + esc(TYPES[m.type] || 'Egen kamp') : '') + '</span></span><span class="res num">' + res + '</span>' + badge + '</button>';
   }
 
   function newMatchForm() {
@@ -652,7 +886,7 @@ window.PUBLIC_CTX = null;
     const c = m.current || { set: 1, home: 0, away: 0 };
     const sets = (m.setScores || []).map((s) => s[0] + '–' + s[1]).join(' · ');
     return '<header class="bar"><button class="link" data-a="back">‹ Kamper</button>'
-      + '<div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + '</span><span class="sub" id="bar-sub">' + esc(barSub(m)) + '</span></div>'
+      + '<div class="title"><span class="display tm">' + crest(m.home, 'sm') + esc(m.home) + ' – ' + esc(m.away) + crest(m.away, 'sm') + '</span><span class="sub" id="bar-sub">' + esc(barSub(m)) + '</span></div>'
       + '<span class="spacer"></span><div class="score-wrap"><span class="setpill">Sett ' + c.set + '</span></div><span class="spacer"></span><div class="bar-actions">'
       + (S.endingSet
         ? '<form id="setform" class="setform"><span class="sub">Resultat sett ' + c.set + '</span>'
@@ -751,7 +985,7 @@ window.PUBLIC_CTX = null;
   // Den åpne statistikksiden bygges av den planlagte oppgaven «Publiser åpen statistikk», som appen starter
   const PUBLISH = { trigger: 'trig_018cBdJrHuYyuvMHWzXJ3ni4', sites: { main: 'Randaberg-siden', 'u20-nevza-2026': 'U20-siden' } };
   let lastPub = 0;
-  const hasSite = () => !window.PUBLIC && !!PUBLISH.sites[CTX.id];
+  const hasSite = () => !window.PUBLIC && !S.dash && !!PUBLISH.sites[CTX.id];
   async function publishOpen(reason, force) {
     if (!hasSite()) return;
     if (!force && Date.now() - lastPub < 120000) return;
@@ -791,10 +1025,12 @@ window.PUBLIC_CTX = null;
       + '<div class="seg" role="group" aria-label="Utvalg"><button data-a="statset" data-v="all" aria-pressed="' + (S.statSet === 'all') + '">Kamp</button>' + sets.map((s) => { const sc = scoreStr((m.setScores || [])[s - 1]); return '<button data-a="statset" data-v="' + s + '" aria-pressed="' + (String(S.statSet) === String(s)) + '">Sett ' + s + (sc ? ' · ' + sc : '') + '</button>'; }).join('') + '</div></div>';
 
     const recRows = Object.entries(st.rec).sort((a, b) => b[1].n - a[1].n);
+    const weakOwn = recRows.length > 1 ? (recRows.filter(([, r]) => r.n >= 5).sort((a, b) => a[1].s / a[1].n - b[1].s / b[1].n)[0] || [])[0] : null;
+    const avgCell = (v) => '<span class="avg">' + dec(v) + '<span class="avgbar"><i style="width:' + Math.max(0, Math.min(100, v / 2 * 100)) + '%"></i></span></span>';
     h += '<div class="stats-body"><div class="stat-block"><div class="label" style="color:var(--accent)">Mottak</div>';
     if (!recRows.length) h += '<div class="empty">Ingen mottak registrert.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Snitt</th><th>Feil</th><th>Spillbart</th><th>Perfekt</th></tr></thead><tbody>'
-      + recRows.map(([id, r]) => '<tr><td class="key">' + esc(pname(id)) + '</td><td>' + r.n + '</td><td class="key">' + dec(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c1, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
+      + recRows.map(([id, r]) => '<tr' + (id === weakOwn ? ' class="weakest"' : '') + '><td class="key">' + esc(pname(id)) + (id === weakOwn ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgCell(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c1, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
       + '<tr class="total"><td>Lag</td><td>' + st.tRec.n + '</td><td>' + dec(st.tRec.s / st.tRec.n) + '</td><td>' + pct(st.tRec.c0, st.tRec.n) + '</td><td>' + pct(st.tRec.c1, st.tRec.n) + '</td><td>' + pct(st.tRec.c2, st.tRec.n) + '</td></tr></tbody></table></div>';
 
     const attRows = Object.entries(st.att).sort((a, b) => b[1].n - a[1].n);
@@ -819,7 +1055,7 @@ window.PUBLIC_CTX = null;
     h += '</div><div class="stat-block"><div class="label" style="color:var(--opp)">' + esc(oppName) + ' mottak · svakest først</div>';
     if (!oppRows.length) h += '<div class="empty">Ingen motstandermottak registrert.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nr</th><th>Ant.</th><th>Snitt</th><th>Feil</th><th>Perfekt</th></tr></thead><tbody>'
-      + oppRows.map(([n, r]) => '<tr' + (r.n < 5 ? ' class="small-n"' : (n === weakOpp ? ' class="weakest"' : '')) + '><td class="key">' + esc(oppLabel(m, n)) + (n === weakOpp ? ' <span class="weak-tag">Server hit</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + dec(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
+      + oppRows.map(([n, r]) => '<tr' + (r.n < 5 ? ' class="small-n"' : (n === weakOpp ? ' class="weakest"' : '')) + '><td class="key">' + esc(oppLabel(m, n)) + (n === weakOpp ? ' <span class="weak-tag">Server hit</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgCell(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
       + '<tr class="total"><td>Lag</td><td>' + st.tOpp.n + '</td><td>' + dec(st.tOpp.s / st.tOpp.n) + '</td><td>' + pct(st.tOpp.c0, st.tOpp.n) + '</td><td>' + pct(st.tOpp.c2, st.tOpp.n) + '</td></tr></tbody></table></div>'
       + '<div class="code-legend">Grå rader: under 5 mottak, lite utvalg.</div>';
 
@@ -913,7 +1149,7 @@ window.PUBLIC_CTX = null;
     const all = tableMatches(), done = all.filter((m) => m.status === 'ferdig').length;
     let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Tabell</span><span class="sub">' + esc(CTX.name) + ' · ' + done + ' av ' + all.length + ' kamper spilt</span></div><span class="spacer"></span></header>';
     h += '<section class="panel"><div class="tbl-wrap"><table class="tbl standings"><thead><tr><th>#</th><th class="l-al">Lag</th><th>K</th><th>V</th><th>T</th><th>Poeng</th><th>Sett</th><th class="hide-sm">Settkv.</th><th class="hide-sm">Ballkv.</th></tr></thead><tbody>'
-      + st.map((r, i) => '<tr' + (r.team === OUR ? ' class="us"' : '') + '><td>' + (i + 1) + '</td><td class="key l-al">' + esc(shortName(r.team)) + '</td><td>' + r.k + '</td><td>' + r.v + '</td><td>' + r.tap + '</td><td class="key">' + r.p + '</td><td>' + r.sv + '–' + r.st + '</td><td class="hide-sm">' + q(r.sv, r.st) + '</td><td class="hide-sm">' + q(r.bv, r.bt) + '</td></tr>').join('')
+      + st.map((r, i) => '<tr' + (r.team === OUR ? ' class="us"' : '') + '><td>' + (i + 1) + '</td><td class="key l-al">' + teamTag(r.team, 'sm', shortName(r.team)) + '</td><td>' + r.k + '</td><td>' + r.v + '</td><td>' + r.tap + '</td><td class="key">' + r.p + '</td><td>' + r.sv + '–' + r.st + '</td><td class="hide-sm">' + q(r.sv, r.st) + '</td><td class="hide-sm">' + q(r.bv, r.bt) + '</td></tr>').join('')
       + '</tbody></table></div><div class="code-legend">Rangering: seire, poeng (3–0 og 3–1 gir 3 poeng, 3–2 gir 2 og 2–3 gir 1), settkvotient, ballkvotient.</div></section>';
     const po = S.matches.filter((m) => m.stage === 'sluttspill' || isSlot(m.home) || isSlot(m.away));
     if (po.length) h += '<section class="panel"><div class="panel-head"><h2>Sluttspill</h2></div><div class="po">' + po.map((m) => {
@@ -1192,11 +1428,12 @@ window.PUBLIC_CTX = null;
     const own = ours ? ownStats(m, allEvents()) : null; const hasNvbf = !!(m.nvbf && m.nvbf.teams && m.nvbf.teams.length);
     const egen = !!own && !(S.detailSrc === 'nvbf' && hasNvbf); const n = egen ? own : m.nvbf;
     addRecAvg(n);
-    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
-      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (ours ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + (ours && m.custom && !window.PUBLIC ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
-    if (!ours && !window.PUBLIC) h += othersPanel(m);
+    const oc = outcome(m);
+    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button>' + crest(m.home, 'md') + '<div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + (oc ? ' <span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss" style="color:#F0A774;box-shadow:inset 0 0 0 1.5px #F0A774">Tap') + '</span>' : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
+      + crest(m.away, 'md') + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (ours ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + (ours && m.custom && !S.dash ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
+    if (!ours && !S.dash) h += othersPanel(m);
     if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">NVBF</button></div>';
-    if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? 'Statistikken fra denne kampen er ikke lagt ut ennå.' : CTX.id !== 'main' ? (m.status === 'ferdig' ? 'Resultatet er registrert. Det er ikke ført statistikk i denne kampen.' : 'Kampen er ikke spilt ennå.') : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
+    if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? (S.dash && !window.PUBLIC ? 'Det er ikke ført statistikk i denne kampen ennå.' : 'Statistikken fra denne kampen er ikke lagt ut ennå.') : CTX.id !== 'main' ? (m.status === 'ferdig' ? 'Resultatet er registrert. Det er ikke ført statistikk i denne kampen.' : 'Kampen er ikke spilt ennå.') : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
     h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
@@ -1323,9 +1560,7 @@ window.PUBLIC_CTX = null;
       + '<div class="title"><span class="display">Sesong</span><span class="sub">' + esc(CTX.name) + ' · ' + done.length + ' av ' + rows.length + ' kamper spilt</span></div><span class="spacer"></span>'
       + '<div class="bar-actions">' + (hasTest ? '<button class="barbtn' + (SEASON.inclTest ? ' primary-bar' : '') + '" data-a="incltest" aria-pressed="' + SEASON.inclTest + '">' + (SEASON.inclTest ? 'Testkampen er med' : 'Vis testkampen') + '</button>' : '') + '</div></header>';
 
-    if (next) h += '<section class="next" aria-label="Neste kamp"><div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px"><span class="label" style="color:inherit;opacity:.8">' + (next.live ? 'Pågår nå' : 'Neste kamp') + ' · ' + esc(roundLabel(next.m)) + '</span>'
-      + '<div class="display">' + esc(next.m.home) + ' – ' + esc(next.m.away) + '</div><div class="meta">' + esc(fmtDate(next.m.date)) + (next.m.venue ? ' · ' + esc(next.m.venue) : '') + '</div></div>'
-      + '<button data-a="open" data-id="' + esc(next.m.id) + '">' + (next.live ? 'Fortsett registrering' : 'Start registrering') + '</button></section>';
+    if (next) h += nextHero(next.m, next.live);
 
     if (!reg.length) h += '<div class="notice">Ingen kamper er ført i appen ennå. Tallene fylles inn automatisk fra første kamp dere fører fra benken.' + (hasTest && !SEASON.inclTest ? ' Trykk «Vis testkampen» for å se hvordan det ser ut.' : '') + '</div>';
 
@@ -1668,7 +1903,7 @@ window.PUBLIC_CTX = null;
       const mm = S.matches.find((x) => x.id === b.dataset.id); if (!mm) return;
       closeSeasonLogs();
       S.matchId = mm.id; S.statSet = 'all';
-      S.view = canLive(mm) && mm.status !== 'ferdig' && !window.PUBLIC ? 'live' : 'detail'; S.detailSrc = 'egen';
+      S.view = S.dash ? 'detail' : canLive(mm) && mm.status !== 'ferdig' ? 'live' : 'detail'; S.detailSrc = 'egen';
       if (canLive(mm)) openLogs(mm.id);
       render(); toTop();
     }
@@ -1686,6 +1921,12 @@ window.PUBLIC_CTX = null;
     else if (a === 'dsrc') { S.detailSrc = b.dataset.v; render(); }
     else if (a === 'ctx-cancel') { S.showNewCtx = false; render(); }
     else if (a === 'publish') { publishOpen('manuelt', true); }
+    else if (a === 'logos' && !S.dash) { S.view = 'logos'; S.matchId = null; openLogs(null); render(); toTop(); }
+    else if (a === 'logo-del') { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; } saveLogo(b.dataset.team, null); }
+    else if (a === 'access' && S.canAdmin) { S.view = 'access'; S.matchId = null; openLogs(null); S.accHits = []; S.accPick = null; render(); toTop(); }
+    else if (a === 'acc-pick') { const p = S.accHits.find((x) => x.id === b.dataset.id); if (p) { S.accPick = { id: p.id, name: p.name }; S.names[p.id] = p.name; render(); } }
+    else if (a === 'acc-grant' && S.accPick) { const sel = document.getElementById('acc-ctx'); const g = Object.assign({}, S.grants || {}, { [S.accPick.id]: sel ? sel.value : CTX.id }); S.accPick = null; S.accHits = []; saveGrants(g); }
+    else if (a === 'acc-del') { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; } const g = Object.assign({}, S.grants || {}); delete g[b.dataset.id]; saveGrants(g); }
     else if (a === 'clear-info') { S.info = ''; render(); }
     else if (a === 'table') { S.view = 'table'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); toTop(); }
     else if (a === 'focus' && m) {
@@ -1746,9 +1987,21 @@ window.PUBLIC_CTX = null;
     else if (a === 'xlsx' && m) exportXlsx(m, b);
   });
 
+  app.addEventListener('input', (ev) => {
+    if (ev.target.id !== 'acc-q' || !S.user) return;
+    const q = ev.target.value.trim();
+    if (!q) { S.accHits = []; render(); return; }
+    S.user.search(q).then((hits) => { if ((document.getElementById('acc-q') || {}).value?.trim() !== q) return; S.accHits = hits; hits.forEach((p) => { S.names[p.id] = p.name; }); render(); });
+  });
+
   app.addEventListener('change', (ev) => {
     const el = ev.target; const a = el.dataset && el.dataset.a; if (!a) return;
     if (a === 'kkplayer') { SEASON.player = el.value; el.blur(); setTimeout(render, 0); return; }
+    if (a === 'logo-up') {
+      const f = el.files && el.files[0], team = el.dataset.team; if (!f) return;
+      shrinkLogo(f).then((d) => saveLogo(team, d)).catch(() => { S.error = 'Kunne ikke lese bildet. Prøv PNG eller JPG.'; render(); });
+      return;
+    }
     if (a === 'ctx') {
       el.blur();
       if (el.value === '__new') { el.value = CTX.id; S.showNewCtx = true; S.showNew = false; setTimeout(render, 0); return; }
@@ -1867,4 +2120,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 14:48.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 15:46.</footer></body></html>
