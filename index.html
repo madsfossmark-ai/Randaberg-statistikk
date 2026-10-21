@@ -636,7 +636,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const er = document.getElementById('err'); if (er) er.innerHTML = errHtml();
     fillMini(); dirSync();
   }
-  // Antall og effektivitet ved siden av navnet: hele kampen
+  // Antall og snitt (0–2) ved siden av navnet: hele kampen
   function fillMini() {
     if (!cur()) return;
     const st = computeStats(allEvents());
@@ -646,7 +646,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       let txt = '';
       if (r && r.n) {
         if (t === 'rec' || t === 'opp') txt = r.n + ' · snitt ' + dec(r.s / r.n);
-        else if (t === 'att') txt = r.n + ' · eff ' + pct(r.c2 - r.c0 - r.B, r.n);
+        else if (t === 'att') txt = r.n + ' · snitt ' + dec(1 + (r.c2 - r.c0 - r.B) / r.n);
         else txt = r.n + ' · ' + r.E + ' ess ' + r.F + ' feil';
       }
       el.textContent = txt;
@@ -681,9 +681,9 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const attRows = Object.entries(st.att).sort((a, b) => b[1].n - a[1].n);
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Angrep</div>';
     if (!attRows.length) h += '<div class="empty">Ingen angrep registrert.</div>';
-    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Poeng</th><th>Feil</th><th>Blokk</th><th>Uttelling</th><th>Effekt.</th></tr></thead><tbody>'
-      + attRows.map(([id, r]) => '<tr><td class="key">' + esc(pname(id)) + '</td><td>' + r.n + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td class="key">' + pct(r.c2, r.n) + '</td><td>' + pct1(r.c2 - r.c0 - r.B, r.n) + '</td></tr>').join('')
-      + '<tr class="total"><td>Lag</td><td>' + st.tAtt.n + '</td><td>' + st.tAtt.c2 + '</td><td>' + st.tAtt.c0 + '</td><td>' + st.tAtt.B + '</td><td>' + pct(st.tAtt.c2, st.tAtt.n) + '</td><td>' + pct1(st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B, st.tAtt.n) + '</td></tr></tbody></table></div>';
+    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Poeng</th><th>Feil</th><th>Blokk</th><th>Uttelling</th><th>Snitt</th></tr></thead><tbody>'
+      + attRows.map(([id, r]) => '<tr><td class="key">' + esc(pname(id)) + '</td><td>' + r.n + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td>' + pct(r.c2, r.n) + '</td><td class="key">' + dec(1 + (r.c2 - r.c0 - r.B) / r.n) + '</td></tr>').join('')
+      + '<tr class="total"><td>Lag</td><td>' + st.tAtt.n + '</td><td>' + st.tAtt.c2 + '</td><td>' + st.tAtt.c0 + '</td><td>' + st.tAtt.B + '</td><td>' + pct(st.tAtt.c2, st.tAtt.n) + '</td><td>' + dec(1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n) + '</td></tr></tbody></table></div>';
 
     const t = st.tSrv;
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Serve</div><div class="kpis">'
@@ -707,7 +707,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     h += '</div></div>';
     if (m.legacy) h += legacyBlock(m.legacy);
     h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (S.dl ? '<button class="secondary" data-a="export">Eksporter til regneark (CSV)</button>' : '') + '</div>';
-    h += '<div class="code-legend">Egenført 0–1–2-score. Ikke det samme som DataProjects effektivitetstall.</div></section>';
+    h += '<div class="code-legend">Egenført 0–1–2-score. Angrep: feil og blokkert = 0, i spill = 1, poeng = 2.</div></section>';
     return h;
   }
 
@@ -907,8 +907,26 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     btn.textContent = old; btn.disabled = false; if (S.error) render();
   }
 
+  // Mottakssnitt (0–2) for NVBF-kamper, regnet fra antall, feil og perfekt %: perfekt = 2, feil = 0, resten = 1
+  function addRecAvg(n) {
+    if (!n || !n.teams) return;
+    const num = (v) => { const x = parseFloat(String(v ?? '').replace('%', '').replace(',', '.').replace('−', '-')); return isNaN(x) ? null : x; };
+    n.teams.forEach((t) => {
+      let N = 0, Pf = 0, F = 0;
+      (t.players || []).forEach((p) => {
+        const perf = num(p.recPerf);
+        if (!p.rec || perf == null) return;
+        const pn = Math.round(p.rec * perf / 100), f = p.recErr || 0;
+        if (p.recAvg == null) p.recAvg = dec((2 * pn + (p.rec - pn - f)) / p.rec);
+        N += p.rec; Pf += pn; F += f;
+      });
+      if (N) { t.totals = t.totals || {}; if (t.totals.recAvg == null) t.totals.recAvg = dec((2 * Pf + (N - Pf - F)) / N); }
+    });
+  }
+
   function detailView() {
     const m = cur(); const n = m.nvbf || (window.PUBLIC ? m.own : null); const egen = !!(n && n.source === 'egen');
+    addRecAvg(n);
     let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
       + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (window.PUBLIC && m.own ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + '</header>';
     if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
@@ -1030,7 +1048,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       const r1 = ps.rec[SEASON.player], a1 = ps.att[SEASON.player], s1 = ps.srv[SEASON.player];
       soloLine = '<div class="status"><b>' + esc(pickLabel(SEASON.player)) + '</b> · ' + games + ' kamp' + (games === 1 ? '' : 'er') + ' med registreringer'
         + (r1 ? ' · mottak ' + r1.n + ' (snitt ' + dec(r1.s / r1.n) + ', perfekt ' + pct(r1.c2, r1.n) + ')' : '')
-        + (a1 ? ' · angrep ' + a1.n + ' (' + a1.c2 + ' poeng, eff. ' + pct1(a1.c2 - a1.c0 - a1.B, a1.n) + ')' : '')
+        + (a1 ? ' · angrep ' + a1.n + ' (' + a1.c2 + ' poeng, snitt ' + dec(1 + (a1.c2 - a1.c0 - a1.B) / a1.n) + ')' : '')
         + (s1 ? ' · serve ' + s1.n + ' (' + s1.E + ' ess, ' + s1.F + ' feil)' : '') + '</div>';
     }
 
@@ -1076,10 +1094,10 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 
     h += '<section class="panel" aria-labelledby="h-kamper"><div class="panel-head"><h2 id="h-kamper">Spilte kamper</h2><span class="status">Egenført statistikk per kamp</span></div>';
     if (!played.length) h += '<div class="empty">Ingen kamper spilt ennå.</div>';
-    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Runde</th><th class="l-al">Motstander</th><th>Res.</th><th>Mottak</th><th>Perf.</th><th>Ang. eff.</th><th>Utt.</th><th>Ess</th><th>Servefeil</th><th>Mot. mottak</th></tr></thead><tbody>'
+    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Runde</th><th class="l-al">Motstander</th><th>Res.</th><th>Mottak</th><th>Perf.</th><th>Ang. snitt</th><th>Utt.</th><th>Ess</th><th>Servefeil</th><th>Mot. mottak</th></tr></thead><tbody>'
       + played.map((r) => {
         const st = r.st, has = r.evs.length > 0;
-        const cells = has ? ['<td>' + d2(METRICS[0].f(st)) + '</td>', '<td>' + p0(METRICS[1].f(st)) + '</td>', '<td>' + p0(METRICS[2].f(st)) + '</td>', '<td>' + p0(METRICS[3].f(st)) + '</td>', '<td>' + st.tSrv.E + '</td>', '<td>' + st.tSrv.F + '</td>', '<td>' + d2(METRICS[4].f(st)) + '</td>'].join('') : '<td colspan="7" class="muted">Ikke ført i appen</td>';
+        const cells = has ? ['<td>' + d2(METRICS[0].f(st)) + '</td>', '<td>' + p0(METRICS[1].f(st)) + '</td>', '<td>' + d2(METRICS[2].f(st)) + '</td>', '<td>' + p0(METRICS[3].f(st)) + '</td>', '<td>' + st.tSrv.E + '</td>', '<td>' + st.tSrv.F + '</td>', '<td>' + d2(METRICS[4].f(st)) + '</td>'].join('') : '<td colspan="7" class="muted">Ikke ført i appen</td>';
         return '<tr class="clickrow" data-a="open" data-id="' + esc(r.m.id) + '"><td>R' + esc(r.m.round || '') + '</td><td class="key l-al">' + (r.home ? '' : '@ ') + esc(shortName(r.opp)) + '</td><td class="' + (r.done ? (r.us > r.them ? 'w' : 'l') : '') + '">' + r.us + '–' + r.them + '</td>' + cells + '</tr>';
       }).join('') + '</tbody></table></div>';
     h += '</section>';
