@@ -567,7 +567,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
         : '<button class="barbtn primary-bar" data-a="endset">Avslutt sett ' + c.set + '</button>'
           + ((m.setScores || []).length ? '<button class="barbtn" data-a="setback">Tilbake til sett ' + (c.set - 1) + '</button>' : '')
           + '<button class="barbtn" data-a="dir">Slagretning</button><button class="barbtn" data-a="squad">Tropp</button><button class="barbtn" data-a="sheet">Kampark</button>' + fsBtn('barbtn')
-          + (m.status !== 'ferdig' ? '<button class="barbtn" data-a="endmatch">Avslutt kamp</button>' : '<button class="barbtn" data-a="reopen">Gjenåpne</button>'))
+          + (m.status !== 'ferdig' ? '<button class="barbtn" data-a="endmatch">Avslutt kamp</button>' : '<button class="barbtn primary-bar" data-a="toview">Ferdig med endringer</button>'))
       + '</div></header>';
   }
   function barSub(m) {
@@ -924,13 +924,52 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     });
   }
 
+  // Egen føring samlet i samme form som NVBF-statistikken, til visningsmodus for avsluttede kamper
+  function ownStats(m, evs) {
+    const E = evs.filter((e) => e.type === 'rec' || e.type === 'att' || e.type === 'srv' || e.type === 'opp');
+    if (!E.length) return null;
+    const cnt = (a, v) => a.filter((x) => x === v).length;
+    const avg = (a) => a.length ? dec(a.reduce((s, x) => s + (Number(x) || 0), 0) / a.length) : undefined;
+    const sp = {}; const get = (id) => (sp[id] ||= { id, rec: [], att: [], srv: [] });
+    E.forEach((e) => { if (e.type !== 'opp') get(e.p)[e.type].push(String(e.c)); });
+    const inServe = E.some((e) => e.type === 'srv' && String(e.c) === 'I');
+    const ord = S.roster.map((p) => p.id); const ix = (id) => { const i = ord.indexOf(id); return i < 0 ? 999 : i; };
+    const T = { rec: [], att: [], srv: [] };
+    const players = Object.values(sp).sort((a, b) => ix(a.id) - ix(b.id)).map((p) => {
+      const pl = player(p.id) || {}; const o = { nr: pl.nr || '', name: pl.name || pname(p.id) };
+      if (p.rec.length) Object.assign(o, { rec: p.rec.length, recErr: cnt(p.rec, '0'), recAvg: avg(p.rec), recPerf: pct(cnt(p.rec, '2'), p.rec.length) });
+      if (p.att.length) { const k = cnt(p.att, '2'); Object.assign(o, { att: p.att.length, kills: k, attErr: cnt(p.att, '0'), blocked: cnt(p.att, 'B'), kp: pct(k, p.att.length) }); }
+      if (p.srv.length || p.att.length) { Object.assign(o, { aces: cnt(p.srv, 'E'), srvErr: cnt(p.srv, 'F'), pts: cnt(p.att, '2') + cnt(p.srv, 'E') }); if (inServe) o.srv = p.srv.length; }
+      T.rec.push(...p.rec); T.att.push(...p.att); T.srv.push(...p.srv);
+      return o;
+    });
+    const k = cnt(T.att, '2'), f = cnt(T.att, '0'), b = cnt(T.att, 'B');
+    const totals = { recAvg: avg(T.rec), recPerf: T.rec.length ? pct(cnt(T.rec, '2'), T.rec.length) : undefined, aces: cnt(T.srv, 'E'), srvErr: cnt(T.srv, 'F'), pts: k + cnt(T.srv, 'E') };
+    if (T.att.length) Object.assign(totals, { kp: pct(k, T.att.length), eff: pct1(k - f - b, T.att.length) });
+    if (inServe) totals.srv = T.srv.length;
+    const oppName = m.home === OUR ? m.away : m.home;
+    const oppr = {};
+    E.forEach((e) => { if (e.type === 'opp') (oppr[String(e.p)] ||= []).push(String(e.c)); });
+    const opp = { name: oppName, players: [], totals: {} };
+    const nums = Object.keys(oppr).sort((a, b) => Number(a) - Number(b));
+    if (nums.length) {
+      const all = nums.flatMap((n) => oppr[n]);
+      opp.players = nums.map((n) => ({ nr: n, name: '', rec: oppr[n].length, recErr: cnt(oppr[n], '0'), recAvg: avg(oppr[n]), recPerf: pct(cnt(oppr[n], '2'), oppr[n].length) }));
+      opp.totals = { recAvg: avg(all), recPerf: pct(cnt(all, '2'), all.length) };
+    } else opp.missing = 'Motstanderens mottak ble ikke ført i denne kampen.';
+    return { source: 'egen', teams: [{ name: OUR, players, totals }, opp] };
+  }
+
   function detailView() {
-    const m = cur(); const n = m.nvbf || (window.PUBLIC ? m.own : null); const egen = !!(n && n.source === 'egen');
+    const m = cur(); const ours = isOurs(m);
+    const own = ours ? ownStats(m, allEvents()) : null; const hasNvbf = !!(m.nvbf && m.nvbf.teams && m.nvbf.teams.length);
+    const egen = !!own && !(S.detailSrc === 'nvbf' && hasNvbf); const n = egen ? own : m.nvbf;
     addRecAvg(n);
     let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">' + esc(m.home) + ' – ' + esc(m.away) + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
-      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (window.PUBLIC && m.own ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + '</header>';
-    if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
-    h += '<div class="status">' + (egen ? 'Ført fra benken av Randaberg Volleyball. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + '</div>';
+      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (ours ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + '</header>';
+    if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">NVBF</button></div>';
+    if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? 'Statistikken fra denne kampen er ikke lagt ut ennå.' : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
+    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
       let s = '<section class="panel"><div class="panel-head"><h2>' + esc(t.name) + '</h2></div>';
@@ -1401,7 +1440,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       const mm = S.matches.find((x) => x.id === b.dataset.id); if (!mm) return;
       closeSeasonLogs();
       S.matchId = mm.id; S.statSet = 'all';
-      S.view = isOurs(mm) && !window.PUBLIC ? 'live' : 'detail';
+      S.view = isOurs(mm) && mm.status !== 'ferdig' && !window.PUBLIC ? 'live' : 'detail'; S.detailSrc = 'egen';
       if (isOurs(mm)) openLogs(mm.id);
       render(); toTop();
     }
@@ -1413,7 +1452,10 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     else if (a === 'psort') { const k = b.dataset.k; if (SEASON.sortK === k) SEASON.sortDir = -SEASON.sortDir; else { SEASON.sortK = k; SEASON.sortDir = k === 'name' ? 1 : -1; } render(); }
     else if (a === 'dir' && m) { dirOpen(); }
     else if (a === 'squad') { S.view = 'squad'; render(); toTop(); }
-    else if (a === 'to-live') { S.view = 'live'; render(); toTop(); }
+    else if (a === 'to-live') { S.view = S.view === 'sheet' && S.sheetBack === 'detail' ? 'detail' : 'live'; render(); toTop(); }
+    else if (a === 'edit' && m) { S.view = 'live'; S.endingSet = false; render(); toTop(); }
+    else if (a === 'toview' && m) { S.view = 'detail'; render(); toTop(); }
+    else if (a === 'dsrc') { S.detailSrc = b.dataset.v; render(); }
     else if (a === 'log') { logEvent(b.dataset.t, b.dataset.p, b.dataset.c); b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 300); }
     else if (a === 'undo') { undo(); }
     else if (a === 'statset') { S.statSet = b.dataset.v; render(); }
@@ -1434,7 +1476,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       Object.assign(m, { setScores, setsHome, setsAway, current: nc }); render();
       saveMatch(m.id, { setScores, setsHome, setsAway, current: nc });
     }
-    else if (a === 'endmatch' && m) { m.status = 'ferdig'; render(); saveMatch(m.id, { status: 'ferdig' }); }
+    else if (a === 'endmatch' && m) { m.status = 'ferdig'; S.view = 'detail'; S.endingSet = false; render(); toTop(); saveMatch(m.id, { status: 'ferdig' }); }
     else if (a === 'reopen' && m) { m.status = 'pågår'; render(); saveMatch(m.id, { status: 'pågår' }); }
     else if ((a === 'court' || a === 'recv') && m) {
       const key = a === 'court' ? 'onCourt' : 'receivers';
@@ -1450,7 +1492,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       if (p) saveRoster(S.roster.filter((x) => x.id !== p.id));
     }
     else if (a === 'export' && m) exportCsv(m);
-    else if (a === 'sheet') { S.view = 'sheet'; render(); toTop(); }
+    else if (a === 'sheet') { S.sheetBack = S.view; S.view = 'sheet'; render(); toTop(); }
     else if (a === 'pdf' && m) { if (window.PUBLIC && !document.getElementById('sk-sheet')) { const hold = document.createElement('div'); hold.style.cssText = 'position:absolute;left:-30000px;top:0'; hold.innerHTML = sheetView(); document.body.appendChild(hold); exportPdf(m, b).finally(() => hold.remove()); } else exportPdf(m, b); }
     else if (a === 'xlsx' && m) exportXlsx(m, b);
   });
