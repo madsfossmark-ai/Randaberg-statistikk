@@ -94,12 +94,14 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .stats-body { display: flex; flex-direction: column; gap: 14px; }
 .col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
-.who { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: center; min-width: 0; }
-.who .nr { grid-row: span 2; }
+.who { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "nr nm" "nr mini"; column-gap: 10px; align-items: center; min-width: 0; }
+.who .nr { grid-area: nr; }
+.who .nm { grid-area: nm; align-self: end; }
+.who .mini { grid-area: mini; align-self: start; }
 .who .mini:empty { display: none; }
-.who .nm:last-child, .who .nm:has(+ .mini:empty) { grid-row: span 2; }
-.nr { flex: none; min-width: 32px; height: 32px; padding: 0 4px; box-sizing: border-box; border-radius: 99px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
-.nr.opp { background: var(--opp-strong); color: #FFFFFF; }
+.who:not(:has(.nm)) .mini { grid-row: 1 / span 2; align-self: center; }
+.nr { flex: none; width: 36px; height: 36px; box-sizing: border-box; border-radius: 50%; background: var(--hero); color: #FFFFFF; box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1; font-variant-numeric: tabular-nums; }
+.nr.opp { background: var(--opp-strong); }
 .nm { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .mini { flex: none; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .codes { display: flex; gap: 6px; }
@@ -139,6 +141,12 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
   .t-att th:nth-child(6), .t-att td:nth-child(6) { display: none; }
   .tbl { font-size: 14px; }
   .lastbar .chip:nth-child(n+4) { display: none; }
+  .kk-controls { flex-direction: column; align-items: stretch; }
+  .kk-controls .seg { flex: none; }
+  .kk-controls .kk-pick { width: 100%; align-items: stretch; }
+  .listhead > div:first-child, .lh-id, .lh-id > div { min-width: 0; max-width: 100%; }
+  .ctx-pick, .ctx-pick select { max-width: 100%; }
+  .ctx-pick select { text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 100%; }
   .listhead h1 { font-size: 34px; }
   .listhead .primary, .listhead .secondary { height: 42px; padding: 0 14px; }
   .tabs button { height: 34px; padding: 0 12px; }
@@ -328,7 +336,7 @@ html.dash [data-a="new-toggle"], html.dash [data-a="publish"], html.dash [data-a
 @media (max-width: 420px) {
   .code { width: 46px; height: 46px; font-size: 20px; }
   .codes { gap: 5px; }
-  .nr { min-width: 28px; height: 28px; font-size: 14px; }
+  .nr { width: 32px; height: 32px; font-size: 16px; }
   .nm { font-size: 14px; }
   .panel { padding: 10px; }
 }
@@ -436,7 +444,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 20:27";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 21:04";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -804,6 +812,7 @@ window.PUBLIC_CTX = null;
     app.innerHTML = '<div id="err">' + errHtml() + '</div>' + html;
     if (S.view === 'live') fillMini();
     dirSync();
+    if (S.menuOpen) { const pop = app.querySelector('.menu-pop'); if (pop) { const r = pop.getBoundingClientRect(); if (r.left < 8) { pop.style.right = 'auto'; pop.style.left = '0'; } } }
     if (keepId) { const el = document.getElementById(keepId); if (el) { if (keepVal != null && el.tagName === 'INPUT') el.value = keepVal; el.focus(); try { if (selStart != null && el.setSelectionRange) el.setSelectionRange(selStart, selStart); } catch (e) {} } }
   }
 
@@ -1131,9 +1140,9 @@ window.PUBLIC_CTX = null;
     const weakOpp = (oppRows.find(([, r]) => r.n >= 5) || [])[0];
     h += '</div><div class="stat-block"><div class="label" style="color:var(--opp)">' + esc(oppName) + ' mottak · svakest først</div>';
     if (!oppRows.length) h += '<div class="empty">Ingen motstandermottak registrert.</div>';
-    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nr</th><th>Ant.</th><th>Snitt</th><th>Feil</th><th>Perfekt</th></tr></thead><tbody>'
-      + oppRows.map(([n, r]) => '<tr' + (r.n < 5 ? ' class="small-n"' : (n === weakOpp ? ' class="weakest"' : '')) + '><td class="key">' + esc(oppLabel(m, n)) + (n === weakOpp ? ' <span class="weak-tag">Server hit</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgCell(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
-      + '<tr class="total"><td>Lag</td><td>' + st.tOpp.n + '</td><td>' + avgBar(st.tOpp.s / st.tOpp.n) + '</td><td>' + pct(st.tOpp.c0, st.tOpp.n) + '</td><td>' + pct(st.tOpp.c2, st.tOpp.n) + '</td></tr></tbody></table></div>'
+    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nr</th><th>Ant.</th><th>Snitt</th><th>Feil</th><th>Spillbart</th><th>Perfekt</th></tr></thead><tbody>'
+      + oppRows.map(([n, r]) => '<tr' + (r.n < 5 ? ' class="small-n"' : (n === weakOpp ? ' class="weakest"' : '')) + '><td class="key">' + esc(oppLabel(m, n)) + (n === weakOpp ? ' <span class="weak-tag">Server hit</span>' : '') + '</td><td>' + r.n + '</td><td class="key">' + avgCell(r.s / r.n) + '</td><td>' + pct(r.c0, r.n) + '</td><td>' + pct(r.c1, r.n) + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
+      + '<tr class="total"><td>Lag</td><td>' + st.tOpp.n + '</td><td>' + avgBar(st.tOpp.s / st.tOpp.n) + '</td><td>' + pct(st.tOpp.c0, st.tOpp.n) + '</td><td>' + pct(st.tOpp.c1, st.tOpp.n) + '</td><td>' + pct(st.tOpp.c2, st.tOpp.n) + '</td></tr></tbody></table></div>'
       + '<div class="code-legend">Grå rader: under 5 mottak, lite utvalg.</div>';
 
     h += '</div></div>';
@@ -1478,7 +1487,7 @@ window.PUBLIC_CTX = null;
     const T = { rec: [], att: [], srv: [] };
     const players = Object.values(sp).sort((a, b) => ix(a.id) - ix(b.id)).map((p) => {
       const pl = player(p.id) || {}; const o = { nr: pl.nr || '', name: pl.name || pname(p.id) };
-      if (p.rec.length) Object.assign(o, { rec: p.rec.length, recErr: cnt(p.rec, '0'), recAvg: avg(p.rec), recPerf: pct(cnt(p.rec, '2'), p.rec.length) });
+      if (p.rec.length) Object.assign(o, { rec: p.rec.length, recErr: cnt(p.rec, '0'), recAvg: avg(p.rec), recPlay: pct(cnt(p.rec, '1'), p.rec.length), recPerf: pct(cnt(p.rec, '2'), p.rec.length) });
       if (p.att.length) { const k = cnt(p.att, '2'); Object.assign(o, { att: p.att.length, kills: k, attErr: cnt(p.att, '0'), blocked: cnt(p.att, 'B'), kp: pct(k, p.att.length) }); }
       if (p.srv.length || p.att.length) { Object.assign(o, { aces: cnt(p.srv, 'E'), srvErr: cnt(p.srv, 'F'), pts: cnt(p.att, '2') + cnt(p.srv, 'E') }); if (inServe) o.srv = p.srv.length; }
       T.rec.push(...p.rec); T.att.push(...p.att); T.srv.push(...p.srv);
@@ -1495,7 +1504,7 @@ window.PUBLIC_CTX = null;
     const nums = Object.keys(oppr).sort((a, b) => Number(a) - Number(b));
     if (nums.length) {
       const all = nums.flatMap((n) => oppr[n]);
-      opp.players = nums.map((n) => ({ nr: n, name: oppName(m, n), rec: oppr[n].length, recErr: cnt(oppr[n], '0'), recAvg: avg(oppr[n]), recPerf: pct(cnt(oppr[n], '2'), oppr[n].length) }));
+      opp.players = nums.map((n) => ({ nr: n, name: oppName(m, n), rec: oppr[n].length, recErr: cnt(oppr[n], '0'), recAvg: avg(oppr[n]), recPlay: pct(cnt(oppr[n], '1'), oppr[n].length), recPerf: pct(cnt(oppr[n], '2'), oppr[n].length) }));
       opp.totals = { recAvg: avg(all), recPerf: pct(cnt(all, '2'), all.length) };
     } else opp.missing = 'Motstanderens mottak ble ikke ført i denne kampen.';
     return { source: 'egen', teams: [{ name: usName(m), players, totals }, opp] };
@@ -1523,7 +1532,7 @@ window.PUBLIC_CTX = null;
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
       const weak = t.name === usName(m) ? null : pr.filter((p) => p.rec >= minRec).sort((a, b) => (pnum(a.recAvg) - pnum(b.recAvg)) || ((b.recErr || 0) / b.rec - (a.recErr || 0) / a.rec))[0];
-      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>Snitt</th>' + (egen ? '' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td>' + (egen ? '' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
+      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Feil</th><th>Snitt</th>' + (egen ? '<th>Spillb.</th>' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + (p === weak ? ' class="weakest"' : '') + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + (p === weak ? ' <span class="weak-tag">Svakest</span>' : '') + '</td><td>' + p.rec + '</td><td>' + (p.recErr ?? '–') + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td>' + (egen ? '<td>' + esc(p.recPlay ?? '–') + '</td>' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       if (weak) s += '<div class="code-legend"><span class="weak-tag">Svakest</span> lavest mottakssnitt blant spillere med minst ' + minRec + ' mottak.</div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
       if (pa.length) s += '<div class="tbl-wrap"><table class="tbl t-att"><thead><tr><th>Angrep</th><th>Fors.</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th><th>Snitt</th></tr></thead><tbody>' + pa.map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td>' + p.att + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att, null, 'att', t.name === OUR ? posByNr(p.nr) : '') : '–') + '</td></tr>').join('') + '</tbody></table></div>';
@@ -2210,4 +2219,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 20:27.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 21:04.</footer></body></html>
