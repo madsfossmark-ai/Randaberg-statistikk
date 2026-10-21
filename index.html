@@ -327,7 +327,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 13:10";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 13:12";
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
   const colSnap = (pairs) => ({ docs: pairs.map(([id, d]) => ({ id, data: () => d })) });
@@ -960,7 +960,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:10";
   const METRICS = [
     { k: 'recAvg', l: 'Mottak snitt', note: '0–2-skala, høyere er bedre', f: (st) => st.tRec.n ? st.tRec.s / st.tRec.n : null, fmt: d2, fixed: [0, 2] },
     { k: 'recPerf', l: 'Perfekt mottak', note: 'andel mottak kodet 2', f: (st) => st.tRec.n ? st.tRec.c2 / st.tRec.n : null, fmt: p0, fixed: [0, 1] },
-    { k: 'attEff', l: 'Angrepseffektivitet', note: '(poeng − feil − blokkert) / angrep', f: (st) => st.tAtt.n ? (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n : null, fmt: p0 },
+    { k: 'attEff', l: 'Angrepssnitt', note: '0–2-skala, feil og blokkert teller 0', f: (st) => st.tAtt.n ? 1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n : null, fmt: d2, fixed: [0, 2] },
     { k: 'attKill', l: 'Angrep uttelling', note: 'poeng / angrep', f: (st) => st.tAtt.n ? st.tAtt.c2 / st.tAtt.n : null, fmt: p0, fixed: [0, 1] },
     { k: 'oppAvg', l: 'Motstanders mottak', note: 'snitt 0–2 på vår serve, lavere er bedre', f: (st) => st.tOpp.n ? st.tOpp.s / st.tOpp.n : null, fmt: d2, fixed: [0, 2] }
   ];
@@ -1049,7 +1049,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:10";
     h += '<section class="tiles" aria-label="Nøkkeltall">'
       + tile('Seire–tap', wins + '–' + losses, 'Sett ' + setsW + '–' + setsL)
       + tile('Mottak snitt', d2(recAvg), 'Perfekt ' + p0(METRICS[1].f(pool)) + (last ? ' · siste ' + d2(METRICS[0].f(last.st)) : ''))
-      + tile('Angrepseffektivitet', p0(attEff), 'Uttelling ' + p0(METRICS[3].f(pool)) + (last ? ' · siste ' + p0(METRICS[2].f(last.st)) : ''))
+      + tile('Angrepssnitt', d2(attEff), 'Uttelling ' + p0(METRICS[3].f(pool)) + (last ? ' · siste ' + d2(METRICS[2].f(last.st)) : ''))
       + tile('Ess per sett', pool.tSrv.n ? d1(pool.tSrv.E / regSets) : '–', 'Servefeil per sett ' + (pool.tSrv.n ? d1(pool.tSrv.F / regSets) : '–'))
       + tile('Motstanders mottak', d2(oppAvg), 'Lavere er bedre for vår serve')
       + '</section>';
@@ -1061,7 +1061,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:10";
       + soloLine
       + '<div class="chart-box" id="kk-chart">' + lineChart(chartRows, M) + '</div><div class="code-legend">Hele terminplanen langs aksen. Stiplet linje er ' + (solo ? 'spillerens snitt' : 'lagets snitt') + ' for alle førte kamper.' + (solo ? ' Motstanders mottak gjelder bare laget.' : '') + '</div></section>';
 
-    h += '<section class="panel" aria-labelledby="h-termin"><div class="panel-head"><h2 id="h-termin">Terminplan</h2><span class="status">Trykk en kamp for å føre eller se den</span></div><div class="fixtures">'
+    h += '<section class="panel" aria-labelledby="h-termin"><div class="panel-head"><h2 id="h-termin">Terminplan</h2><span class="status">' + (window.PUBLIC ? 'Trykk en kamp for å se statistikken' : 'Trykk en kamp for å føre eller se den') + '</span></div><div class="fixtures">'
       + rows.map((r) => {
         const isNext = next && r.m.id === next.m.id;
         const future = !r.done && !r.live;
@@ -1093,14 +1093,14 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:10";
       if (e.type === 'att') { p.attN++; if (e.c === '2') p.attK++; else if (e.c === '0') p.attE++; else if (e.c === 'B') p.attB++; }
       if (e.type === 'srv') { p.srvN++; if (e.c === 'E') p.srvE++; if (e.c === 'F') p.srvF++; }
     }));
-    const prow = Object.values(P).map((p) => ({ ...p, name: pname(p.id), nr: (player(p.id) || {}).nr || '', games: p.games.size, recAvg: p.recN ? p.recS / p.recN : null, recPerf: p.recN ? p.recP / p.recN : null, attEff: p.attN ? (p.attK - p.attE - p.attB) / p.attN : null }));
+    const prow = Object.values(P).map((p) => ({ ...p, name: pname(p.id), nr: (player(p.id) || {}).nr || '', games: p.games.size, recAvg: p.recN ? p.recS / p.recN : null, recPerf: p.recN ? p.recP / p.recN : null, attEff: p.attN ? 1 + (p.attK - p.attE - p.attB) / p.attN : null }));
     const k = SEASON.sortK, dir = SEASON.sortDir;
     prow.sort((a, b) => k === 'name' ? dir * a.name.localeCompare(b.name, 'nb') : (a[k] == null ? 1 : b[k] == null ? -1 : dir * (a[k] - b[k])));
-    const cols = [['name', 'Spiller'], ['games', 'Kamper'], ['recN', 'Mottak'], ['recAvg', 'Snitt'], ['recPerf', 'Perf.'], ['attN', 'Angrep'], ['attK', 'Poeng'], ['attEff', 'Eff.'], ['srvN', 'Serve'], ['srvE', 'Ess'], ['srvF', 'Feil']];
+    const cols = [['name', 'Spiller'], ['games', 'Kamper'], ['recN', 'Mottak'], ['recAvg', 'Snitt'], ['recPerf', 'Perf.'], ['attN', 'Angrep'], ['attK', 'Poeng'], ['attEff', 'Snitt'], ['srvN', 'Serve'], ['srvE', 'Ess'], ['srvF', 'Feil']];
     h += '<section class="panel" aria-labelledby="h-spillere"><div class="panel-head"><h2 id="h-spillere">Spillere hittil</h2><span class="status">Summert over alle førte kamper · trykk en kolonne for å sortere</span></div>';
     if (!prow.length) h += '<div class="empty">Ingen spillerregistreringer ennå.</div>';
     else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + cols.map(([c, l]) => '<th aria-sort="' + (c === k ? (dir < 0 ? 'descending' : 'ascending') : 'none') + '"><button data-a="psort" data-k="' + c + '">' + l + '</button></th>').join('') + '</tr></thead><tbody>'
-      + prow.map((p) => '<tr class="clickrow" data-a="kkpick" data-id="' + esc(p.id) + '" title="Vis kamp for kamp"><td class="key">' + (p.nr ? '#' + esc(p.nr) + ' ' : '') + esc(p.name) + '</td><td>' + p.games + '</td><td>' + p.recN + '</td><td class="key">' + d2(p.recAvg) + '</td><td>' + p0(p.recPerf) + '</td><td>' + p.attN + '</td><td>' + p.attK + '</td><td class="key">' + p0(p.attEff) + '</td><td>' + p.srvN + '</td><td>' + p.srvE + '</td><td>' + p.srvF + '</td></tr>').join('')
+      + prow.map((p) => '<tr class="clickrow" data-a="kkpick" data-id="' + esc(p.id) + '" title="Vis kamp for kamp"><td class="key">' + (p.nr ? '#' + esc(p.nr) + ' ' : '') + esc(p.name) + '</td><td>' + p.games + '</td><td>' + p.recN + '</td><td class="key">' + d2(p.recAvg) + '</td><td>' + p0(p.recPerf) + '</td><td>' + p.attN + '</td><td>' + p.attK + '</td><td class="key">' + d2(p.attEff) + '</td><td>' + p.srvN + '</td><td>' + p.srvE + '</td><td>' + p.srvF + '</td></tr>').join('')
       + '</tbody></table></div><div class="code-legend">Trykk en spiller for å se henne kamp for kamp. Snitt og prosent er regnet av summen av alle registreringer, ikke snitt av kampsnitt.</div>';
     h += '</section><div class="code-legend">Egenført 0–1–2-koding fra benken. Kamper som ikke er ført i appen telles i resultatet, men ikke i snittene. Ikke det samme som NVBF/DataProject-tallene.</div></div>';
     return h;
@@ -1500,4 +1500,4 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:10";
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 13:10.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 13:12.</footer></body></html>
