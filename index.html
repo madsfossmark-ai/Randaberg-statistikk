@@ -180,6 +180,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .squad td.c { text-align: center; }
 .del { background: none; border: 0; color: var(--bad); font-size: 13px; font-weight: 600; padding: 8px; }
 .status { font-size: 13px; color: var(--muted); }
+.notice.info { background: var(--accent-soft); }
 .notice { background: var(--opp-soft); color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
 
 
@@ -340,7 +341,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 14:48";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -425,12 +426,15 @@ window.PUBLIC_CTX = null;
   const player = (id) => {
     if (typeof id === 'string' && id.startsWith('o:')) {
       const [, slug, nr] = id.split(':'); const p = ((S.opps[slug] || {}).players || []).find((x) => String(x.nr) === nr) || {};
-      return { id, nr, name: p.name || '#' + nr, pos: p.pos || '' };
+      return { id, nr, name: NAMEHINT[id] || p.name || '#' + nr, pos: p.pos || '' };
     }
     return S.roster.find((p) => p.id === id);
   };
   const EXTRA = { midt: 'Midtspillere' };
-  const pname = (id) => { const p = player(id); return p ? p.name.split(' ')[0] : (EXTRA[id] || '?'); };
+  // Navn slik de var da registreringen ble gjort (følger spilleren selv om tropp eller nummer endres senere)
+  const NAMEHINT = {}, OPPHINT = {};
+  const learnNames = (evs, opp) => evs.forEach((e) => { if (!e.n) return; if (e.type === 'opp' || e.type === 'dir') { if (opp) opp[String(e.p)] = e.n; } else NAMEHINT[e.p] = e.n; });
+  const pname = (id) => { const p = player(id); return p ? p.name.split(' ')[0] : NAMEHINT[id] ? NAMEHINT[id].split(' ')[0] : (EXTRA[id] || '?'); };
   // Kamptyper: serie fra terminlisten, eller egne kamper (cup, europacup, trening)
   const TYPES = { serie: 'Seriekamp', cup: 'Cupkamp', europacup: 'Europacup', turnering: 'Turnering', trening: 'Treningskamp' };
   const TSHORT = { serie: 'Serie', cup: 'Cup', europacup: 'EC', turnering: 'T', trening: 'Tr' };
@@ -446,7 +450,8 @@ window.PUBLIC_CTX = null;
   const teamRoster = (m) => m && m.focus ? rosterOf(m.focus).map((p) => ({ id: 'o:' + teamSlug(m.focus) + ':' + p.nr, nr: String(p.nr), name: p.name || '#' + p.nr, pos: p.pos || '' })) : S.roster;
   const isSlot = (t) => /^\d\. plass$/.test(String(t || ''));
   const oppP = (m, nr) => oppRoster(m).find((p) => String(p.nr) === String(nr));
-  const oppLabel = (m, nr) => { const p = m && oppP(m, nr); return '#' + nr + (p && p.name ? ' ' + p.name.split(' ')[0] : ''); };
+  const oppName = (m, nr) => OPPHINT[String(nr)] || ((m && oppP(m, nr)) || {}).name || '';
+  const oppLabel = (m, nr) => { const n = oppName(m, nr); return '#' + nr + (n ? ' ' + n.split(' ')[0] : ''); };
 
   // ---------- Data ----------
   async function boot() {
@@ -512,6 +517,7 @@ window.PUBLIC_CTX = null;
     S.logUnsub = S.db.collection(PFX + 'matches/' + id + '/log').onSnapshot((snap) => {
       const logs = {};
       snap.docs.forEach((d) => { logs[d.id] = (d.data().events || []).slice(); });
+      Object.keys(OPPHINT).forEach((k) => delete OPPHINT[k]); Object.values(logs).forEach((evs) => learnNames(evs, OPPHINT));
       S.logs = logs; render();
     }, (e) => { S.error = 'Registreringene kunne ikke lastes (' + e.code + ').'; render(); });
   }
@@ -536,6 +542,8 @@ window.PUBLIC_CTX = null;
     const key = deviceId + '-s' + set;
     const own = (S.logs[key] || []).slice();
     const ev = Object.assign({ t: Date.now(), set, type, p: who, c: code }, extra || {});
+    const nm = type === 'opp' || type === 'dir' ? ((oppP(m, who) || {}).name || '') : (((type === 'rec' || type === 'att' || type === 'srv') && player(who)) || {}).name;
+    if (nm && !String(nm).startsWith('#')) ev.n = nm;
     own.push(ev);
     S.logs[key] = own;
     render();
@@ -607,7 +615,7 @@ window.PUBLIC_CTX = null;
     let h = '<div class="listhead"><div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="tabs" role="group" aria-label="Filter">'
       + [['alle', 'Alle'], ['vare', 'Våre'], ['andre', 'Andres']].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + l + '</button>').join('')
-      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button><button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
+      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button>' + (hasSite() ? '<button class="secondary" data-a="publish" title="Oppdater den åpne statistikksiden">Publiser</button>' : '') + '<button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
     if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (upcoming) {
@@ -685,8 +693,8 @@ window.PUBLIC_CTX = null;
   function liveView() {
     const m = cur();
     const oppName = m.home === usName(m) ? m.away : m.home;
-    const receivers = (m.receivers || []).map(player).filter(Boolean);
-    const onCourt = (m.onCourt || []).map(player).filter(Boolean);
+    const receivers = (m.receivers || []).map(player).filter((p) => p && !p.archived);
+    const onCourt = (m.onCourt || []).map(player).filter((p) => p && !p.archived);
     const oppNums = m.oppNumbers || [];
     const evs = allEvents();
 
@@ -740,7 +748,30 @@ window.PUBLIC_CTX = null;
       el.textContent = txt;
     });
   }
-  function errHtml() { return S.error ? '<div class="notice" role="alert">' + esc(S.error) + ' <button class="textbtn" data-a="clear-err">Lukk</button></div>' : ''; }
+  // Den åpne statistikksiden bygges av den planlagte oppgaven «Publiser åpen statistikk», som appen starter
+  const PUBLISH = { trigger: 'trig_018cBdJrHuYyuvMHWzXJ3ni4', sites: { main: 'Randaberg-siden', 'u20-nevza-2026': 'U20-siden' } };
+  let lastPub = 0;
+  const hasSite = () => !window.PUBLIC && !!PUBLISH.sites[CTX.id];
+  async function publishOpen(reason, force) {
+    if (!hasSite()) return;
+    if (!force && Date.now() - lastPub < 120000) return;
+    let mcp = null; try { mcp = await window.claude?.use?.('mcp'); } catch (e) { mcp = null; }
+    if (!mcp) { if (force) { S.info = 'Publisering er ikke tilgjengelig i denne visningen. Åpne appen på claude.ai eller i Claude-appen.'; render(); } return; }
+    lastPub = Date.now(); const site = PUBLISH.sites[CTX.id];
+    S.info = site + ' oppdateres …'; render();
+    try {
+      await mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: PUBLISH.trigger, text: 'kontekst: ' + CTX.id + ' (' + reason + ')' }, { cache: false });
+      S.info = site + ' oppdateres nå (' + reason + '). Det tar noen minutter.';
+    } catch (e) {
+      lastPub = 0;
+      const c = e && e.code;
+      S.info = c === 'server_not_connected' || c === 'needs_reauth' ? 'Kunne ikke oppdatere ' + site + ': koble til «Claude Code Remote» under Innstillinger → Koblinger på claude.ai.'
+        : c === 'not_in_manifest' || c === 'approval_required' || c === 'consent_required' ? site + ' ble ikke oppdatert fordi publisering ikke ble tillatt. Trykk «Publiser» for å prøve igjen.'
+        : site + ' ble ikke oppdatert (' + (c || 'ukjent feil') + '). Trykk «Publiser» for å prøve igjen.';
+    }
+    render();
+  }
+  function errHtml() { return (S.info ? '<div class="notice info" role="status">' + esc(S.info) + ' <button class="textbtn" data-a="clear-info">Lukk</button></div>' : '') + (S.error ? '<div class="notice" role="alert">' + esc(S.error) + ' <button class="textbtn" data-a="clear-err">Lukk</button></div>' : ''); }
 
   function evLabel(e, oppName) {
     if (e.type === 'dir') return oppName + ' #' + e.p + ' · slag ' + dirKind(e) + (e.c ? ' ' + (DRES[e.c] || '').toLowerCase() : '');
@@ -923,7 +954,7 @@ window.PUBLIC_CTX = null;
       + (rec.size && (rec.size < 4 || rec.size > 6) ? '<div class="notice">Velg 4–6 spillere i mottak (nå ' + rec.size + ').</div>' : '')
       + (court.size > 6 ? '<div class="notice">Det er valgt ' + court.size + ' spillere på banen. Maks 6, libero føres i mottak.</div>' : '')
       + '<div class="tbl-wrap"><table class="squad"><thead><tr><th>Nr</th><th>Navn</th><th>Posisjon</th><th class="c">På banen</th><th class="c">I mottak</th><th class="hide-sm"></th></tr></thead><tbody>'
-      + S.roster.map((p, i) => '<tr><td><input class="nrin" type="text" inputmode="numeric" maxlength="3" id="nr-' + esc(p.id) + '" data-a="nr" data-id="' + esc(p.id) + '" value="' + esc(p.nr || '') + '" placeholder="Nr" aria-label="Draktnummer ' + esc(p.name) + '"></td>'
+      + S.roster.filter((p) => !p.archived).map((p, i) => '<tr><td><input class="nrin" type="text" inputmode="numeric" maxlength="3" id="nr-' + esc(p.id) + '" data-a="nr" data-id="' + esc(p.id) + '" value="' + esc(p.nr || '') + '" placeholder="Nr" aria-label="Draktnummer ' + esc(p.name) + '"></td>'
         + '<td><input type="text" id="nm-' + esc(p.id) + '" data-a="name" data-id="' + esc(p.id) + '" value="' + esc(p.name) + '" aria-label="Navn"></td>'
         + '<td><select id="ps-' + esc(p.id) + '" data-a="pos" data-id="' + esc(p.id) + '" aria-label="Posisjon ' + esc(p.name) + '"><option value="">Velg</option>' + POS.map((x) => '<option' + (p.pos === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></td>'
         + '<td class="c"><button class="tog" data-a="court" data-id="' + esc(p.id) + '" aria-pressed="' + court.has(p.id) + '" aria-label="På banen ' + esc(p.name) + '">' + (court.has(p.id) ? '✓' : '') + '</button></td>'
@@ -1150,7 +1181,7 @@ window.PUBLIC_CTX = null;
     const nums = Object.keys(oppr).sort((a, b) => Number(a) - Number(b));
     if (nums.length) {
       const all = nums.flatMap((n) => oppr[n]);
-      opp.players = nums.map((n) => ({ nr: n, name: (oppP(m, n) || {}).name || '', rec: oppr[n].length, recErr: cnt(oppr[n], '0'), recAvg: avg(oppr[n]), recPerf: pct(cnt(oppr[n], '2'), oppr[n].length) }));
+      opp.players = nums.map((n) => ({ nr: n, name: oppName(m, n), rec: oppr[n].length, recErr: cnt(oppr[n], '0'), recAvg: avg(oppr[n]), recPerf: pct(cnt(oppr[n], '2'), oppr[n].length) }));
       opp.totals = { recAvg: avg(all), recPerf: pct(cnt(all, '2'), all.length) };
     } else opp.missing = 'Motstanderens mottak ble ikke ført i denne kampen.';
     return { source: 'egen', teams: [{ name: usName(m), players, totals }, opp] };
@@ -1202,7 +1233,7 @@ window.PUBLIC_CTX = null;
       if (SEASON.unsubs[m.id] || m.status === 'kommende') return;
       SEASON.unsubs[m.id] = S.db.collection(PFX + 'matches/' + m.id + '/log').onSnapshot((snap) => {
         const evs = [];
-        snap.docs.forEach((d) => evs.push(...(d.data().events || [])));
+        snap.docs.forEach((d) => evs.push(...(d.data().events || []))); learnNames(evs, null);
         evs.sort((a, b) => a.t - b.t);
         SEASON.logs[m.id] = evs;
         if (S.view === 'season') render();
@@ -1275,7 +1306,7 @@ window.PUBLIC_CTX = null;
     const metricsShown = solo ? METRICS.filter((x) => x.k !== 'oppAvg') : METRICS;
     const chartRows = solo ? rows.map((r) => { const evs = r.evs.filter((e) => e.type !== 'opp' && e.type !== 'dir' && String(e.p) === String(SEASON.player)); return { ...r, evs, st: computeStats(evs) }; }) : rows;
     const withRegs = new Set(rows.flatMap((r) => r.evs.filter((e) => e.type !== 'opp' && e.type !== 'dir').map((e) => String(e.p))));
-    const pickIds = S.roster.map((p) => p.id).concat([...withRegs].filter((id) => !player(id)));
+    const pickIds = S.roster.filter((p) => !p.archived || withRegs.has(String(p.id))).map((p) => p.id).concat([...withRegs].filter((id) => !player(id)));
     const pickLabel = (id) => { const p = player(id); return (p && p.nr ? '#' + p.nr + ' ' : '') + (p ? p.name : pname(id)); };
     let soloLine = '';
     if (solo) {
@@ -1654,6 +1685,8 @@ window.PUBLIC_CTX = null;
     else if (a === 'toview' && m) { S.view = 'detail'; render(); toTop(); }
     else if (a === 'dsrc') { S.detailSrc = b.dataset.v; render(); }
     else if (a === 'ctx-cancel') { S.showNewCtx = false; render(); }
+    else if (a === 'publish') { publishOpen('manuelt', true); }
+    else if (a === 'clear-info') { S.info = ''; render(); }
     else if (a === 'table') { S.view = 'table'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); toTop(); }
     else if (a === 'focus' && m) {
       const team = b.dataset.v === 'away' ? m.away : m.home;
@@ -1692,7 +1725,7 @@ window.PUBLIC_CTX = null;
       Object.assign(m, { setScores, setsHome, setsAway, current: nc }); render();
       saveMatch(m.id, { setScores, setsHome, setsAway, current: nc });
     }
-    else if (a === 'endmatch' && m) { m.status = 'ferdig'; S.view = 'detail'; S.endingSet = false; render(); toTop(); saveMatch(m.id, { status: 'ferdig' }); }
+    else if (a === 'endmatch' && m) { m.status = 'ferdig'; S.view = 'detail'; S.endingSet = false; render(); toTop(); saveMatch(m.id, { status: 'ferdig' }).then(() => setTimeout(() => publishOpen('kampen ferdig', true), 1500)); }
     else if (a === 'reopen' && m) { m.status = 'pågår'; render(); saveMatch(m.id, { status: 'pågår' }); }
     else if ((a === 'court' || a === 'recv') && m) {
       const key = a === 'court' ? 'onCourt' : 'receivers';
@@ -1705,7 +1738,7 @@ window.PUBLIC_CTX = null;
     else if (a === 'delp') {
       const p = player(b.dataset.id);
       if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; }
-      if (p) saveRoster(S.roster.filter((x) => x.id !== p.id));
+      if (p) saveRoster(S.roster.map((x) => x.id === p.id ? { ...x, archived: true } : x));
     }
     else if (a === 'export' && m) exportCsv(m);
     else if (a === 'sheet') { S.sheetBack = S.view; S.view = 'sheet'; render(); toTop(); }
@@ -1754,7 +1787,8 @@ window.PUBLIC_CTX = null;
       const setsHome = setScores.filter((x) => x[0] > x[1]).length, setsAway = setScores.length - setsHome;
       const nc = { set: c.set + 1, home: 0, away: 0 };
       Object.assign(m, { setScores, setsHome, setsAway, current: nc }); S.endingSet = false; S.error = ''; S.statSet = 'all'; render();
-      saveMatch(m.id, { setScores, setsHome, setsAway, current: nc, status: m.status === 'ferdig' ? 'ferdig' : 'pågår' });
+      saveMatch(m.id, { setScores, setsHome, setsAway, current: nc, status: m.status === 'ferdig' ? 'ferdig' : 'pågår' })
+        .then(() => setTimeout(() => publishOpen('sett ' + setScores.length + ' ferdig'), 1500));
       return;
     }
     if (f.id === 'ctxform' && S.db) {
@@ -1763,7 +1797,7 @@ window.PUBLIC_CTX = null;
       const id = teamSlug(name).slice(0, 40) + '-' + Date.now().toString(36);
       const ctx = { id, name, our, prefix: 'ctx/' + id + '/', teams: [] };
       try {
-        if (document.getElementById('ctx-copy').checked && S.roster.length) await S.db.doc(ctx.prefix + 'config/roster').set({ players: S.roster });
+        if (document.getElementById('ctx-copy').checked && S.roster.length) await S.db.doc(ctx.prefix + 'config/roster').set({ players: S.roster.filter((p) => !p.archived) });
         const list = S.contexts.filter((c) => c.id !== 'main').concat([ctx]);
         await S.db.doc('config/contexts').set({ list });
         S.contexts = [MAIN_CTX].concat(list); applyCtx(id);
@@ -1792,7 +1826,7 @@ window.PUBLIC_CTX = null;
       }
       const sh = sc.filter((x) => x[0] > x[1]).length, sa = sc.length - sh;
       Object.assign(m, { setScores: sc, setsHome: sh, setsAway: sa, status: sc.length ? 'ferdig' : 'kommende' }); S.error = ''; render();
-      saveMatch(m.id, { setScores: sc, setsHome: sh, setsAway: sa, status: sc.length ? 'ferdig' : 'kommende' });
+      saveMatch(m.id, { setScores: sc, setsHome: sh, setsAway: sa, status: sc.length ? 'ferdig' : 'kommende' }).then(() => setTimeout(() => publishOpen('resultat ' + shortName(m.home) + '–' + shortName(m.away)), 1500));
       return;
     }
     if (f.id === 'oppform' && m) {
@@ -1833,4 +1867,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 13:18.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 14:48.</footer></body></html>
