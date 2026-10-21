@@ -409,7 +409,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 19:57";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 20:05";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -1530,11 +1530,11 @@ window.PUBLIC_CTX = null;
   function closeSeasonLogs() { Object.values(SEASON.unsubs).forEach((u) => { try { u(); } catch (e) {} }); SEASON.unsubs = {}; }
 
   const METRICS = [
-    { k: 'recAvg', l: 'Mottak snitt', note: '0–2-skala, høyere er bedre', f: (st) => st.tRec.n ? st.tRec.s / st.tRec.n : null, fmt: d2, fixed: [0, 2] },
+    { k: 'recAvg', l: 'Mottak snitt', note: '0–2-skala, høyere er bedre', f: (st) => st.tRec.n ? st.tRec.s / st.tRec.n : null, fmt: d2, fixed: [0, 2], kind: 'rec' },
     { k: 'recPerf', l: 'Perfekt mottak', note: 'andel mottak kodet 2', f: (st) => st.tRec.n ? st.tRec.c2 / st.tRec.n : null, fmt: p0, fixed: [0, 1] },
-    { k: 'attEff', l: 'Angrepssnitt', note: '0–2-skala, feil og blokkert teller 0', f: (st) => st.tAtt.n ? 1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n : null, fmt: d2, fixed: [0, 2] },
+    { k: 'attEff', l: 'Angrepssnitt', note: '0–2-skala, feil og blokkert teller 0', f: (st) => st.tAtt.n ? 1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n : null, fmt: d2, fixed: [0, 2], kind: 'att' },
     { k: 'attKill', l: 'Angrep uttelling', note: 'poeng / angrep', f: (st) => st.tAtt.n ? st.tAtt.c2 / st.tAtt.n : null, fmt: p0, fixed: [0, 1] },
-    { k: 'oppAvg', l: 'Motstanders mottak', note: 'snitt 0–2 på vår serve, lavere er bedre', f: (st) => st.tOpp.n ? st.tOpp.s / st.tOpp.n : null, fmt: d2, fixed: [0, 2] }
+    { k: 'oppAvg', l: 'Motstanders mottak', note: 'snitt 0–2 på vår serve, lavere er bedre', f: (st) => st.tOpp.n ? st.tOpp.s / st.tOpp.n : null, fmt: d2, fixed: [0, 2], kind: 'rec' }
   ];
 
   function summarize(m) {
@@ -1557,6 +1557,14 @@ window.PUBLIC_CTX = null;
     const x = (i) => ml + step * (i + 0.5);
     const ticks = [0, 1, 2, 3, 4].map((i) => lo + (hi - lo) * i / 4);
     let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(metric.l) + ' kamp for kamp">';
+    // Fargesoner for snitt: rød, gul og grønn bak kurven, med samme grenser som søylene
+    const pos = metric.kind === 'att' && SEASON.player !== 'team' ? posOf(SEASON.player) : '';
+    const LV = { lo: 'var(--bad)', mid: '#D9A21B', hi: 'var(--good)' };
+    if (metric.kind) {
+      const [t0, t1] = thr(metric.kind, pos), cl = (v) => Math.max(lo, Math.min(hi, v));
+      [[lo, t0, 'lo'], [t0, t1, 'mid'], [t1, hi, 'hi']].forEach(([a, b, k]) => { if (cl(b) > cl(a)) s += '<rect x="' + ml + '" width="' + (W - ml - mr) + '" y="' + y(cl(b)) + '" height="' + (y(cl(a)) - y(cl(b))) + '" fill="' + LV[k] + '" opacity=".09"></rect>'; });
+      [[t0, 11], [t1, -3]].forEach(([t, dy]) => { s += '<text x="' + (ml + 4) + '" y="' + (y(t) + dy) + '" font-size="10" fill="var(--muted)">' + esc(metric.fmt(t)) + '</text>'; });
+    }
     ticks.forEach((t) => { s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(t) + '" y2="' + y(t) + '" stroke="var(--line)" stroke-width="1"></line><text x="' + (ml - 8) + '" y="' + (y(t) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + esc(metric.fmt(t)) + '</text>'; });
     if (lo < 0 && hi > 0) s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="var(--faint)" stroke-width="1"></line>';
     const pooled = metric.f(computeStats(rows.flatMap((r) => r.evs)));
@@ -1565,7 +1573,7 @@ window.PUBLIC_CTX = null;
     if (pts.length > 1) s += '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') + '" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>';
     rows.forEach((r, i) => {
       const v = vals[i], future = !r.done && !r.live;
-      if (v != null) s += '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"></circle><text x="' + x(i) + '" y="' + (y(v) - 10) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--fg)">' + esc(metric.fmt(v)) + '</text>';
+      if (v != null) s += '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="' + (metric.kind ? 6 : 4.5) + '" fill="' + (metric.kind ? LV[avgLvl(v, metric.kind, pos)] : 'var(--accent)') + '" stroke="var(--surface)" stroke-width="2"></circle><text x="' + x(i) + '" y="' + (y(v) - 10) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--fg)">' + esc(metric.fmt(v)) + '</text>';
       else if (!future) s += '<text x="' + x(i) + '" y="' + (H - mb - 6) + '" text-anchor="middle" font-size="10" fill="var(--faint)">' + (SEASON.player === 'team' ? 'ikke ført' : 'ingen reg.') + '</text>';
       const lab = roundShort(r.m);
       s += '<text x="' + x(i) + '" y="' + (H - mb + 16) + '" text-anchor="middle" font-size="11" font-weight="' + (future ? 400 : 600) + '" fill="' + (future ? 'var(--faint)' : 'var(--fg)') + '">' + esc(lab) + '</text>';
@@ -1629,7 +1637,7 @@ window.PUBLIC_CTX = null;
       + pickIds.map((id) => '<option value="' + esc(id) + '"' + (String(SEASON.player) === String(id) ? ' selected' : '') + '>' + esc(pickLabel(id)) + (withRegs.has(String(id)) ? '' : ' (ingen reg.)') + '</option>').join('') + '</select></div>'
       + '<div class="seg" role="group" aria-label="Velg nøkkeltall">' + metricsShown.map((x) => '<button data-a="metric" data-v="' + x.k + '" aria-pressed="' + (x.k === M.k) + '">' + x.l + '</button>').join('') + '</div></div>'
       + soloLine
-      + '<div class="chart-box" id="kk-chart">' + lineChart(chartRows, M) + '</div><div class="code-legend">Hele terminplanen langs aksen. Stiplet linje er ' + (solo ? 'spillerens snitt' : 'lagets snitt') + ' for alle førte kamper.' + (solo ? ' Motstanders mottak gjelder bare laget.' : '') + '</div></section>';
+      + '<div class="chart-box" id="kk-chart">' + lineChart(chartRows, M) + '</div><div class="code-legend">Hele terminplanen langs aksen. Stiplet linje er ' + (solo ? 'spillerens snitt' : 'lagets snitt') + ' for alle førte kamper.' + (solo ? ' Motstanders mottak gjelder bare laget.' : '') + (M.kind ? ' Fargesonene og prikkene viser nivået: grønn, gul og rød etter samme grenser som søylene. ' + legendLink() : '') + '</div></section>';
 
     h += '<section class="panel" aria-labelledby="h-termin"><div class="panel-head"><h2 id="h-termin">Terminplan</h2><span class="status">' + (window.PUBLIC ? 'Trykk en kamp for å se statistikken' : 'Trykk en kamp for å føre eller se den') + '</span></div><div class="fixtures">'
       + rows.map((r) => {
@@ -2173,4 +2181,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 19:57.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 20:05.</footer></body></html>
