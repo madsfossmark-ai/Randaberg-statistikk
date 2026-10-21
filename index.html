@@ -179,8 +179,10 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .crest { flex: none; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF; font-family: var(--font-display); font-weight: 700; line-height: 1; box-shadow: inset 0 0 0 2px rgba(255,255,255,.3); }
 .crest.sh { border-radius: 22% 22% 50% 50% / 18% 18% 42% 42%; }
 .crest.slot { background: var(--sunk); color: var(--muted); box-shadow: inset 0 0 0 1.5px var(--line); }
-.crest.img { background: transparent; box-shadow: none; }
-.crest.img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.crest.img { background: #FFFFFF; border-radius: 50%; box-shadow: 0 0 0 1px rgba(22,24,29,.14); box-sizing: border-box; }
+.crest.img img { width: 76%; height: 76%; object-fit: contain; display: block; border-radius: 3px; }
+.crest.img.xs { width: 20px; height: 20px; } .crest.img.sm { width: 28px; height: 28px; } .crest.img.md { width: 42px; height: 42px; } .crest.img.lg { width: 68px; height: 68px; }
+.next .crest.img.lg, .board .crest.img.lg { box-shadow: 0 0 0 3px rgba(255,255,255,.25); }
 .crest.xs { width: 16px; height: 19px; font-size: 8px; } .crest.sm { width: 22px; height: 26px; font-size: 10px; } .crest.md { width: 34px; height: 40px; font-size: 15px; } .crest.lg { width: 56px; height: 66px; font-size: 24px; }
 .flag { flex: none; position: relative; overflow: hidden; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.18); display: inline-block; }
 .flag i { position: absolute; display: block; }
@@ -214,11 +216,6 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .avgbar { width: 48px; height: 4px; border-radius: 2px; background: var(--sunk); overflow: hidden; display: block; }
 .avgbar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
 tr.weakest .avgbar i { background: var(--opp-strong); }
-.logo-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--sunk); flex-wrap: wrap; }
-.logo-row .nm2 { flex: 1; min-width: 140px; font-weight: 600; }
-.filebtn { position: relative; overflow: hidden; display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--accent); color: var(--accent); font-weight: 600; font-size: 14px; cursor: pointer; }
-.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.filebtn:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 /* Skjema */
 .form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: end; }
@@ -403,7 +400,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 17:08";
+window.PUBLIC_UPDATED = "21.10.2026 kl. 17:18";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -743,7 +740,6 @@ window.PUBLIC_CTX = null;
     else if (S.view === 'season') html = seasonView();
     else if (S.view === 'table') html = tableView();
     else if (S.view === 'access' && S.canAdmin) html = accessView();
-    else if (S.view === 'logos' && !S.dash) html = logosView();
     else if (S.view === 'watch' && cur()) html = cur().status === 'ferdig' ? detailView() : watchView();
     else html = listView();
     app.innerHTML = '<div id="err">' + errHtml() + '</div>' + html;
@@ -773,39 +769,7 @@ window.PUBLIC_CTX = null;
       + '<div class="b-sets">' + pills + '</div></section>';
   }
 
-  // Lagmerker: last opp klubblogoer (lagres nedskalert i databasen, så de også kommer med på den åpne siden)
-  function logoTeams() {
-    const set = new Set([OUR].concat(CTX.teams || []));
-    S.matches.forEach((m) => [m.home, m.away].forEach((t) => { if (t && !isSlot(t)) set.add(t); }));
-    return [...set].sort((a, b) => (a === OUR ? -1 : b === OUR ? 1 : a.localeCompare(b, 'nb')));
-  }
-  function logosView() {
-    const L = S.logos || {};
-    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Lagmerker</span><span class="sub">' + esc(CTX.name) + '</span></div><span class="spacer"></span></header>';
-    h += '<section class="panel"><div class="panel-head"><h2>Klubblogoer</h2></div><div class="status">Last opp logoen til hvert lag (PNG, JPG, SVG eller WebP). Den skaleres ned og vises i kamplisten, tabellen og live-visningen, også for dem som ser på. Uten logo vises et skjold med forbokstaver' + (Object.keys(FLAGS).some((f) => logoTeams().includes(f)) ? ', og landslag får flagg' : '') + '. Bruk bare logoer klubbene har godkjent.</div>'
-      + logoTeams().map((t) => '<div class="logo-row">' + crest(t, 'md') + '<span class="nm2">' + esc(t) + (L[t] ? '' : ' <span class="code-legend">· ' + (FLAGS[t] ? 'flagg' : 'skjold') + '</span>') + '</span>'
-        + '<label class="filebtn">' + (L[t] ? 'Bytt logo' : 'Last opp logo') + '<input type="file" accept="image/*" data-a="logo-up" data-team="' + esc(t) + '" aria-label="Logo for ' + esc(t) + '"></label>'
-        + (L[t] ? '<button class="del" data-a="logo-del" data-team="' + esc(t) + '">Fjern</button>' : '') + '</div>').join('') + '</section>';
-    return h;
-  }
-  async function saveLogo(team, dataUrl) {
-    const L = Object.assign({}, S.logos || {}); if (dataUrl) L[team] = dataUrl; else delete L[team];
-    S.logos = L; render();
-    try { await S.db.doc(PFX + 'config/logos').set({ logos: L }); } catch (e) { S.error = 'Logoen ble ikke lagret (' + e.code + ').'; render(); }
-  }
-  function shrinkLogo(file) {
-    return new Promise((res, rej) => {
-      const url = URL.createObjectURL(file), img = new Image();
-      img.onload = () => {
-        const max = 128, k = Math.min(1, max / Math.max(img.naturalWidth || max, img.naturalHeight || max));
-        const w = Math.max(1, Math.round((img.naturalWidth || max) * k)), hh = Math.max(1, Math.round((img.naturalHeight || max) * k));
-        const cv = document.createElement('canvas'); cv.width = w; cv.height = hh; cv.getContext('2d').drawImage(img, 0, 0, w, hh);
-        URL.revokeObjectURL(url); let d = cv.toDataURL('image/png'); if (d.length > 60000) d = cv.toDataURL('image/webp', 0.85); res(d);
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bilde')); };
-      img.src = url;
-    });
-  }
+  // Lagmerker: klubblogoer ligger i config/logos (lagt inn av Claude), vist i hvit medaljong
 
   // Tilgang: knytt personer med lesetilgang til ett lag (lagrer bare person-id)
   function accessView() {
@@ -843,7 +807,7 @@ window.PUBLIC_CTX = null;
     let h = '<div class="listhead"><div class="lh-id">' + crest(OUR, 'md') + '<div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>' + '</div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="tabs" role="group" aria-label="Filter">'
       + [['alle', 'Alle'], ['vare', OUR]].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + esc(l) + '</button>').join('')
-      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button>' + (S.canAdmin && !S.dash ? '<button class="secondary" data-a="access">Tilgang</button>' : '') + (!S.dash ? '<button class="secondary" data-a="logos">Lagmerker</button>' : '') + (hasSite() ? '<button class="secondary" data-a="publish" title="Oppdater den åpne statistikksiden">Publiser</button>' : '') + (siteUrl() ? '<button class="secondary" data-a="share" aria-expanded="' + !!S.showShare + '">Del</button>' : '') + '<button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
+      + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="secondary" data-a="table">Tabell</button>' + (S.canAdmin && !S.dash ? '<button class="secondary" data-a="access">Tilgang</button>' : '') + '' + (hasSite() ? '<button class="secondary" data-a="publish" title="Oppdater den åpne statistikksiden">Publiser</button>' : '') + (siteUrl() ? '<button class="secondary" data-a="share" aria-expanded="' + !!S.showShare + '">Del</button>' : '') + '<button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
     if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (S.showShare && siteUrl()) h += sharePanel();
@@ -1945,8 +1909,6 @@ window.PUBLIC_CTX = null;
     else if (a === 'share') { S.showShare = !S.showShare; S.copied = false; render(); }
     else if (a === 'share-copy') { copyShare(); }
     else if (a === 'share-native') { navigator.share({ title: CTX.name, text: 'Statistikk ' + CTX.name, url: siteUrl() }).catch((e) => { if (e && e.name !== 'AbortError') copyShare(); }); }
-    else if (a === 'logos' && !S.dash) { S.view = 'logos'; S.matchId = null; openLogs(null); render(); toTop(); }
-    else if (a === 'logo-del') { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; } saveLogo(b.dataset.team, null); }
     else if (a === 'access' && S.canAdmin) { S.view = 'access'; S.matchId = null; openLogs(null); S.accHits = []; S.accPick = null; render(); toTop(); }
     else if (a === 'acc-pick') { const p = S.accHits.find((x) => x.id === b.dataset.id); if (p) { S.accPick = { id: p.id, name: p.name }; S.names[p.id] = p.name; render(); } }
     else if (a === 'acc-grant' && S.accPick) { const sel = document.getElementById('acc-ctx'); const g = Object.assign({}, S.grants || {}, { [S.accPick.id]: sel ? sel.value : CTX.id }); S.accPick = null; S.accHits = []; saveGrants(g); }
@@ -2021,11 +1983,6 @@ window.PUBLIC_CTX = null;
   app.addEventListener('change', (ev) => {
     const el = ev.target; const a = el.dataset && el.dataset.a; if (!a) return;
     if (a === 'kkplayer') { SEASON.player = el.value; el.blur(); setTimeout(render, 0); return; }
-    if (a === 'logo-up') {
-      const f = el.files && el.files[0], team = el.dataset.team; if (!f) return;
-      shrinkLogo(f).then((d) => saveLogo(team, d)).catch(() => { S.error = 'Kunne ikke lese bildet. Prøv PNG eller JPG.'; render(); });
-      return;
-    }
     if (a === 'ctx') {
       el.blur();
       if (el.value === '__new') { el.value = CTX.id; S.showNewCtx = true; S.showNew = false; setTimeout(render, 0); return; }
@@ -2144,4 +2101,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 17:08.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 17:18.</footer></body></html>
