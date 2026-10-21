@@ -318,6 +318,8 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 .dir-res button[aria-pressed="true"][data-v="B"] { background: var(--bad); border-color: var(--bad); color: #FFFFFF; }
 .dir-res button[aria-pressed="true"][data-v="D"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 .panel.pending { box-shadow: 0 0 0 2px var(--opp-strong); }
+.ctx-pick select { appearance: none; -webkit-appearance: none; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235C6270'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid var(--line); border-radius: 8px; height: 34px; padding: 0 30px 0 10px; max-width: 100%; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .chk { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--fg); }
 .chk input { width: 22px; height: 22px; accent-color: var(--accent); }
 </style>
@@ -381,13 +383,17 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 </style>
 <script>
 (() => {
-  const OUR = 'Randaberg';
+  // Sesong eller lag: hver kontekst har egne kamper, egen tropp og egne motstandere.
+  // Hovedkonteksten ligger i roten av databasen; de andre under ctx/<id>/.
+  const MAIN_CTX = { id: 'main', name: 'Randaberg · Mizunoligaen kvinner 26/27', our: 'Randaberg', prefix: '',
+    teams: ['Finstad Sportsklubb', 'Førde Volleyballklubb', 'Koll IL', 'ØKSIL', 'OSI', 'Oslo Volley', 'TIF Viking', 'ToppVolley Norge'] };
+  let CTX = MAIN_CTX, PFX = '', OUR = 'Randaberg';
   const POS = ['Opplegger', 'Diagonal', 'Kant', 'Midt', 'Libero'];
   const app = document.getElementById('app');
 
   const S = {
     db: null, dl: null, ready: false, offline: false,
-    roster: [], matches: [], logs: {}, logUnsub: null, opps: {},
+    roster: [], matches: [], logs: {}, logUnsub: null, opps: {}, contexts: [MAIN_CTX], ctxReady: false, showNewCtx: false,
     view: 'list', matchId: null, filter: 'alle', statSet: 'all',
     showNew: false, flash: null, error: ''
   };
@@ -408,10 +414,10 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   const EXTRA = { midt: 'Midtspillere' };
   const pname = (id) => { const p = player(id); return p ? p.name.split(' ')[0] : (EXTRA[id] || '?'); };
   // Kamptyper: serie fra terminlisten, eller egne kamper (cup, europacup, trening)
-  const TYPES = { serie: 'Seriekamp', cup: 'Cupkamp', europacup: 'Europacup', trening: 'Treningskamp' };
-  const TSHORT = { serie: 'Serie', cup: 'Cup', europacup: 'EC', trening: 'Tr' };
-  const roundLabel = (m) => m.custom ? (TYPES[m.type] || 'Egen kamp') + (m.round ? ' · ' + m.round : '') : (m.round ? 'Runde ' + m.round : 'Uten runde');
-  const roundShort = (m) => m.custom ? (TSHORT[m.type] || 'Egen') : 'R' + (m.round || '?');
+  const TYPES = { serie: 'Seriekamp', cup: 'Cupkamp', europacup: 'Europacup', turnering: 'Turnering', trening: 'Treningskamp' };
+  const TSHORT = { serie: 'Serie', cup: 'Cup', europacup: 'EC', turnering: 'T', trening: 'Tr' };
+  const roundLabel = (m) => m.custom ? (m.type === 'turnering' && m.round ? m.round : (TYPES[m.type] || 'Egen kamp') + (m.round ? ' · ' + m.round : '')) : (m.round ? 'Runde ' + m.round : 'Uten runde');
+  const roundShort = (m) => m.custom ? (m.short || TSHORT[m.type] || 'Egen') : 'R' + (m.round || '?');
   // Motstanderens tropp lagres per lag og huskes til neste kamp mot samme lag
   const teamSlug = (s) => String(s || '').toLowerCase().replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'lag';
   const oppTeam = (m) => m.home === OUR ? m.away : m.home;
@@ -424,25 +430,63 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     try { S.db = await window.claude?.use?.('db'); } catch (e) { S.db = null; }
     try { S.dl = await window.claude?.use?.('downloads'); } catch (e) { S.dl = null; }
     if (!S.db) { S.offline = true; S.ready = true; render(); return; }
-    S.db.doc('config/roster').onSnapshot((snap) => {
+    let saved = null; try { saved = localStorage.getItem('rv-ctx'); } catch (e) {}
+    S.db.doc('config/contexts').onSnapshot((snap) => {
+      const list = snap.exists ? (snap.data().list || []) : [];
+      S.contexts = [MAIN_CTX].concat(list.filter((c) => c && c.id && c.id !== 'main'));
+      if (!S.ctxReady) { S.ctxReady = true; applyCtx(saved || 'main'); }
+      else if (!S.contexts.some((c) => c.id === CTX.id)) applyCtx('main');
+      else { CTX = S.contexts.find((c) => c.id === CTX.id); render(); }
+    }, () => { if (!S.ctxReady) { S.ctxReady = true; applyCtx('main'); } });
+  }
+
+  let ctxUnsubs = [];
+  function applyCtx(id) {
+    CTX = S.contexts.find((c) => c.id === id) || MAIN_CTX;
+    PFX = CTX.prefix || ''; OUR = CTX.our || 'Randaberg';
+    try { localStorage.setItem('rv-ctx', CTX.id); } catch (e) {}
+    ctxUnsubs.forEach((u) => { try { u(); } catch (e) {} }); ctxUnsubs = [];
+    closeSeasonLogs(); openLogs(null);
+    S.roster = []; S.matches = []; S.opps = {}; S.ready = false; S.view = 'list'; S.matchId = null; S.showNew = false; S.showNewCtx = false;
+    SEASON.player = 'team';
+    render(); toTop();
+    subscribeCtx();
+  }
+  function subscribeCtx() {
+    const keep = (u) => { if (typeof u === 'function') ctxUnsubs.push(u); };
+    keep(S.db.doc(PFX + 'config/roster').onSnapshot((snap) => {
       S.roster = snap.exists ? (snap.data().players || []).map((p) => ({ ...p })) : [];
       S.ready = true; render();
-    }, (e) => { S.error = 'Kunne ikke laste troppen (' + e.code + ').'; render(); });
-    S.db.collection('opponents').onSnapshot((snap) => {
+    }, (e) => { S.error = 'Kunne ikke laste troppen (' + e.code + ').'; render(); }));
+    keep(S.db.collection(PFX + 'opponents').onSnapshot((snap) => {
       const o = {}; snap.docs.forEach((d) => { o[d.id] = JSON.parse(JSON.stringify(d.data())); }); S.opps = o; render();
-    }, () => {});
-    S.db.collection('matches').onSnapshot((snap) => {
+    }, () => {}));
+    keep(S.db.collection(PFX + 'matches').onSnapshot((snap) => {
       S.matches = snap.docs.map((d) => ({ id: d.id, ...JSON.parse(JSON.stringify(d.data())) }));
       S.matches.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
       S.ready = true; if (S.view === 'season') openSeasonLogs(); render();
-    }, (e) => { S.error = 'Kunne ikke laste kamper (' + e.code + ').'; render(); });
+    }, (e) => { S.error = 'Kunne ikke laste kamper (' + e.code + ').'; render(); }));
+  }
+
+  function ctxPicker() {
+    if (window.PUBLIC || S.offline) return '<span class="label">' + esc(CTX.name) + '</span>';
+    return '<label class="ctx-pick" for="ctx-pick"><span class="sr">Sesong eller lag</span><select id="ctx-pick" data-a="ctx">'
+      + S.contexts.map((c) => '<option value="' + esc(c.id) + '"' + (c.id === CTX.id ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('')
+      + '<option value="__new">+ Ny sesong eller lag …</option></select></label>';
+  }
+  function newCtxForm() {
+    return '<form class="panel" id="ctxform" aria-label="Ny sesong eller lag"><div class="panel-head"><h2>Ny sesong eller lag</h2><span class="status">Får egne kamper, egen tropp og egen sesongstatistikk. Det du har nå, ligger urørt og kan velges i menyen.</span></div><div class="form">'
+      + '<div class="field"><label for="ctx-name">Navn</label><input id="ctx-name" type="text" required placeholder="F.eks. Randaberg · Mizunoligaen kvinner 27/28"></div>'
+      + '<div class="field"><label for="ctx-our">Vårt lag heter</label><input id="ctx-our" type="text" required value="' + esc(OUR) + '"></div>'
+      + '<label class="chk" for="ctx-copy"><input id="ctx-copy" type="checkbox"> Ta med spillertroppen fra «' + esc(CTX.name) + '»</label>'
+      + '<div style="display:flex;gap:8px"><button class="primary" type="submit">Opprett</button><button class="secondary" type="button" data-a="ctx-cancel">Avbryt</button></div></div></form>';
   }
 
   function openLogs(id) {
     if (S.logUnsub) { S.logUnsub(); S.logUnsub = null; }
     S.logs = {};
     if (!S.db || !id) return;
-    S.logUnsub = S.db.collection('matches/' + id + '/log').onSnapshot((snap) => {
+    S.logUnsub = S.db.collection(PFX + 'matches/' + id + '/log').onSnapshot((snap) => {
       const logs = {};
       snap.docs.forEach((d) => { logs[d.id] = (d.data().events || []).slice(); });
       S.logs = logs; render();
@@ -453,13 +497,13 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
 
   async function saveMatch(id, patch) {
     if (!S.db) return;
-    try { await S.db.doc('matches/' + id).update(patch); }
+    try { await S.db.doc(PFX + 'matches/' + id).update(patch); }
     catch (e) { S.error = 'Lagring feilet (' + e.code + '). Prøv igjen.'; render(); }
   }
   async function saveRoster(players) {
     S.roster = players; render();
     if (!S.db) return;
-    try { await S.db.doc('config/roster').set({ players }); }
+    try { await S.db.doc(PFX + 'config/roster').set({ players }); }
     catch (e) { S.error = 'Troppen ble ikke lagret (' + e.code + ').'; render(); }
   }
 
@@ -472,7 +516,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     own.push(ev);
     S.logs[key] = own;
     render();
-    try { await S.db.doc('matches/' + m.id + '/log/' + key).set({ device: deviceId, set, events: own }); }
+    try { await S.db.doc(PFX + 'matches/' + m.id + '/log/' + key).set({ device: deviceId, set, events: own }); }
     catch (e) { S.error = 'Registreringen ble ikke lagret (' + e.code + ').'; render(); }
     if (m.status !== 'pågår' && m.status !== 'ferdig') saveMatch(m.id, { status: 'pågår' });
   }
@@ -484,7 +528,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     if (!bestKey) return;
     const own = S.logs[bestKey].slice(0, -1);
     S.logs[bestKey] = own; render();
-    try { await S.db.doc('matches/' + m.id + '/log/' + bestKey).set({ device: deviceId, set: Number(bestKey.split('-s')[1]), events: own }); }
+    try { await S.db.doc(PFX + 'matches/' + m.id + '/log/' + bestKey).set({ device: deviceId, set: Number(bestKey.split('-s')[1]), events: own }); }
     catch (e) { S.error = 'Angre ble ikke lagret (' + e.code + ').'; render(); }
   }
 
@@ -536,10 +580,11 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const upcoming = S.matches.filter((m) => isOurs(m) && m.status !== 'ferdig').sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
     const rounds = {};
     ms.forEach((m) => { const r = m.custom ? roundLabel(m) + '|' + m.id : roundLabel(m); (rounds[r] ||= []).push(m); });
-    let h = '<div class="listhead"><div style="display:flex;flex-direction:column;gap:4px"><span class="label">Mizunoligaen kvinner 26/27</span><h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>'
+    let h = '<div class="listhead"><div style="display:flex;flex-direction:column;gap:4px">' + ctxPicker() + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="tabs" role="group" aria-label="Filter">'
       + [['alle', 'Alle'], ['vare', 'Våre'], ['andre', 'Andres']].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + l + '</button>').join('')
       + '</div><button class="secondary" data-a="new-toggle">Ny kamp</button><button class="primary" data-a="season">Sesong</button>' + fsBtn('secondary') + '</div></div>';
+    if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (upcoming) {
       h += '<section class="next" aria-label="Neste kamp"><div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px"><span class="label" style="color:inherit;opacity:.8">' + (upcoming.status === 'pågår' ? 'Pågår nå' : 'Neste kamp') + ' · ' + esc(roundLabel(upcoming)) + '</span>'
@@ -559,9 +604,9 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   }
 
   function newMatchForm() {
-    const teams = [...new Set(['Finstad Sportsklubb', 'Førde Volleyballklubb', 'Koll IL', 'ØKSIL', 'OSI', 'Oslo Volley', 'TIF Viking', 'ToppVolley Norge'].concat(Object.values(S.opps).map((o) => o.name).filter(Boolean)))].sort((a, b) => a.localeCompare(b, 'nb'));
+    const teams = [...new Set((CTX.teams || []).concat(Object.values(S.opps).map((o) => o.name).filter(Boolean)))].sort((a, b) => a.localeCompare(b, 'nb'));
     return '<form class="panel" id="newform" aria-label="Ny kamp"><div class="panel-head"><h2>Ny kamp</h2><span class="status">Cup, europacup, treningskamp eller en kamp som mangler i terminlisten</span></div><div class="form">'
-      + '<div class="field"><label for="nf-type">Type kamp</label><select id="nf-type">' + ['cup', 'europacup', 'trening', 'serie'].map((t) => '<option value="' + t + '">' + TYPES[t] + '</option>').join('') + '</select></div>'
+      + '<div class="field"><label for="nf-type">Type kamp</label><select id="nf-type">' + ['cup', 'europacup', 'turnering', 'trening', 'serie'].map((t) => '<option value="' + t + '">' + TYPES[t] + '</option>').join('') + '</select></div>'
       + '<div class="field"><label for="nf-opp">Motstander</label><input id="nf-opp" type="text" list="nf-teams" required autocomplete="off" placeholder="Skriv lagnavn"><datalist id="nf-teams">' + teams.map((t) => '<option value="' + esc(t) + '"></option>').join('') + '</datalist></div>'
       + '<div class="field"><label for="nf-ha">Hjemme/borte</label><select id="nf-ha"><option value="h">Hjemme</option><option value="b">Borte</option></select></div>'
       + '<div class="field"><label for="nf-date">Dato og tid</label><input id="nf-date" type="datetime-local" required></div>'
@@ -593,7 +638,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const us = m.home === OUR ? (m.setsHome || 0) : (m.setsAway || 0);
     const them = m.home === OUR ? (m.setsAway || 0) : (m.setsHome || 0);
     const sc = setList(m);
-    return 'Randaberg ' + us + '–' + them + ' i sett' + (sc ? ' · ' + sc : '') + (m.status === 'ferdig' ? ' · kampen er avsluttet' : '');
+    return OUR + ' ' + us + '–' + them + ' i sett' + (sc ? ' · ' + sc : '') + (m.status === 'ferdig' ? ' · kampen er avsluttet' : '');
   }
   function shortName(n) { return n === OUR ? 'Randaberg' : n.replace(/ (Volleyballklubb|Sportsklubb|Volley Norge)$/, '').replace(/ IL$/, ''); }
   function scoreStr(sc) { return sc && Math.max(sc[0], sc[1]) >= 5 ? sc[0] + '–' + sc[1] : ''; }
@@ -758,16 +803,16 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     players = players.slice().sort((a, b) => Number(a.nr) - Number(b.nr));
     S.opps = Object.assign({}, S.opps, { [id]: { name: oppTeam(m), players } }); render();
     if (!S.db) return;
-    try { await S.db.doc('opponents/' + id).set({ name: oppTeam(m), players }); }
+    try { await S.db.doc(PFX + 'opponents/' + id).set({ name: oppTeam(m), players }); }
     catch (e) { S.error = 'Motstanderens spillere ble ikke lagret (' + e.code + ').'; render(); }
   }
   function setOppNumbers(m, list) { list = [...new Set(list.map(String))].sort((a, b) => Number(a) - Number(b)); m.oppNumbers = list; render(); saveMatch(m.id, { oppNumbers: list }); }
   async function deleteMatch(m) {
     if (!S.db || !m) return;
     try {
-      const logs = await S.db.collection('matches/' + m.id + '/log').get();
-      for (const d of logs.docs) await S.db.doc('matches/' + m.id + '/log/' + d.id).delete();
-      await S.db.doc('matches/' + m.id).delete();
+      const logs = await S.db.collection(PFX + 'matches/' + m.id + '/log').get();
+      for (const d of logs.docs) await S.db.doc(PFX + 'matches/' + m.id + '/log/' + d.id).delete();
+      await S.db.doc(PFX + 'matches/' + m.id).delete();
       closeSeasonLogs(); openLogs(null); S.view = 'list'; S.matchId = null; render(); toTop();
     } catch (e) { S.error = 'Kampen ble ikke slettet (' + e.code + ').'; render(); }
   }
@@ -1056,7 +1101,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     if (!S.db) return;
     S.matches.filter(isOurs).forEach((m) => {
       if (SEASON.unsubs[m.id] || m.status === 'kommende') return;
-      SEASON.unsubs[m.id] = S.db.collection('matches/' + m.id + '/log').onSnapshot((snap) => {
+      SEASON.unsubs[m.id] = S.db.collection(PFX + 'matches/' + m.id + '/log').onSnapshot((snap) => {
         const evs = [];
         snap.docs.forEach((d) => evs.push(...(d.data().events || [])));
         evs.sort((a, b) => a.t - b.t);
@@ -1145,7 +1190,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     }
 
     let h = '<div class="season"><header class="bar"><button class="link" data-a="back">‹ Kamper</button>'
-      + '<div class="title"><span class="display">Sesongen 26/27</span><span class="sub">Randaberg kvinner · Mizunoligaen · ' + done.length + ' av ' + rows.length + ' kamper spilt</span></div><span class="spacer"></span>'
+      + '<div class="title"><span class="display">Sesong</span><span class="sub">' + esc(CTX.name) + ' · ' + done.length + ' av ' + rows.length + ' kamper spilt</span></div><span class="spacer"></span>'
       + '<div class="bar-actions">' + (hasTest ? '<button class="barbtn' + (SEASON.inclTest ? ' primary-bar' : '') + '" data-a="incltest" aria-pressed="' + SEASON.inclTest + '">' + (SEASON.inclTest ? 'Testkampen er med' : 'Vis testkampen') + '</button>' : '') + '</div></header>';
 
     if (next) h += '<section class="next" aria-label="Neste kamp"><div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px"><span class="label" style="color:inherit;opacity:.8">' + (next.live ? 'Pågår nå' : 'Neste kamp') + ' · ' + esc(roundLabel(next.m)) + '</span>'
@@ -1317,7 +1362,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     const m = cur(); const last = dirOwnLast(); if (!m || !last || !S.db) return;
     const own = S.logs[last.key].slice(); own[last.idx] = Object.assign({}, own[last.idx], patch);
     S.logs[last.key] = own; render();
-    try { await S.db.doc('matches/' + m.id + '/log/' + last.key).set({ device: deviceId, set: Number(last.key.split('-s')[1]), events: own }); }
+    try { await S.db.doc(PFX + 'matches/' + m.id + '/log/' + last.key).set({ device: deviceId, set: Number(last.key.split('-s')[1]), events: own }); }
     catch (e) { S.error = 'Utfallet ble ikke lagret (' + e.code + ').'; render(); }
   }
 
@@ -1509,6 +1554,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
     else if (a === 'edit' && m) { S.view = 'live'; S.endingSet = false; render(); toTop(); }
     else if (a === 'toview' && m) { S.view = 'detail'; render(); toTop(); }
     else if (a === 'dsrc') { S.detailSrc = b.dataset.v; render(); }
+    else if (a === 'ctx-cancel') { S.showNewCtx = false; render(); }
     else if (a === 'delmatch' && m) {
       if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Trykk igjen for å slette kampen og alle registreringene'; return; }
       deleteMatch(m);
@@ -1563,6 +1609,11 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
   app.addEventListener('change', (ev) => {
     const el = ev.target; const a = el.dataset && el.dataset.a; if (!a) return;
     if (a === 'kkplayer') { SEASON.player = el.value; el.blur(); setTimeout(render, 0); return; }
+    if (a === 'ctx') {
+      el.blur();
+      if (el.value === '__new') { el.value = CTX.id; S.showNewCtx = true; S.showNew = false; setTimeout(render, 0); return; }
+      setTimeout(() => applyCtx(el.value), 0); return;
+    }
     if ((a === 'onr' || a === 'oname' || a === 'opos') && cur()) {
       const m = cur(), nr = el.dataset.nr, val = el.value.trim();
       const ros = oppRoster(m).map((p) => ({ ...p })); let p = ros.find((x) => String(x.nr) === nr);
@@ -1599,6 +1650,19 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       saveMatch(m.id, { setScores, setsHome, setsAway, current: nc, status: m.status === 'ferdig' ? 'ferdig' : 'pågår' });
       return;
     }
+    if (f.id === 'ctxform' && S.db) {
+      const name = document.getElementById('ctx-name').value.trim(), our = document.getElementById('ctx-our').value.trim();
+      if (!name || !our) { S.error = 'Fyll inn navn og vårt lag.'; render(); return; }
+      const id = teamSlug(name).slice(0, 40) + '-' + Date.now().toString(36);
+      const ctx = { id, name, our, prefix: 'ctx/' + id + '/', teams: [] };
+      try {
+        if (document.getElementById('ctx-copy').checked && S.roster.length) await S.db.doc(ctx.prefix + 'config/roster').set({ players: S.roster });
+        const list = S.contexts.filter((c) => c.id !== 'main').concat([ctx]);
+        await S.db.doc('config/contexts').set({ list });
+        S.contexts = [MAIN_CTX].concat(list); applyCtx(id);
+      } catch (e) { S.error = 'Kunne ikke opprette (' + e.code + ').'; render(); }
+      return;
+    }
     if (f.id === 'oppaddform' && m) {
       const v = (document.getElementById('opp-add-nr').value || '').replace(/[^0-9]/g, '');
       const nm = (document.getElementById('opp-add-name').value || '').trim();
@@ -1625,7 +1689,7 @@ window.PUBLIC_UPDATED = "21.10.2026 kl. 13:18";
       const round = document.getElementById('nf-round').value.trim();
       const venue = document.getElementById('nf-venue').value.trim();
       const doc = { home: home ? OUR : opp, away: home ? opp : OUR, date, round: round || null, venue: venue || null, source: 'egen', custom: true, type, inSeason, status: 'kommende', setsHome: 0, setsAway: 0, setScores: [], current: { set: 1, home: 0, away: 0 }, receivers: [], onCourt: [], oppNumbers: [] };
-      try { const ref = await S.db.collection('matches').add(doc); S.showNew = false; S.matchId = ref.id; S.view = 'squad'; openLogs(ref.id); render(); }
+      try { const ref = await S.db.collection(PFX + 'matches').add(doc); S.showNew = false; S.matchId = ref.id; S.view = 'squad'; openLogs(ref.id); render(); }
       catch (e) { S.error = e.code === 'quota_exceeded' ? 'Lagringen er full. Slett gamle kamper først.' : 'Kampen ble ikke opprettet (' + e.code + ').'; render(); }
     }
   });
