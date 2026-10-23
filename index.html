@@ -476,7 +476,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "21.10.2026 kl. 23:26";
+window.PUBLIC_UPDATED = "23.10.2026 kl. 11:17";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -1591,7 +1591,7 @@ window.PUBLIC_CTX = null;
       if (!has('att') && p.att) { const k = p.kills || 0, f = p.attErr || 0, b = p.blocked || 0; push('att', id, '2', k, p.name); push('att', id, '0', f, p.name); push('att', id, 'B', b, p.name); push('att', id, '1', Math.max(0, p.att - k - f - b), p.name); }
       if (!has('srv') && (p.srv || p.aces || p.srvErr)) { const e = p.aces || 0, f = p.srvErr || 0; push('srv', id, 'E', e, p.name); push('srv', id, 'F', f, p.name); if (p.srv) push('srv', id, 'I', Math.max(0, p.srv - e - f), p.name); }
     });
-    if (tOpp && !has('opp')) (tOpp.players || []).forEach((p) => { if (p.nr) recEv('opp', p, String(p.nr)); });
+    if (tOpp && !has('opp')) (tOpp.players || []).forEach((p) => { if (!p.nr) return; recEv('opp', p, String(p.nr)); if (p.rec && p.name && !OPPHINT[String(p.nr)]) OPPHINT[String(p.nr)] = String(p.name).replace(/ \(L\)$/, ''); });
     Object.keys(NVCAT).forEach((k) => { if (!has(k) && out.extra.some((e) => e.type === k)) out.cats.push(NVCAT[k]); });
     return out;
   }
@@ -1636,6 +1636,20 @@ window.PUBLIC_CTX = null;
     const m = cur(); const ours = canLive(m);
     const ownEvs = allEvents(), fill = ours && ownEvs.length ? nvbfFill(m, ownEvs) : { extra: [], cats: [] };
     const own = ours ? ownStats(m, ownEvs.concat(fill.extra)) : null; const hasNvbf = !!(m.nvbf && m.nvbf.teams && m.nvbf.teams.length);
+    // Motstanderens angrep, serve og poeng føres aldri fra benken, så de hentes fra NVBF når statistikken finnes
+    if (own && hasNvbf && m.status === 'ferdig') {
+      const nOpp = m.nvbf.teams.find((t) => t.name !== usName(m)), oOpp = own.teams[1], F = ['att', 'attErr', 'blocked', 'kills', 'kp', 'eff', 'srv', 'srvErr', 'aces', 'blocks', 'pts'];
+      if (nOpp && oOpp && (nOpp.players || []).some((p) => F.some((f) => p[f] != null))) {
+        (nOpp.players || []).forEach((p) => {
+          if (!F.some((f) => p[f] != null)) return;
+          let q = oOpp.players.find((x) => String(x.nr) === String(p.nr)); if (!q) { q = { nr: p.nr, name: p.name }; oOpp.players.push(q); }
+          if (!q.name) q.name = p.name; F.forEach((f) => { if (p[f] != null) q[f] = p[f]; });
+        });
+        F.forEach((f) => { if (nOpp.totals && nOpp.totals[f] != null) oOpp.totals[f] = nOpp.totals[f]; });
+        if (oOpp.missing && oOpp.players.length) delete oOpp.missing;
+        fill.cats.push('angrep, serve og poeng for ' + shortName(nOpp.name));
+      }
+    }
     const egen = !!own && !(S.detailSrc === 'nvbf' && hasNvbf); const n = egen ? own : m.nvbf;
     addRecAvg(n);
     const oc = outcome(m);
@@ -2364,4 +2378,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 21.10.2026 kl. 23:26.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 23.10.2026 kl. 11:17.</footer></body></html>
