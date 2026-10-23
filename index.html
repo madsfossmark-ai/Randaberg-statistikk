@@ -476,7 +476,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "23.10.2026 kl. 11:17";
+window.PUBLIC_UPDATED = "23.10.2026 kl. 11:31";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -972,7 +972,7 @@ window.PUBLIC_CTX = null;
     const ours = isOurs(m);
     const res = (m.setsHome != null && m.setsAway != null && (m.setsHome + m.setsAway) > 0) ? m.setsHome + '–' + m.setsAway : (m.status === 'pågår' ? (m.setsHome || 0) + '–' + (m.setsAway || 0) : '–');
     const oc = ours ? outcome(m) : null;
-    const badge = m.status === 'pågår' ? '<span class="badge b-live">Live</span>' : oc ? '<span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss">Tap') + '</span>' : ours ? '' : m.focus ? '<span class="badge b-own">Egenført</span>' : (m.nvbf && m.nvbf.teams ? '<span class="badge b-nvbf">NVBF-statistikk</span>' : m.source === 'nvbf' ? '<span class="badge b-nvbf">NVBF</span>' : '');
+    const badge = m.status === 'pågår' ? '<span class="badge b-live">Live</span>' : oc ? '<span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss">Tap') + '</span>' : ours ? '' : m.focus && !(m.nvbf && m.nvbf.src) ? '<span class="badge b-own">Egenført</span>' : (m.nvbf && m.nvbf.teams ? '<span class="badge b-nvbf">' + srcName(m.nvbf) + (m.nvbf.partial ? ' · delvis' : '-statistikk') + '</span>' : m.source === 'nvbf' ? '<span class="badge b-nvbf">NVBF</span>' : '');
     return '<button class="match' + (ours ? ' ours' : '') + '" data-a="open" data-id="' + esc(m.id) + '"><span class="t"><span class="tn">' + (ours ? crest(m.home, 'sm') + '<span class="nmx">' + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + '</span>' + crest(m.away, 'sm') : crest(m.home, 'xs') + '<span class="nmx">' + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + '</span>' + crest(m.away, 'xs')) + '</span><span class="d">' + esc(fmtDate(m.date)) + (m.custom ? ' · ' + esc(TYPES[m.type] || 'Egen kamp') : '') + '</span></span><span class="res num">' + res + '</span>' + badge + '</button>';
   }
 
@@ -1303,11 +1303,13 @@ window.PUBLIC_CTX = null;
   }
 
   // Topplister for serien/turneringen: NVBF-statistikk der den finnes, ellers egen føring (også kamper der vi har ført for et annet lag)
+  // Kilden for offisiell statistikk: NVBF for serien, CEV for landslagsturneringer
+  function srcName(n) { return (n && n.src) || 'NVBF'; }
   function topListsData() {
     const P = {}, pn = (v) => v == null ? null : parseFloat(String(v).replace('−', '-').replace('%', '').replace(',', '.'));
     let src = 0;
     tableMatches().filter((m) => m.status === 'ferdig').forEach((m) => {
-      let n = m.nvbf && m.nvbf.teams && m.nvbf.teams.length ? m.nvbf : null;
+      let n = m.nvbf && m.nvbf.teams && m.nvbf.teams.length && !m.nvbf.partial ? m.nvbf : null;
       if (!n && canLive(m) && SEASON.logs[m.id] && SEASON.logs[m.id].length) n = ownStats(m, SEASON.logs[m.id]);
       if (!n) return; src++; addRecAvg(n);
       n.teams.forEach((t) => (t.players || []).forEach((p) => {
@@ -1653,12 +1655,12 @@ window.PUBLIC_CTX = null;
     const egen = !!own && !(S.detailSrc === 'nvbf' && hasNvbf); const n = egen ? own : m.nvbf;
     addRecAvg(n);
     const oc = outcome(m);
-    let h = '<header class="bar det-bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display tm" style="flex-wrap:wrap">' + crest(m.home, 'sm') + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + crest(m.away, 'sm') + ' ' + (m.setsHome != null ? m.setsHome + '–' + m.setsAway : '') + (oc ? ' <span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss" style="color:#F0A774;box-shadow:inset 0 0 0 1.5px #F0A774">Tap') + '</span>' : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
-      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos NVBF ›</a>' : '') + (ours ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + (ours && m.custom && !S.dash ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
+    let h = '<header class="bar det-bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display tm" style="flex-wrap:wrap">' + crest(m.home, 'sm') + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + crest(m.away, 'sm') + ' ' + (m.setsHome != null && m.status !== 'kommende' ? m.setsHome + '–' + m.setsAway : '') + (oc ? ' <span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss" style="color:#F0A774;box-shadow:inset 0 0 0 1.5px #F0A774">Tap') + '</span>' : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
+      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos ' + srcName(n) + ' ›</a>' : '') + (ours ? '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + (ours && m.custom && !S.dash ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
     if (!ours && !S.dash) h += othersPanel(m);
-    if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">NVBF</button></div>';
+    if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">' + srcName(n) + '</button></div>';
     if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? (S.dash && !window.PUBLIC ? 'Det er ikke ført statistikk i denne kampen ennå.' : 'Statistikken fra denne kampen er ikke lagt ut ennå.') : CTX.id !== 'main' ? (m.status === 'ferdig' ? 'Resultatet er registrert. Det er ikke ført statistikk i denne kampen.' : 'Kampen er ikke spilt ennå.') : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
-    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' + (fill.cats.length ? ' Ikke ført, hentet fra NVBF: ' + fill.cats.join(', ') + '.' : '') : 'Offisiell NVBF-statistikk · kontrollert ' + esc(n.checked || 'ukjent tid')) + ' ' + legendLink() + '</div>';
+    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' + (fill.cats.length ? ' Ikke ført, hentet fra ' + srcName(n) + ': ' + fill.cats.join(', ') + '.' : '') : 'Offisiell ' + srcName(n) + '-statistikk' + (n.coverage ? ' · <b>' + esc(n.coverage) + '</b>' : '') + ' · ' + (n.src ? '' : 'kontrollert ') + esc(n.checked || 'ukjent tid')) + ' ' + legendLink() + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
       let s = '<section class="panel"><div class="panel-head"><h2>' + esc(t.name) + '</h2></div>';
@@ -1823,7 +1825,7 @@ window.PUBLIC_CTX = null;
         const d = r.m.date ? new Date(r.m.date) : null;
         const ds = d && !isNaN(d) ? d.toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
         const pill = r.done ? '<span class="res-pill ' + (r.us > r.them ? 'w' : 'l') + '">' + (r.us > r.them ? 'V ' : 'T ') + r.us + '–' + r.them + '</span>' : r.live ? '<span class="res-pill live">Live ' + r.us + '–' + r.them + '</span>' : isNext ? '<span class="badge b-next">Neste</span>' : '';
-        const regB = r.ownN ? '<span class="badge b-own">' + r.ownN + ' reg.</span>' + (r.nvN ? ' <span class="badge b-nvbf">+ NVBF</span>' : '') : r.nvN ? '<span class="badge b-nvbf">NVBF</span>' : (!future ? '<span class="badge b-none">Ikke ført</span>' : '');
+        const regB = r.ownN ? '<span class="badge b-own">' + r.ownN + ' reg.</span>' + (r.nvN ? ' <span class="badge b-nvbf">+ ' + srcName(r.m.nvbf) + '</span>' : '') : r.nvN ? '<span class="badge b-nvbf">' + srcName(r.m.nvbf) + '</span>' : (!future ? '<span class="badge b-none">Ikke ført</span>' : '');
         return '<button class="fx' + (isNext ? ' next-fx' : '') + (future && !isNext ? ' future' : '') + '" data-a="open" data-id="' + esc(r.m.id) + '"><span class="fx-top"><span>' + esc(r.m.custom ? (TYPES[r.m.type] || 'Egen kamp') : 'Runde ' + (r.m.round || '–')) + '</span><span>' + esc(ds) + '</span></span>'
           + '<span class="fx-opp">' + (r.home ? 'mot ' : '@ ') + esc(shortName(r.opp)) + '</span><span class="fx-meta">' + (r.home ? 'Hjemme' : 'Borte') + (r.m.venue ? ' · ' + esc(r.m.venue) : '') + '</span>'
           + '<span class="fx-foot">' + pill + regB + '</span></button>';
@@ -2164,7 +2166,7 @@ window.PUBLIC_CTX = null;
       const mm = S.matches.find((x) => x.id === b.dataset.id); if (!mm) return;
       closeSeasonLogs();
       S.matchId = mm.id; S.statSet = 'all';
-      S.view = S.dash ? 'detail' : canLive(mm) && mm.status !== 'ferdig' ? 'live' : 'detail'; S.detailSrc = 'egen';
+      S.view = S.dash ? 'detail' : canLive(mm) && mm.status !== 'ferdig' && !(mm.source === 'annen' && mm.nvbf && mm.nvbf.src) ? 'live' : 'detail'; S.detailSrc = 'egen';
       if (canLive(mm)) openLogs(mm.id);
       render(); toTop();
     }
@@ -2378,4 +2380,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 23.10.2026 kl. 11:17.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 23.10.2026 kl. 11:31.</footer></body></html>
