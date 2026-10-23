@@ -421,6 +421,18 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 .tbl tr.strongest td { background: rgba(31,122,77,.14); }
 .row.strong-row { background: rgba(31,122,77,.14); box-shadow: 0 0 0 6px rgba(31,122,77,.14); border-radius: 8px; }
 .row.weak-row { background: var(--opp-soft); box-shadow: 0 0 0 6px var(--opp-soft); border-radius: 8px; }
+.plan-line { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; }
+.plan-tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; line-height: 1; padding: 4px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-ink); box-shadow: inset 0 0 0 1.5px var(--accent); white-space: nowrap; }
+.plan-tag.svak { background: transparent; opacity: .8; }
+.coach-ic { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 99px; background: #FFF4D6; color: #7A5A00; font-size: 12px; font-weight: 700; box-shadow: inset 0 0 0 1.5px #C99A1E; flex: none; }
+.coach-pop { display: block; margin: 6px 0 0; font-size: 12px; line-height: 1.3; background: #FFF4D6; color: #5A4300; border-radius: 8px; padding: 6px 8px; box-shadow: inset 0 0 0 1px #E3C46B; white-space: normal; overflow-wrap: anywhere; }
+.scout-why { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.scout-q { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.scout-q.god { background: var(--good-soft, #E3F1E8); color: var(--good); }
+.scout-q.svak, .scout-q.for-lite { background: var(--opp-soft, #FBF3EC); color: var(--opp); }
+.scout-coach { display: grid; grid-template-columns: minmax(0, 170px) minmax(0, 1fr); gap: 6px; max-width: 520px; margin-top: 6px; }
+@media (max-width: 640px) { .scout-coach { grid-template-columns: minmax(0, 1fr); } }
+.scout-coach select, .scout-coach input { width: 100%; min-width: 0; height: 40px; margin: 0; font: inherit; font-size: 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 0 8px; box-sizing: border-box; }
 .weak-tag.reg { display: table; margin: 5px 0 0; font-size: 11px; padding: 2px 8px; }
 .weak-tag.strong { background: var(--good); }
 .weak-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: var(--opp-strong); color: #FFFFFF; padding: 1px 6px; border-radius: 99px; margin-left: 4px; vertical-align: 1px; }
@@ -473,10 +485,283 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
   <div class="panel"><div class="empty">Laster kamper …</div></div>
 </div>
 
+<script data-modul="scouting/analyse.js">
+/*
+ * Scouting & Serveplan V1 – analysemodell (ren JavaScript, ingen DOM).
+ * Brukes av moduler/scouting/scouting.html i nettleseren og av testene i Node.
+ *
+ * Inndata: samme form som den åpne sidens data.json (offentlig/bygg.py):
+ *   { roster: [...], matches: [{ id, data }], logs: { <kampId>: { <loggdok>: { events: [...] } } }, opponents: { <lag>: { players } } }
+ * Utdata: normaliserte observasjoner med kildesporing, nøkkeltall og en forklarbar serveprioritering.
+ * Ingenting her skriver data. Trenerens vurderinger holdes utenfor alle beregninger.
+ * Se docs/scouting.md for definisjoner.
+ */
+(function (root) {
+  'use strict';
+
+  const KILDENAVN = { egen: 'Egen føring', NVBF: 'NVBF', CEV: 'CEV' };
+  // Definisjonsfamilier: tall med ulik definisjon summeres aldri sammen
+  const DEF = { dv: 'datavolley', egen: 'egen-0-1-2' };
+  const MIN_MOTTAK = 5;      // under dette rangeres ikke en mottaker
+  const KRYMP = 10;          // antall «tenkte» mottak på lagsnittet (krymping mot snitt)
+
+  const norm = (s) => String(s == null ? '' : s).replace(/\s*\(L\)\s*$/, '').trim().toLowerCase();
+  const lagNokkel = (s) => norm(s).replace(/\s+(volleyball(klubb)?|vbk|il)$/, '');
+  const tall = (v) => { if (v == null || v === '' || v === '-' || v === '.') return 0; const x = Number(String(v).replace(',', '.')); return isNaN(x) ? 0 : x; };
+  const prosent = (v) => { if (v == null) return null; const x = parseFloat(String(v).replace('%', '').replace(',', '.').replace('−', '-')); return isNaN(x) ? null : x; };
+
+  // ---------- Innlesing ----------
+
+  function lesData(d) {
+    const matches = (d.matches || []).map((m) => (m.data ? Object.assign({ id: m.id }, m.data) : m));
+    const logs = {};
+    Object.entries(d.logs || {}).forEach(([id, docs]) => {
+      logs[id] = Array.isArray(docs) ? docs : [].concat(...Object.values(docs).map((x) => (x && x.events) || []));
+    });
+    return { __lest: true, matches, logs, roster: d.roster || [], opponents: d.opponents || {} };
+  }
+
+  // ---------- Normalisering ----------
+
+  /* Én observasjon = én spiller, én kamp, én kategori, fra én kilde.
+   * { kampId, dato, lag, motstander, nr, navn, kategori: 'mottak'|'angrep'|'serve', kilde, definisjon,
+   *   omfang: 'kamp'|'delvis', hentet, tall: {...}, flagg: [...] } */
+  function offisiellKilde(nv) { return nv && nv.src === 'CEV' ? 'CEV' : 'NVBF'; }
+
+  function offisielleObs(m) {
+    const nv = m.nvbf; if (!nv || !nv.teams || !nv.teams.length) return [];
+    const kilde = offisiellKilde(nv), out = [];
+    // Hele kampen som venter på kontroll regnes som hele kampen, men flagges. Settuttrekk og gamle delvise felt er delvise.
+    const omfang = nv.scope === 'match' ? 'kamp' : nv.partial || nv.scope === 'set' ? 'delvis' : 'kamp';
+    const forelopig = nv.scope === 'match' && nv.partial;
+    nv.teams.forEach((t) => {
+      const mot = nv.teams.find((x) => x !== t);
+      const lagFlagg = forelopig ? ['Foreløpige tall (ikke bekreftet som endelige)'] : [];
+      if (t.totals && t.totals.rec && prosent(t.totals.recPerf) === 0) lagFlagg.push('0 % perfekte mottak hos laget (mulig forenklet føring)');
+      (t.players || []).forEach((p) => {
+        const base = { kampId: m.id, dato: m.date || null, lag: t.name, motstander: mot ? mot.name : null, nr: String(p.nr || ''), navn: String(p.name || '').replace(/\s*\(L\)\s*$/, ''),
+          kilde, definisjon: DEF.dv, omfang, hentet: nv.statsFetchedAt || nv.checked || null, flagg: lagFlagg.slice() };
+        if (p.rec) out.push(Object.assign({}, base, { kategori: 'mottak', tall: { n: tall(p.rec), feil: tall(p.recErr), posPct: prosent(p.recPos), perfPct: prosent(p.recPerf) } }));
+        if (p.att) out.push(Object.assign({}, base, { kategori: 'angrep', tall: { n: tall(p.att), kill: tall(p.kills), feil: tall(p.attErr), blokkert: tall(p.blocked) } }));
+        if (p.srv || p.aces || p.srvErr) out.push(Object.assign({}, base, { kategori: 'serve', tall: { n: p.srv != null ? tall(p.srv) : null, ess: tall(p.aces), feil: tall(p.srvErr) } }));
+      });
+    });
+    return out;
+  }
+
+  function egneObs(m, events, data, our) {
+    if (!events || !events.length) return [];
+    const us = m.focus || our, them = m.home === us ? m.away : m.home;
+    const ros = m.focus ? null : data.roster;
+    const oppRos = ((data.opponents[them] || {}).players || []);
+    const fokusRos = m.focus ? ((data.opponents[m.focus] || {}).players || []) : [];
+    const spiller = (id) => {
+      if (ros) { const r = ros.find((x) => x.id === id); return r ? { nr: String(r.nr || ''), navn: r.name || '' } : { nr: '', navn: String(id) }; }
+      const nr = String(id).split(':').pop(); const r = fokusRos.find((x) => String(x.nr) === nr); return { nr, navn: (r && r.name) || '' };
+    };
+    const acc = {};
+    const add = (lag, mot, sp, kat, f) => {
+      const k = lag + '|' + (sp.nr || sp.navn) + '|' + kat;
+      const o = acc[k] || (acc[k] = { kampId: m.id, dato: m.date || null, lag, motstander: mot, nr: sp.nr, navn: sp.navn, kategori: kat, kilde: 'egen', definisjon: DEF.egen,
+        omfang: m.status === 'ferdig' ? 'kamp' : 'delvis', hentet: null, flagg: [], tall: kat === 'mottak' ? { n: 0, feil: 0, k1: 0, k2: 0 } : kat === 'angrep' ? { n: 0, kill: 0, feil: 0, blokkert: 0 } : { n: 0, ess: 0, feil: 0 } });
+      f(o.tall);
+    };
+    events.forEach((e) => {
+      if (e.type === 'rec') add(us, them, spiller(e.p), 'mottak', (t) => { t.n++; if (e.c === '0') t.feil++; if (e.c === '1') t.k1++; if (e.c === '2') t.k2++; });
+      else if (e.type === 'opp') { const r = oppRos.find((x) => String(x.nr) === String(e.p)); add(them, us, { nr: String(e.p), navn: (r && r.name) || '' }, 'mottak', (t) => { t.n++; if (e.c === '0') t.feil++; if (e.c === '1') t.k1++; if (e.c === '2') t.k2++; }); }
+      else if (e.type === 'att') add(us, them, spiller(e.p), 'angrep', (t) => { t.n++; if (e.c === '2') t.kill++; if (e.c === '0') t.feil++; if (e.c === 'B') t.blokkert++; });
+      else if (e.type === 'srv') add(us, them, spiller(e.p), 'serve', (t) => { t.n++; if (e.c === 'E') t.ess++; if (e.c === 'F') t.feil++; });
+    });
+    return Object.values(acc);
+  }
+
+  /* Velger én kilde per kamp, lag og kategori, og fjerner doble kampdokumenter.
+   * Rekkefølge: offisiell for hele kampen > egen føring > offisiell delvis (for eksempel bare sett 1).
+   * Settuttrekk og kamputtrekk summeres aldri: hver kamp har ett statistikkfelt, og et delvis uttrekk
+   * brukes bare når ingenting bedre finnes. Alle valg logges i `beslutninger`. */
+  function normaliser(raw, opts) {
+    const data = raw && raw.__lest ? raw : lesData(raw || {});
+    const our = (opts && opts.our) || 'Randaberg';
+    const beslutninger = [];
+    // Doble kampdokumenter: samme dato og lag
+    const sett = {}, kamper = [];
+    data.matches.filter((m) => m.round !== 'Test' && !m.test).forEach((m) => {
+      const k = String(m.date || '').slice(0, 10) + '|' + lagNokkel(m.home) + '|' + lagNokkel(m.away);
+      const mengde = (m.nvbf && m.nvbf.teams ? 2 : 0) + ((data.logs[m.id] || []).length ? 1 : 0);
+      if (sett[k]) {
+        const forrige = sett[k];
+        const pm = (forrige.nvbf && forrige.nvbf.teams ? 2 : 0) + ((data.logs[forrige.id] || []).length ? 1 : 0);
+        const behold = mengde > pm ? m : forrige, dropp = behold === m ? forrige : m;
+        beslutninger.push({ type: 'dobbel-kamp', tekst: `${dropp.id} er samme kamp som ${behold.id} (${k}); brukte ${behold.id}` });
+        if (behold === m) { kamper[kamper.indexOf(forrige)] = m; sett[k] = m; }
+        return;
+      }
+      sett[k] = m; kamper.push(m);
+    });
+    const obs = [];
+    kamper.forEach((m) => {
+      const off = offisielleObs(m), egen = egneObs(m, data.logs[m.id], data, our);
+      const grupper = {};
+      off.concat(egen).forEach((o) => { const k = lagNokkel(o.lag) + '|' + o.kategori; (grupper[k] || (grupper[k] = [])).push(o); });
+      Object.entries(grupper).forEach(([k, liste]) => {
+        const har = (f) => liste.some(f);
+        const valg = har((o) => o.kilde !== 'egen' && o.omfang === 'kamp') ? (o) => o.kilde !== 'egen' && o.omfang === 'kamp'
+          : har((o) => o.kilde === 'egen') ? (o) => o.kilde === 'egen' : (o) => o.kilde !== 'egen';
+        const brukt = liste.filter(valg), forkastet = liste.filter((o) => !valg(o));
+        if (forkastet.length) {
+          const kb = brukt[0], kf = forkastet[0];
+          beslutninger.push({ type: 'kildevalg', kampId: m.id, tekst: `${m.id}, ${kb.lag} ${kb.kategori}: brukte ${KILDENAVN[kb.kilde]} (${kb.omfang}), ikke ${KILDENAVN[kf.kilde]} (${kf.omfang}, ${forkastet.reduce((a, o) => a + (o.tall.n || 0), 0)} forsøk)` });
+        }
+        brukt.forEach((o) => obs.push(o));
+      });
+    });
+    return { kamper, obs, beslutninger, our };
+  }
+
+  // ---------- Nøkkeltall ----------
+
+  /* Positiv mottaksprosent fra avrundede prosenter: hver kamp gir et heltall p (avrundet) av n mottak.
+   * Riktig antall ligger i [ceil((p-0.5)·n/100), floor((p+0.5)·n/100)]. Vi summerer intervallene
+   * og et punktanslag (round(p·n/100)). Nevneren er bare mottak med denne definisjonen. */
+  function andelFraProsent(liste, felt) {
+    let n = 0, pkt = 0, lo = 0, hi = 0, avrundet = false;
+    liste.forEach((o) => {
+      const p = o.tall[felt]; if (p == null || !o.tall.n) return;
+      const x = o.tall.n;
+      n += x; pkt += Math.round(p * x / 100);
+      const a = Math.max(0, Math.ceil(((p - 0.5) * x / 100) - 1e-9)), b = Math.min(x, Math.floor(((p + 0.5) * x / 100) + 1e-9));
+      lo += Math.min(a, b); hi += Math.max(a, b);
+      if (a !== b) avrundet = true;  // antallet kan ikke bestemmes entydig fra den avrundede prosenten
+    });
+    return n ? { n, antall: pkt, lo, hi, pct: 100 * pkt / n, loPct: 100 * lo / n, hiPct: 100 * hi / n, avrundet } : null;
+  }
+
+  function mottak(liste) {
+    const n = liste.reduce((a, o) => a + o.tall.n, 0), feil = liste.reduce((a, o) => a + o.tall.feil, 0);
+    const dv = liste.filter((o) => o.definisjon === DEF.dv), eg = liste.filter((o) => o.definisjon === DEF.egen);
+    const egN = eg.reduce((a, o) => a + o.tall.n, 0);
+    return {
+      n, feil, feilPct: n ? 100 * feil / n : null,
+      positiv: andelFraProsent(dv, 'posPct'),          // DataVolley Pos% (CEV/NVBF)
+      perfekt: andelFraProsent(dv, 'perfPct'),          // DataVolley Exc.%
+      egen: egN ? { n: egN, k2: eg.reduce((a, o) => a + o.tall.k2, 0), k1: eg.reduce((a, o) => a + o.tall.k1, 0), snitt: eg.reduce((a, o) => a + o.tall.k1 + 2 * o.tall.k2, 0) / egN } : null,
+      kamper: new Set(liste.map((o) => o.kampId)).size,
+      kilder: [...new Set(liste.map((o) => o.kilde))],
+    };
+  }
+
+  function angrep(liste, lagN) {
+    const s = (f) => liste.reduce((a, o) => a + (o.tall[f] || 0), 0);
+    const n = s('n'), kill = s('kill'), feil = s('feil'), blokkert = s('blokkert');
+    return { n, kill, feil, blokkert, killPct: n ? 100 * kill / n : null, feilPct: n ? 100 * feil / n : null, blokkertPct: n ? 100 * blokkert / n : null,
+      eff: n ? 100 * (kill - feil - blokkert) / n : null, andel: lagN ? 100 * n / lagN : null, kamper: new Set(liste.map((o) => o.kampId)).size, kilder: [...new Set(liste.map((o) => o.kilde))] };
+  }
+
+  function serve(liste) {
+    const kjent = liste.filter((o) => o.tall.n != null), n = kjent.reduce((a, o) => a + o.tall.n, 0);
+    const ess = liste.reduce((a, o) => a + o.tall.ess, 0), feil = liste.reduce((a, o) => a + o.tall.feil, 0);
+    return { n: kjent.length ? n : null, ess, feil, essPct: n ? 100 * kjent.reduce((a, o) => a + o.tall.ess, 0) / n : null, feilPct: n ? 100 * kjent.reduce((a, o) => a + o.tall.feil, 0) / n : null,
+      kamper: new Set(liste.map((o) => o.kampId)).size, kilder: [...new Set(liste.map((o) => o.kilde))] };
+  }
+
+  // ---------- Lagprofil ----------
+
+  function spillerNokkel(o) { return o.nr ? '#' + o.nr : 'n:' + norm(o.navn); }
+
+  function lagprofil(modell, lag, opts) {
+    const ferOm = (opts && opts.foer) || null;      // bare kamper før denne datoen (plan før kamp)
+    const unntak = (opts && opts.utenKamp) || null; // og aldri kampen som analyseres
+    const mine = modell.obs.filter((o) => lagNokkel(o.lag) === lagNokkel(lag) && (!ferOm || (o.dato && o.dato < ferOm)) && o.kampId !== unntak);
+    const spillere = {};
+    mine.forEach((o) => {
+      const k = spillerNokkel(o);
+      const s = spillere[k] || (spillere[k] = { nr: o.nr, navn: [], obs: [] });
+      if (o.navn && !s.navn.includes(o.navn)) s.navn.push(o.navn);
+      s.obs.push(o);
+    });
+    const lagAngrep = mine.filter((o) => o.kategori === 'angrep').reduce((a, o) => a + o.tall.n, 0);
+    const ut = Object.values(spillere).map((s) => {
+      const m = s.obs.filter((o) => o.kategori === 'mottak'), a = s.obs.filter((o) => o.kategori === 'angrep'), v = s.obs.filter((o) => o.kategori === 'serve');
+      const flagg = [...new Set(s.obs.flatMap((o) => o.flagg))];
+      if (s.navn.length > 1) flagg.push('Ulike navn på samme nummer: ' + s.navn.join(' / '));
+      if (s.navn.some((n) => /ukjent spiller|player unknown/i.test(n))) flagg.push('Navnet mangler i kilden');
+      return { nr: s.nr, navn: s.navn[0] || '', navn_alle: s.navn, mottak: m.length ? mottak(m) : null, angrep: a.length ? angrep(a, lagAngrep) : null, serve: v.length ? serve(v) : null, flagg };
+    }).sort((x, y) => (Number(x.nr) || 999) - (Number(y.nr) || 999));
+    const kamper = [...new Set(mine.map((o) => o.kampId))];
+    const kilder = {};
+    mine.forEach((o) => { (kilder[o.kilde] || (kilder[o.kilde] = new Set())).add(o.kampId); });
+    return { lag, kamper, kilder: Object.fromEntries(Object.entries(kilder).map(([k, v]) => [k, [...v]])), spillere: ut,
+      lagMottak: mine.some((o) => o.kategori === 'mottak') ? mottak(mine.filter((o) => o.kategori === 'mottak')) : null, lagAngrep };
+  }
+
+  // ---------- Serveprioritering ----------
+
+  function kvalitet(m) {
+    if (!m || m.n < MIN_MOTTAK) return { nivaa: 'for lite', tekst: `under ${MIN_MOTTAK} mottak – rangeres ikke` };
+    if (m.n >= 20 && m.kamper >= 2) return { nivaa: 'god', tekst: `${m.n} mottak i ${m.kamper} kamper` };
+    if (m.n >= 10) return { nivaa: 'middels', tekst: `${m.n} mottak i ${m.kamper} kamp${m.kamper > 1 ? 'er' : ''}` };
+    return { nivaa: 'svak', tekst: `bare ${m.n} mottak` };
+  }
+
+  const pct = (x, d) => x == null ? '–' : (Math.round(x * Math.pow(10, d || 0)) / Math.pow(10, d || 0)).toString().replace('.', ',').replace('-', '−') + '\u00a0%';
+
+  /* Forklarbar prioritering. For hver mottaker:
+   *   feil* = (feil + K·lagsnittFeil) / (n + K)           krympet mot lagets feilrate
+   *   pos*  = (positive + K·lagsnittPos) / (nPos + K)      bare der CEV/NVBF har Pos%
+   *   score = (feil* − lagsnittFeil) + ½·(lagsnittPos − pos*)   i prosentpoeng
+   * Høyere score = svakere mottak enn lagsnittet = høyere prioritet. Under 5 mottak rangeres ikke.
+   * Ingen rotasjon eller soner: grunnlaget har ikke det. Trenerens vurderinger påvirker ikke scoren. */
+  function serveplan(profil) {
+    const lm = profil.lagMottak; if (!lm || !lm.n) return { rader: [], grunnlag: 'Ingen mottaksdata for laget' };
+    const e0 = lm.feil / lm.n, p0 = lm.positiv ? lm.positiv.antall / lm.positiv.n : null;
+    const rader = profil.spillere.filter((s) => s.mottak && s.mottak.n).map((s) => {
+      const m = s.mottak, q = kvalitet(m);
+      const ek = (m.feil + KRYMP * e0) / (m.n + KRYMP);
+      let pk = null;
+      if (p0 != null && m.positiv) pk = (m.positiv.antall + KRYMP * p0) / (m.positiv.n + KRYMP);
+      const score = 100 * (ek - e0) + (pk != null ? 50 * (p0 - pk) : 0);
+      const grunner = [`${m.feil} feil på ${m.n} mottak (${pct(m.feilPct)}), lagsnitt ${pct(100 * e0)}`];
+      if (m.positiv) grunner.push(`positivt ${m.positiv.avrundet ? '≈ ' : ''}${pct(m.positiv.pct)} av ${m.positiv.n} mottak hos ${m.kilder.filter((k) => k !== 'egen').join('/')}` + (m.positiv.avrundet ? ` (${pct(m.positiv.loPct)}–${pct(m.positiv.hiPct)} pga. avrunding)` : '') + (p0 != null ? `, lagsnitt ${pct(100 * p0)}` : ''));
+      if (m.egen) grunner.push(`egen føring: snitt ${m.egen.snitt.toFixed(2).replace('.', ',')} på ${m.egen.n} mottak (0–2-skala, ikke sammenlignbar med Pos%)`);
+      return { nr: s.nr, navn: s.navn, n: m.n, kamper: m.kamper, kilder: m.kilder, feilPct: m.feilPct, positiv: m.positiv, egen: m.egen, score: q.nivaa === 'for lite' ? null : score,
+        kvalitet: q, flagg: s.flagg, grunner };
+    });
+    rader.sort((a, b) => (a.score == null) - (b.score == null) || (b.score || 0) - (a.score || 0) || b.n - a.n);
+    let rang = 0; rader.forEach((r) => { r.rang = r.score == null ? null : ++rang; });
+    return { rader, lagsnitt: { feilPct: 100 * e0, posPct: p0 != null ? 100 * p0 : null, n: lm.n },
+      grunnlag: `Krympet mot lagsnittet med ${KRYMP} mottak. Minst ${MIN_MOTTAK} mottak for rangering. Ingen rotasjons- eller sonedata.` };
+  }
+
+  // ---------- Under og etter kamp ----------
+
+  function kampObs(modell, kampId, lag) {
+    return modell.obs.filter((o) => o.kampId === kampId && (!lag || lagNokkel(o.lag) === lagNokkel(lag)));
+  }
+
+  /* Plan (bare kamper før denne) mot det som ble observert i kampen. Ingen årsakspåstander. */
+  function etterKamp(modell, kamp, motstander, eget) {
+    const plan = serveplan(lagprofil(modell, motstander, { foer: kamp.date, utenKamp: kamp.id }));
+    const idag = lagprofil(modell, motstander, {}).spillere; // brukes bare til navn
+    const iKamp = kampObs(modell, kamp.id, motstander).filter((o) => o.kategori === 'mottak');
+    const perSpiller = {};
+    iKamp.forEach((o) => { const k = spillerNokkel(o); (perSpiller[k] || (perSpiller[k] = [])).push(o); });
+    const sammenligning = plan.rader.filter((r) => r.rang != null).slice(0, 6).map((r) => {
+      const o = perSpiller['#' + r.nr] || [];
+      const m = o.length ? mottak(o) : null;
+      return { nr: r.nr, navn: r.navn, rang: r.rang, foerFeilPct: r.feilPct, foerN: r.n, iKamp: m, kilde: o.length ? KILDENAVN[o[0].kilde] : null };
+    });
+    const vaar = kampObs(modell, kamp.id, eget).filter((o) => o.kategori === 'serve');
+    return { plan, sammenligning, vaarServe: vaar.length ? serve(vaar) : null, navn: idag };
+  }
+
+  const api = { KILDENAVN, DEF, MIN_MOTTAK, KRYMP, lesData, normaliser, lagprofil, serveplan, etterKamp, kampObs, mottak, angrep, serve, andelFraProsent, kvalitet, lagNokkel, pct };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Scouting = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "23.10.2026 kl. 15:22";
+window.PUBLIC_UPDATED = "23.10.2026 kl. 16:18";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -732,6 +1017,9 @@ window.PUBLIC_CTX = null;
       S.ready = true; render();
     }, (e) => { S.error = 'Kunne ikke laste troppen (' + e.code + ').'; render(); }));
     keep(S.db.doc(PFX + 'config/logos').onSnapshot((snap) => { S.logos = snap.exists ? (snap.data().logos || {}) : {}; render(); }, () => {}));
+    // Trenerens vurderinger til serveplanen: eget dokument, holdes utenfor all statistikk
+    S.scoutNotes = {}; Object.values(SCOUT.unsubs).forEach((u) => { try { u(); } catch (e) {} }); SCOUT.unsubs = {}; SCOUT.logs = {}; SCOUT.memo = null;
+    if (!window.PUBLIC) keep(S.db.doc(PFX + 'scouting/notater').onSnapshot((snap) => { S.scoutNotes = snap.exists ? JSON.parse(JSON.stringify(snap.data().lag || {})) : {}; render(); }, () => {}));
     keep(S.db.collection(PFX + 'opponents').onSnapshot((snap) => {
       const o = {}; snap.docs.forEach((d) => { o[d.id] = JSON.parse(JSON.stringify(d.data())); }); S.opps = o; render();
     }, () => {}));
@@ -839,6 +1127,7 @@ window.PUBLIC_CTX = null;
     else if (S.dash && S.noAccess) html = noAccessView();
     else if (!S.ready) html = '<div class="panel"><div class="empty">Laster kamper …</div></div>';
     else if (S.view === 'live' && cur()) html = liveView();
+    else if (S.view === 'scout' && cur()) html = scoutView();
     else if (S.view === 'squad' && cur()) html = squadView();
     else if (S.view === 'detail' && cur()) html = detailView();
     else if (S.view === 'sheet' && cur()) html = sheetView();
@@ -1048,7 +1337,7 @@ window.PUBLIC_CTX = null;
       + '<section class="panel p-rec" aria-label="Eget mottak"><div class="panel-head"><h2><span class="step">1</span>Eget mottak</h2><button class="textbtn" data-a="squad">' + receivers.length + ' i mottak · endre</button></div>' + playerRows(receivers.map((p) => p.id), 'rec', REC) + (receivers.length && (receivers.length < 4 || receivers.length > 6) ? '<div class="code-legend warn">Velg 4–6 mottakere.</div>' : '') + '</section>'
       + '<section class="panel p-att" aria-label="Angrep"><div class="panel-head"><h2><span class="step">2</span>Angrep</h2>' + courtBtn + '</div>' + (onCourt.length ? playerRows(onCourt.map((p) => p.id), 'att', ATT) + '<div class="code-legend">0 feil · B blokkert · 1 i spill · 2 poeng</div>' : noCourt) + '</section>'
       + '<section class="panel p-srv" aria-label="Vår serve"><div class="panel-head"><h2><span class="step">3</span>Vår serve</h2>' + courtBtn + '</div>' + (onCourt.length ? playerRows(onCourt.map((p) => p.id), 'srv', SRV) + '<div class="code-legend">F feil · I i spill · E ess</div>' : noCourt) + '</section>'
-      + '<section class="panel opp p-opp" aria-label="Motstanderens mottak"><div class="panel-head"><h2><span class="step">4</span>' + esc(oppName) + ' mottak</h2><button class="textbtn" data-a="dir" style="color:var(--opp)">Slagretning ›</button></div>'
+      + '<section class="panel opp p-opp" aria-label="Motstanderens mottak"><div class="panel-head"><h2><span class="step">4</span>' + esc(oppName) + ' mottak</h2><span style="display:flex;gap:14px"><button class="textbtn" data-a="scout" style="color:var(--accent)">Serveplan ›</button><button class="textbtn" data-a="dir" style="color:var(--opp)">Slagretning ›</button></span></div>'
       + (oppNums.length ? oppNums.map((n) => '<div class="row"><div class="who"><span class="nr opp">' + esc(n) + '</span>' + ((oppP(m, n) || {}).name ? '<span class="nm">' + esc(oppP(m, n).name.split(' ')[0]) + '</span>' : '') + '<span class="mini" data-mini="opp|' + esc(n) + '"></span></div><div class="codes">' + REC.map((c) => codeBtn('opp', n, c[0], c[1], c[2], c[3])).join('') + '</div></div>').join('') : '<div class="empty">Legg til draktnummer på mottakerne deres.</div>')
       + '<form class="addopp" id="oppform"><label for="opp-nr" class="label" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Draktnummer</label><input id="opp-nr" type="text" inputmode="numeric" placeholder="Nr" maxlength="3"><button type="submit">+ Nummer</button></form></section>'
       + '<div class="col stats" id="stats">' + statsPanel(m, evs, oppName) + '</div></div></div>';
@@ -1074,8 +1363,61 @@ window.PUBLIC_CTX = null;
     fillMini(); dirSync();
   }
   // Antall og snitt (0–2) ved siden av navnet: hele kampen
+  // ---- Serveplan (analysemodellen i moduler/scouting/analyse.js, innbakt over app-skriptet) ----
+  // Planen bygger bare på kamper før denne: offisiell statistikk (CEV/NVBF) og egen føring mot samme lag.
+  const SCOUT = { unsubs: {}, logs: {}, memo: null };
+  function scoutLoad(m) {
+    if (!S.db || window.PUBLIC || S.dash || !m) return;
+    const them = oppTeam(m);
+    S.matches.filter((x) => x.id !== m.id && x.status !== 'kommende' && (x.home === them || x.away === them) && !SCOUT.unsubs[x.id]).forEach((x) => {
+      SCOUT.unsubs[x.id] = S.db.collection(PFX + 'matches/' + x.id + '/log').onSnapshot((snap) => {
+        const evs = []; snap.docs.forEach((d) => evs.push(...(d.data().events || []))); SCOUT.logs[x.id] = evs; SCOUT.memo = null; render();
+      }, () => {});
+    });
+  }
+  function scoutPlan(m) {
+    if (!window.Scouting || !m) return null;
+    const key = [CTX.id, m.id, usName(m), Object.keys(SCOUT.logs).length, S.matches.map((x) => x.id + (x.nvbf ? (x.nvbf.statsFetchedAt || x.nvbf.checked || 1) : '')).join(',')].join('|');
+    if (SCOUT.memo && SCOUT.memo.key === key) return SCOUT.memo.val;
+    const W = window.Scouting, them = oppTeam(m);
+    const model = W.normaliser({ matches: S.matches.filter((x) => x.id !== m.id), logs: SCOUT.logs, roster: S.roster, opponents: S.opps || {} }, { our: usName(m) });
+    const plan = W.serveplan(W.lagprofil(model, them, { foer: m.date, utenKamp: m.id }));
+    const val = { lag: them, plan, byNr: Object.fromEntries(plan.rader.map((r) => [String(r.nr), r])), beslutninger: model.beslutninger };
+    SCOUT.memo = { key, val }; return val;
+  }
+  const scoutNote = (lag, nr) => ((S.scoutNotes || {})[lag] || {})[String(nr)] || null;
+  function scoutMarks(nr, txt) {
+    const sp = scoutPlan(cur()); if (!sp) return txt;
+    const r = sp.byNr[String(nr)], n = scoutNote(sp.lag, nr), harNotat = n && (n.vurdering || n.tekst);
+    let pre = '';
+    if (r && r.rang) pre += '<span class="plan-tag' + (r.kvalitet.nivaa === 'svak' ? ' svak' : '') + '" title="' + esc(r.grunner.join(' · ')) + '">Plan ' + r.rang + '</span>';
+    if (harNotat) pre += '<span class="coach-ic" aria-hidden="true">✎</span>';
+    return (pre ? '<span class="plan-line">' + pre + '</span>' : '') + txt + (harNotat ? '<span class="coach-pop">' + esc([n.vurdering, n.tekst].filter(Boolean).join(' – ')) + '</span>' : '');
+  }
+  function scoutView() {
+    const m = cur(), sp = scoutPlan(m); if (!sp) return '<div class="panel"><div class="empty">Serveplanen er ikke tilgjengelig.</div></div>';
+    const W = window.Scouting, pct = (x) => W.pct(x), lag = sp.lag, kan = !window.PUBLIC && !S.dash;
+    let h = '<header class="bar det-bar"><button class="link" data-a="scout-back">‹ Tilbake</button><div class="title"><span class="display tm">Serveplan mot ' + esc(shortName(lag)) + '</span><span class="sub">Bygger på kamper før ' + esc(fmtDate(m.date)) + '. Trenerens vurdering påvirker ikke rekkefølgen.</span></div></header>';
+    if (!sp.plan.rader.length) return h + '<div class="panel"><div class="empty">Ingen mottaksdata for ' + esc(lag) + ' i tidligere kamper.</div></div>';
+    h += '<section class="panel"><table class="tbl"><thead><tr><th>#</th><th style="text-align:left">Spiller</th><th>Mottak</th><th>Feil</th><th>Positivt</th><th style="text-align:left">Kvalitet</th></tr></thead><tbody>' + sp.plan.rader.map((r) => {
+      const n = scoutNote(lag, r.nr) || {};
+      return '<tr><td class="display" style="font-size:22px;color:var(--accent)">' + (r.rang || '–') + '</td><td style="text-align:left"><b>#' + esc(r.nr) + ' ' + esc(r.navn) + '</b><div class="scout-why">' + r.grunner.map(esc).join('<br>') + '</div>' + r.flagg.map((f) => '<div class="scout-why" style="color:var(--opp)">⚑ ' + esc(f) + '</div>').join('')
+        + (kan ? '<div class="scout-coach"><select data-a="scout-note" data-f="vurdering" data-nr="' + esc(r.nr) + '" aria-label="Vurdering"><option value="">Ingen vurdering</option>' + ['Server hit', 'Unngå', 'Følg med'].map((v) => '<option' + (n.vurdering === v ? ' selected' : '') + '>' + v + '</option>').join('') + '</select><input data-a="scout-note" data-f="tekst" data-nr="' + esc(r.nr) + '" value="' + esc(n.tekst || '') + '" placeholder="Notat" aria-label="Notat"></div>' : '')
+        + '</td><td>' + r.n + '<div class="scout-why">' + r.kamper + ' k</div></td><td>' + pct(r.feilPct) + '</td><td>' + (r.positiv ? (r.positiv.avrundet ? '≈ ' : '') + pct(r.positiv.pct) : '–') + '</td><td style="text-align:left"><span class="scout-q ' + r.kvalitet.nivaa.replace(' ', '-') + '">' + esc(r.kvalitet.nivaa) + '</span></td></tr>';
+    }).join('') + '</tbody></table><div class="code-legend">' + esc(sp.plan.grunnlag) + ' Lagsnitt: ' + pct(sp.plan.lagsnitt.feilPct) + ' feil på ' + sp.plan.lagsnitt.n + ' mottak' + (sp.plan.lagsnitt.posPct != null ? ', ' + pct(sp.plan.lagsnitt.posPct) + ' positivt' : '') + '.</div></section>';
+    return h;
+  }
+  async function saveScoutNote(nr, felt, verdi) {
+    const sp = scoutPlan(cur()); if (!sp || !S.db || window.PUBLIC || S.dash) return;
+    const alle = JSON.parse(JSON.stringify(S.scoutNotes || {})), lag = sp.lag;
+    alle[lag] = alle[lag] || {}; alle[lag][String(nr)] = Object.assign({}, alle[lag][String(nr)], { [felt]: verdi, endret: new Date().toISOString() });
+    S.scoutNotes = alle;
+    try { await S.db.doc(PFX + 'scouting/notater').set({ lag: alle }); } catch (e) { S.error = 'Notatet ble ikke lagret (' + e.code + ').'; render(); }
+  }
+
   function fillMini() {
     if (!cur()) return;
+    scoutLoad(cur());
     const st = computeStats(allEvents());
     // Svakeste mottaker hos motstanderen (lavest snitt, minst 5 mottak i kampen) markeres også i registreringen
     const weakOpp = (Object.entries(st.opp).filter(([, r]) => r.n >= 5).sort((a, b) => (a[1].s / a[1].n) - (b[1].s / b[1].n) || b[1].n - a[1].n)[0] || [])[0];
@@ -1094,6 +1436,7 @@ window.PUBLIC_CTX = null;
         else if (t === 'att') txt = r.n + ' · snitt ' + dec(1 + (r.c2 - r.c0 - r.B) / r.n) + avgBarOnly(1 + (r.c2 - r.c0 - r.B) / r.n, 'blk', 'att', posOf(id));
         else txt = esc(r.n + ' · ' + r.E + ' ess ' + r.F + ' feil') + avgBarOnly(srvAvg(r), 'blk', 'srv');
       }
+      if (t === 'opp') txt = scoutMarks(id, txt);
       const weak = t === 'opp' ? id === weakOpp : !!ex[t] && id === ex[t].lo, strong = t !== 'opp' && !!ex[t] && id === ex[t].hi;
       if (weak) txt += '<span class="weak-tag reg">' + (t === 'opp' ? 'Server hit' : 'Lav') + '</span>';
       if (strong) txt += '<span class="weak-tag strong reg">Høy</span>';
@@ -2192,6 +2535,8 @@ window.PUBLIC_CTX = null;
     else if (a === 'acc-grant' && S.accPick) { const sel = document.getElementById('acc-ctx'); const g = Object.assign({}, S.grants || {}, { [S.accPick.id]: sel ? sel.value : CTX.id }); S.accPick = null; S.accHits = []; saveGrants(g); }
     else if (a === 'acc-del') { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Bekreft'; return; } const g = Object.assign({}, S.grants || {}); delete g[b.dataset.id]; saveGrants(g); }
     else if (a === 'clear-info') { S.info = ''; render(); }
+    else if (a === 'scout') { S.scoutFrom = S.view; S.view = 'scout'; render(); window.scrollTo(0, 0); }
+    else if (a === 'scout-back') { S.view = S.scoutFrom || 'live'; render(); }
     else if (a === 'table') { S.view = 'table'; S.matchId = null; openLogs(null); openSeasonLogs(); render(); toTop(); }
     else if (a === 'topmode') { S.topMode = b.dataset.v; render(); }
     else if (a === 'focus' && m) {
@@ -2262,6 +2607,7 @@ window.PUBLIC_CTX = null;
   app.addEventListener('change', (ev) => {
     const el = ev.target; const a = el.dataset && el.dataset.a; if (!a) return;
     if (a === 'kkplayer') { SEASON.player = el.value; el.blur(); setTimeout(render, 0); return; }
+    if (a === 'scout-note') { saveScoutNote(el.dataset.nr, el.dataset.f, el.value); return; }
     if (a === 'ctx') {
       el.blur();
       if (el.value === '__new') { el.value = CTX.id; S.showNewCtx = true; S.showNew = false; setTimeout(render, 0); return; }
@@ -2380,4 +2726,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 23.10.2026 kl. 15:22.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 23.10.2026 kl. 16:18.</footer></body></html>
