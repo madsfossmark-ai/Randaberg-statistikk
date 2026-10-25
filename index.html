@@ -498,6 +498,8 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
   .dir-sum .panel-head { display: none; }
   .dir-page { break-after: page; } .dir-page:last-child { break-after: auto; }
 }
+#moved-banner { position: sticky; top: 0; z-index: 60; background: #1d4ed8; color: #fff; padding: 10px 16px; font-size: 15px; text-align: center; }
+#moved-banner a { color: #fff; font-weight: 700; margin-left: 6px; }
 .panel.pending { box-shadow: 0 0 0 2px var(--opp-strong); }
 .resform { display: flex; flex-direction: column; gap: 6px; }
 .res-set { display: grid; grid-template-columns: 70px 64px 16px 64px; gap: 8px; align-items: center; }
@@ -992,8 +994,26 @@ window.PUBLIC_CTX = null;
   const oppLabel = (m, nr) => { const n = oppName(m, nr); return '#' + nr + (n ? ' ' + n.split(' ')[0] : ''); };
 
   // ---------- Data ----------
+  // Appen er flyttet til den nye løsningen (Supabase, beta) 25.10.2026. Denne versjonen er bare til lesing.
+  // Gjelder bare Claude-artefakten: ikke de åpne sidene (PUBLIC) og ikke V2-bygget (V2_CONFIG).
+  const MOVED_URL = 'https://madsfossmark-ai.github.io/Statistikk-V2-beta/';
+  const FROZEN = !window.PUBLIC && !window.V2_CONFIG;
+  function frozenDb(db) {
+    const nope = async () => { S.error = 'Appen er flyttet til den nye løsningen (beta). Her kan du bare se, ikke endre. Før statistikk på ' + MOVED_URL; render(); throw Object.assign(new Error('flyttet'), { code: 'flyttet' }); };
+    return {
+      doc: (path) => { const d = db.doc(path); return { onSnapshot: (...a) => d.onSnapshot(...a), get: (...a) => d.get(...a), set: nope, update: nope, delete: nope }; },
+      collection: (path) => { const c = db.collection(path); return { onSnapshot: (...a) => c.onSnapshot(...a), get: (...a) => c.get(...a), add: nope }; },
+    };
+  }
+  function movedBanner() {
+    if (!FROZEN || document.getElementById('moved-banner')) return;
+    const d = document.createElement('div'); d.id = 'moved-banner'; d.setAttribute('role', 'status');
+    d.innerHTML = '<b>Flyttet:</b> statistikken føres nå i den nye løsningen (beta). Denne versjonen er bare til lesing. <a href="' + MOVED_URL + '" target="_blank" rel="noopener">Åpne den nye appen ›</a>';
+    document.body.prepend(d);
+  }
   async function boot() {
     try { S.db = await window.claude?.use?.('db'); } catch (e) { S.db = null; }
+    if (FROZEN && S.db) { S.db = frozenDb(S.db); movedBanner(); }
     try { S.dl = await window.claude?.use?.('downloads'); } catch (e) { S.dl = null; }
     if (!window.PUBLIC) {
       try { S.user = await window.claude?.use?.('user'); } catch (e) { S.user = null; }
@@ -1168,6 +1188,7 @@ window.PUBLIC_CTX = null;
     else if (S.view === 'table') html = tableView();
     else if (S.view === 'access' && S.canAdmin) html = accessView();
     else if (S.view === 'legend') html = legendView();
+    else if (S.view === 'logos' && !S.dash) html = logosView();
     else if (S.view === 'watch' && cur()) html = cur().status === 'ferdig' ? detailView() : watchView();
     else html = listView();
     app.innerHTML = '<div id="err">' + errHtml() + '</div>' + html;
@@ -1220,6 +1241,46 @@ window.PUBLIC_CTX = null;
       + '</div></section>';
     h += '<section class="panel"><div class="panel-head"><h2>Grenser for ' + (g === 'menn' ? 'kvinner' : 'menn') + '</h2></div>' + table(g === 'menn' ? 'kvinner' : 'menn') + '<div class="code-legend">Velges automatisk ut fra laget. Nye sesonger og lag får valget «Klasse» når de opprettes.</div></section>';
     return h;
+  }
+
+  // Lagmerker: last opp logo for hvert lag i sesongen. Bildet skaleres ned til 256 px og lagres i config/logos.
+  function logoTeams() {
+    const t = new Set([OUR].concat(CTX.teams || []));
+    S.matches.forEach((m) => { if (!isSlot(m.home)) t.add(m.home); if (!isSlot(m.away)) t.add(m.away); });
+    return [...t].filter(Boolean).sort((a, b) => (a === OUR ? -1 : b === OUR ? 1 : a.localeCompare(b, 'nb')));
+  }
+  function logosView() {
+    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Lagmerker</span><span class="sub">' + esc(CTX.name) + '</span></div><span class="spacer"></span></header>';
+    h += '<section class="panel"><div class="panel-head"><h2>Last opp logo</h2></div><div class="status">Velg et bilde (PNG, JPG eller SVG) for laget. Kvadratisk med gjennomsiktig eller hvit bakgrunn blir finest. Bildet skaleres ned automatisk og vises i kamplisten, tabellen og kampvisningen.</div>'
+      + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="l-al">Lag</th><th>Nå</th><th></th></tr></thead><tbody>'
+      + logoTeams().map((t) => '<tr><td class="key l-al">' + esc(t) + '</td><td>' + crest(t, 'sm') + '</td><td style="white-space:nowrap"><label class="secondary" style="display:inline-flex;align-items:center;cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--line)">Velg bilde<input type="file" accept="image/*" data-logo="' + esc(t) + '" style="position:absolute;width:1px;height:1px;opacity:0"></label>'
+        + '</td></tr>').join('')
+      + '</tbody></table></div></section>';
+    return h;
+  }
+  function logoFromFile(file) {
+    return new Promise((ok, feil) => {
+      const r = new FileReader();
+      r.onerror = () => feil(new Error('kunne ikke lese filen'));
+      r.onload = () => {
+        const img = new Image();
+        img.onerror = () => feil(new Error('ikke et bilde'));
+        img.onload = () => {
+          const N = 256, k = Math.min(1, N / Math.max(img.width || N, img.height || N));
+          const w = Math.max(1, Math.round((img.width || N) * k)), hh = Math.max(1, Math.round((img.height || N) * k));
+          const c = document.createElement('canvas'); c.width = w; c.height = hh; c.getContext('2d').drawImage(img, 0, 0, w, hh);
+          let url = c.toDataURL('image/png'); if (url.length > 150000) url = c.toDataURL('image/webp', 0.85);
+          if (url.length > 190000) return feil(new Error('bildet er for stort'));
+          ok(url);
+        };
+        img.src = r.result;
+      };
+      r.readAsDataURL(file);
+    });
+  }
+  async function saveLogos(logos) {
+    S.logos = logos; render();
+    try { await S.db.doc(PFX + 'config/logos').set({ logos }); S.info = 'Lagmerket er lagret.'; render(); } catch (e) { S.error = 'Lagmerket ble ikke lagret (' + (e.code || e.message) + ').'; render(); }
   }
 
   // Tilgang: knytt personer med lesetilgang til ett lag (lagrer bare person-id)
@@ -1276,6 +1337,7 @@ window.PUBLIC_CTX = null;
       + (S.canAdmin && !S.dash ? '<button class="menu-item" role="menuitem" data-a="access">Tilgang</button>' : '')
       + (hasSite() ? '<button class="menu-item" role="menuitem" data-a="publish">Publiser åpen side</button>' : '')
       + (siteUrl() ? '<button class="menu-item" role="menuitem" data-a="share">Del lenke til åpen side</button>' : '')
+      + (!S.dash && !window.PUBLIC ? '<button class="menu-item" role="menuitem" data-a="logos">Lagmerker</button>' : '')
       + '<button class="menu-item" role="menuitem" data-a="legend">Fargeforklaring</button>'
       + (fsOk() ? fsBtn('menu-item') : '');
     if (window.PUBLIC && !fsOk()) return '';
@@ -2595,6 +2657,8 @@ window.PUBLIC_CTX = null;
     const b = ev.target.closest('[data-a]'); if (!b || b.disabled) return;
     const a = b.dataset.a; const m = cur();
     if (a === 'menu') { S.menuOpen = !S.menuOpen; render(); return; }
+    if (a === 'logos') { S.menuOpen = false; S.view = 'logos'; render(); toTop(); return; }
+    if (a === 'back' && S.view === 'logos') { S.view = 'list'; render(); toTop(); return; }
     if (a === 'legend') { S.menuOpen = false; S.legendBack = { view: S.view, matchId: S.matchId }; S.view = 'legend'; render(); toTop(); return; }
     if (a === 'back' && S.view === 'legend' && S.legendBack) { S.view = S.legendBack.view; S.matchId = S.legendBack.matchId; S.legendBack = null; render(); toTop(); return; }
     if (S.menuOpen) { S.menuOpen = false; if (b.closest('.menu-pop') && a === 'fs') render(); }
@@ -2702,6 +2766,12 @@ window.PUBLIC_CTX = null;
   });
 
   app.addEventListener('change', (ev) => {
+    const lf = ev.target.closest && ev.target.closest('input[data-logo]');
+    if (lf && lf.files && lf.files[0]) {
+      const team = lf.dataset.logo;
+      logoFromFile(lf.files[0]).then((url) => saveLogos(Object.assign({}, S.logos || {}, { [team]: url }))).catch((e) => { S.error = 'Lagmerket ble ikke lagret: ' + e.message + '.'; render(); });
+      return;
+    }
     const el = ev.target; const a = el.dataset && el.dataset.a; if (!a) return;
     if (a === 'kkplayer') { SEASON.player = el.value; el.blur(); setTimeout(render, 0); return; }
     if (a === 'scout-note') { saveScoutNote(el.dataset.nr, el.dataset.f, el.value); return; }
