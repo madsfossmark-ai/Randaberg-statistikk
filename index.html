@@ -761,7 +761,7 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 <script>
 /* Lesemodus: erstatter Claude-lagringen med data.json */
 window.PUBLIC = true;
-window.PUBLIC_UPDATED = "25.10.2026 kl. 15:09";
+window.PUBLIC_UPDATED = "25.10.2026 kl. 15:14";
 window.PUBLIC_CTX = null;
 (function () {
   const dataP = fetch('data.json', { cache: 'no-cache' }).then((r) => r.json());
@@ -1613,7 +1613,11 @@ window.PUBLIC_CTX = null;
 
   // Tabell: CEV-poeng (3–0/3–1 gir 3, 3–2 gir 2, 2–3 gir 1), så seire, poeng, settkvotient og ballkvotient
   function tableMatches() {
-    return S.matches.filter((m) => m.stage !== 'sluttspill' && !isSlot(m.home) && !isSlot(m.away) && !isTest(m) && (!m.custom || m.type === 'turnering' || m.type === 'serie'));
+    return seasonMatches().filter((m) => m.stage !== 'sluttspill');
+  }
+  // Alle seriens/turneringens kamper med kjente lag, også sluttspill (brukes av topplistene)
+  function seasonMatches() {
+    return S.matches.filter((m) => !isSlot(m.home) && !isSlot(m.away) && !isTest(m) && (!m.custom || m.type === 'turnering' || m.type === 'serie'));
   }
   function standings() {
     const T = {}; const row = (t) => (T[t] ||= { team: t, k: 0, v: 0, tap: 0, p: 0, sv: 0, st: 0, bv: 0, bt: 0 });
@@ -1651,7 +1655,7 @@ window.PUBLIC_CTX = null;
   function topListsData() {
     const P = {}, pn = (v) => v == null ? null : parseFloat(String(v).replace('−', '-').replace('%', '').replace(',', '.'));
     let src = 0;
-    tableMatches().filter((m) => m.status === 'ferdig').forEach((m) => {
+    seasonMatches().filter((m) => m.status === 'ferdig').forEach((m) => {
       let n = m.nvbf && m.nvbf.teams && m.nvbf.teams.length && !m.nvbf.partial ? m.nvbf : null;
       if (!n && canLive(m) && SEASON.logs[m.id] && SEASON.logs[m.id].length) n = ownStats(m, SEASON.logs[m.id]);
       if (!n) return; src++; addRecAvg(n);
@@ -2726,4 +2730,4 @@ window.PUBLIC_CTX = null;
 })();
 </script>
 
-<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 25.10.2026 kl. 15:09.</footer></body></html>
+<footer class="pub-foot">Statistikk ført fra benken av Randaberg Volleyball. Andre lags kamper fra NVBF. Oppdatert 25.10.2026 kl. 15:14.</footer></body></html>
