@@ -1620,7 +1620,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "e28f910c55822f73df2a6481a4d4c461d42d916584855f7f653deb2e0b41f472"
+    "sourceHash": "e28f910c55822f73df2a6481a4d4c461d42d916584855f7f653deb2e0b41f472",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r1-koll-viking": {
@@ -3469,7 +3472,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "9a3722da9813811c8506a210dd22d4b5b7a024235156b0be287bfcd34fd30df0"
+    "sourceHash": "9a3722da9813811c8506a210dd22d4b5b7a024235156b0be287bfcd34fd30df0",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r1-oksil-oslo": {
@@ -5167,7 +5173,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "44612ffd938503db8ca20eedfa747df38f6698f5d6a35e22eaa3ac2010d9ba38"
+    "sourceHash": "44612ffd938503db8ca20eedfa747df38f6698f5d6a35e22eaa3ac2010d9ba38",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r1-osi-viking": {
@@ -6999,7 +7008,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "da211944c00dbbf5dcea62e2177aedd62ed5c3c33d68d0f8b721ae83632d105d"
+    "sourceHash": "da211944c00dbbf5dcea62e2177aedd62ed5c3c33d68d0f8b721ae83632d105d",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r10-finstad-osi": {
@@ -9084,7 +9096,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "071e5d36f55fff7ef2f2675357c317a58f17c16e18874b1918b864060d1403fc"
+    "sourceHash": "071e5d36f55fff7ef2f2675357c317a58f17c16e18874b1918b864060d1403fc",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r2-oslo-forde": {
@@ -10810,7 +10825,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "76b464175b443db5850e190e122737f448f94bc3da8067960fc2400d68294096"
+    "sourceHash": "76b464175b443db5850e190e122737f448f94bc3da8067960fc2400d68294096",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r2-viking-oksil": {
@@ -12544,7 +12562,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "ab304be0dc2ef04bd47750e4e8988911265bea4b7f6e7a6c5202c072764117ea"
+    "sourceHash": "ab304be0dc2ef04bd47750e4e8988911265bea4b7f6e7a6c5202c072764117ea",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r3-koll-osi": {
@@ -14519,7 +14540,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "aef9da409927146ed143d9973a5fe020fcc4f453ce882ae412d7187b7702c980"
+    "sourceHash": "aef9da409927146ed143d9973a5fe020fcc4f453ce882ae412d7187b7702c980",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r3-oksil-finstad": {
@@ -16267,7 +16291,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "65d04abd5b5e7bb27741cca73369dacf427681c35878359b5b6731d32691b811"
+    "sourceHash": "65d04abd5b5e7bb27741cca73369dacf427681c35878359b5b6731d32691b811",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r3-randaberg-oslo": {
@@ -18383,7 +18410,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "5ebb5bb5eeab94ed99c9cbaf511ea886e12306d0f1a42733c15d0fac241e15ca"
+    "sourceHash": "5ebb5bb5eeab94ed99c9cbaf511ea886e12306d0f1a42733c15d0fac241e15ca",
+    "src": "NVBF",
+    "partial": true,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r3-toppvolley-oslo": {
@@ -20275,7 +20305,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "3550fba9d5a4f5ef11f7c29fd54fd57ce1b5cd91d7a736a443cf45e1db9509a0"
+    "sourceHash": "3550fba9d5a4f5ef11f7c29fd54fd57ce1b5cd91d7a736a443cf45e1db9509a0",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r3-viking-forde": {
@@ -21972,7 +22005,10 @@
      "numericDash": "zero",
      "percentageDot": "not_applicable"
     },
-    "sourceHash": "aae144226950315dbfdc3e4bb7123004e38277890b24b8919a14a2b669c50a62"
+    "sourceHash": "aae144226950315dbfdc3e4bb7123004e38277890b24b8919a14a2b669c50a62",
+    "src": "NVBF",
+    "partial": false,
+    "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
   "r4-finstad-viking": {
