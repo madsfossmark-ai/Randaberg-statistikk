@@ -16322,7 +16322,7 @@
     ]
    ],
    "nvbf": {
-    "checked": "hentet fra NVBF/DataProject 26.10.2026; hele kampen; spillersummer kontrollert mot TOTALE; Oslo Volley nr. 29: kilden oppgir ikke spillernavn",
+    "checked": "hentet fra NVBF/DataProject 26.10.2026; hele kampen; spillersummer kontrollert mot TOTALE; Oslo Volley nr. 29: kilden oppgir ikke spillernavn (navnet mangler bare for én spiller; tallene er komplette og telles med)",
     "teams": [
      {
       "name": "Randaberg",
@@ -18412,7 +18412,7 @@
     },
     "sourceHash": "5ebb5bb5eeab94ed99c9cbaf511ea886e12306d0f1a42733c15d0fac241e15ca",
     "src": "NVBF",
-    "partial": true,
+    "partial": false,
     "statsFetchedAt": "2026-10-26T10:14:21.586740+00:00"
    }
   },
