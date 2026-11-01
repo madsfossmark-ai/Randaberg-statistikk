@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><!-- app-ikon -->
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#0D1117;color:#E8EBF0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><!-- app-ikon -->
 <link rel="apple-touch-icon" sizes="180x180" href="../ikoner/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../ikoner/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="../ikoner/favicon-16x16.png">
@@ -15,31 +15,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: benk-verktøy, iPad liggende først – tre kolonner (registrering | registrering | løpende tall), stables på smal skjerm */
+/* Layout: benk-verktøy, iPad liggende først – to registreringsfelt i bredden, nøkkeltall over, løpende tall under. Stables på smal skjerm.
+   Design: mørk benkemodus (valgt 31.10.2026) – mørk flate, store knapper, rød/gul/grønn måler per spiller */
 :root {
-  --bg: #F2F1EC; --surface: #FFFFFF; --sunk: #E7E5DE; --line: #D9D6CD;
-  --fg: #16181D; --muted: #4A4F5A; --faint: #6B7080;
-  --accent: #1B4592; --accent-soft: #DCE4F5; --accent-fg: #FFFFFF; --accent-ink: #122F66; --accent-bar: #2F63C4; --hero: #1B4592;
-  --opp: #8A3E0F; --opp-soft: #F5DFCF; --opp-strong: #C85E1C;
-  --bad: #B3261E; --block: #7A1A14; --neutral: #5C6270; --good: #1F7A4D;
-  --bar: #16181D; --bar-fg: #FFFFFF; --bar-muted: #B8BCC6;
+  --bg: #0D1117; --surface: #161B24; --sunk: #1D2430; --row: #1A202B; --line: #2A3240;
+  --fg: #E8EBF0; --muted: #8B95A5; --faint: #6E7888; --soft: #C9D1DC;
+  --accent: #8FB3FF; --accent-soft: #1E2A44; --accent-fg: #0D1117; --accent-ink: #C9D6F0; --accent-bar: #2E4A86; --hero: #2E4A86;
+  --opp: #FFB547; --opp-soft: #1E1912; --opp-strong: #B4641C; --opp-nr: #8A4A12;
+  --amber: #FFB547; --amber-fg: #1A1203;
+  --bad: #C2362D; --block: #7E2520; --neutral: #4A5464; --good: #1E8A57;
+  --lvl-lo: #F07167; --lvl-mid: #FFC94A; --lvl-hi: #4CD08A;
+  --av: #D98A92; --av-soft: #1F161A; --av-kant: #4A2C33;
+  --win-bg: #16402C; --loss-bg: #4A1F1D; --live-bg: #3A2A10;
+  --bar: #161B24; --bar-fg: #FFFFFF; --bar-muted: #8B95A5;
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #121418; --surface: #1C1F25; --sunk: #262A32; --line: #343944;
-  --fg: #ECEDEF; --muted: #A7ADB8; --faint: #8E94A0;
-  --accent: #7FA3E8; --accent-soft: #23314F; --accent-fg: #0E1424;
-  --opp: #F0A774; --opp-soft: #3A2A1F; --opp-strong: #D9773A;
-  --bad: #D9473E; --block: #9C2B23; --neutral: #6A7180; --good: #2E9963;
-  --bar: #0B0C0F; --bar-fg: #FFFFFF; --bar-muted: #A7ADB8; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #121418; --surface: #1C1F25; --sunk: #262A32; --line: #343944;
-  --fg: #ECEDEF; --muted: #A7ADB8; --faint: #8E94A0;
-  --accent: #7FA3E8; --accent-soft: #23314F; --accent-fg: #0E1424;
-  --opp: #F0A774; --opp-soft: #3A2A1F; --opp-strong: #D9773A;
-  --bad: #D9473E; --block: #9C2B23; --neutral: #6A7180; --good: #2E9963;
-  --bar: #0B0C0F; --bar-fg: #FFFFFF; --bar-muted: #A7ADB8; color-scheme: dark }
+:root[data-theme="light"] {
+  --bg: #F2F1EC; --surface: #FFFFFF; --sunk: #E7E5DE; --row: #F7F6F2; --line: #D9D6CD;
+  --fg: #16181D; --muted: #4A4F5A; --faint: #6B7080; --soft: #2A2E37;
+  --accent: #1B4592; --accent-soft: #DCE4F5; --accent-fg: #FFFFFF; --accent-ink: #122F66; --accent-bar: #2F63C4; --hero: #1B4592;
+  --opp: #8A3E0F; --opp-soft: #F5DFCF; --opp-strong: #C85E1C; --opp-nr: #C85E1C;
+  --amber: #C27C0E; --amber-fg: #FFFFFF;
+  --bad: #B3261E; --block: #7A1A14; --neutral: #5C6270; --good: #1F7A4D;
+  --lvl-lo: #B3261E; --lvl-mid: #B07D0B; --lvl-hi: #1F7A4D;
+  --av: #9B3B47; --av-soft: #F7E4E6; --av-kant: #E2B8BD;
+  --win-bg: #DDEFE4; --loss-bg: #F7DCD9; --live-bg: #FBEBCC;
+  --bar: #16181D; --bar-fg: #FFFFFF; --bar-muted: #B8BCC6; color-scheme: light;
+}
 
 body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px;
@@ -55,7 +59,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .app { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
 
 /* Topplinje */
-.bar { background: var(--bar); color: var(--bar-fg); border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.bar { background: var(--bar); color: var(--bar-fg); border-radius: 16px; padding: 8px 12px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .bar a, .bar .link { color: #C9D6F0; text-decoration: none; background: none; border: 0; padding: 8px 4px; font-size: 14px; }
 .bar .title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .bar .title .display { font-size: 24px; }
@@ -67,11 +71,40 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .sbtn { width: 46px; height: 46px; border-radius: 10px; border: 1px solid #3A3F49; background: transparent; color: #FFFFFF; font-size: 22px; }
 .sbtn.plus-us { background: var(--accent-bar); border-color: var(--accent-bar); }
 .sbtn.plus-them { background: var(--opp-strong); border-color: var(--opp-strong); }
-.barbtn { height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #3A3F49; background: transparent; color: #FFFFFF; font-weight: 600; font-size: 14px; }
+.barbtn { height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--sunk); color: #FFFFFF; font-weight: 600; font-size: 14px; }
+.barbtn.hn-knapp { border-color: #FFB547; color: #FFB547; white-space: nowrap; }
 .sets { font-family: var(--font-display); font-size: 18px; color: var(--bar-muted); }
 
+/* Felles toppmeny */
+.topnav { display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap; background: var(--surface); border-radius: 16px; padding: 8px 10px; }
+.topnav .tn-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topnav .ctx-pick select { height: 44px; border-radius: 12px; background-color: var(--sunk); color: var(--fg); text-transform: none; letter-spacing: 0; font-size: 14px; }
+.navtabs { display: flex; gap: 4px; background: var(--bg); border-radius: 12px; padding: 4px; flex-wrap: wrap; }
+.navtab { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px; text-decoration: none; }
+.navtab[aria-current="page"] { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+.sec-h { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+/* Mobil: lagmerke, lagvelger og meny på første linje (velgeren krymper og kutter lange navn), menyfanene under */
+.topnav .ctx-pick select { max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+@media (max-width: 640px) {
+  .topnav { flex-wrap: wrap; }
+  .topnav .spacer { display: none; }
+  .topnav .tn-id { flex: 1 1 0; min-width: 0; }
+  .topnav .tn-id .crest:not(.img) { width: 30px; height: 35px; font-size: 13px; }
+  .topnav .tn-id .crest.img { width: 36px; height: 36px; }
+  .topnav .ctx-pick { flex: 1 1 0; min-width: 0; display: block; }
+  .topnav .ctx-pick select { width: 100%; font-size: 16px; height: 44px; }
+  .topnav .tn-id > .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topnav .menu-wrap { margin-left: 0; flex: none; }
+  .topnav .menu-btn { height: 44px; }
+  .navtabs { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .navtabs::-webkit-scrollbar { display: none; }
+  .navtab { flex: 1 0 auto; justify-content: center; padding: 0 8px; min-width: 0; white-space: nowrap; }
+  @media (max-width: 420px) { .navtabs { gap: 2px; } .navtab { padding: 0 6px; font-size: 13px; } }
+  @media (max-width: 380px) { .navtabs { gap: 0; padding: 3px; } .navtab { padding: 0 3px; } }
+}
+
 /* Generelle flater */
-.panel { background: var(--surface); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.panel { background: var(--surface); border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .panel-head h2 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
 .panel.opp .panel-head h2 { color: var(--opp); }
@@ -79,7 +112,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .empty { font-size: 13px; color: var(--muted); padding: 6px 0; }
 
 .score-wrap { display: flex; align-items: center; gap: 18px; }
-.setpill { font-family: var(--font-display); font-weight: 700; font-size: 30px; padding: 2px 14px; border-radius: 10px; background: #2A2E37; }
+.setpill { font-family: var(--font-display); font-weight: 700; font-size: 30px; padding: 2px 14px; border-radius: 10px; background: var(--sunk); color: var(--amber); }
 .barbtn.primary-bar { background: var(--accent-bar); border-color: var(--accent-bar); }
 .setform { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .setin { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--bar-muted); }
@@ -89,6 +122,10 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .barbtn.win { background: var(--good); border-color: var(--good); }
 .barbtn.lose { background: var(--opp-strong); border-color: var(--opp-strong); }
 .bar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.det-kilde { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; }
+.det-kilde .seg { margin: 0; }
+.det-lenke { color: var(--accent, #8FB4FF); font-weight: 600; text-decoration: none; padding: 10px 2px; white-space: nowrap; }
+.det-bar .bar-actions .barbtn { height: auto; min-height: 44px; padding-top: 6px; padding-bottom: 6px; line-height: 1.2; }
 
 /* Registrering: én rad per spiller, ett trykk. Mobil: alt stablet. Nettbrett: registrering side om side, tall under. Bred iPad: tre kolonner på én skjerm */
 .live-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
@@ -116,24 +153,124 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .code small { font-family: var(--font-body); font-size: 10px; font-weight: 500; margin-top: 2px; }
 .code:active { transform: scale(.94); }
 .c-bad { background: var(--bad); } .c-block { background: var(--block); } .c-mid { background: var(--neutral); } .c-good { background: var(--good); }
+/* Egen blokk (blokkpoeng): grønn B, skilt fra angrepskodene med avstand og ring */
+.c-blkp { background: var(--good); box-shadow: inset 0 0 0 3px rgba(255,255,255,.4); margin-left: 6px; }
 .code.flash { box-shadow: 0 0 0 4px var(--accent); }
 .code-legend { font-size: 12px; color: var(--muted); }
 .addopp { display: flex; gap: 6px; }
 .addopp input { width: 90px; height: 44px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 0 10px; font-size: 16px; }
 .addopp button { height: 44px; padding: 0 12px; border-radius: 10px; border: 1px dashed var(--opp); background: var(--surface); color: var(--opp); font-weight: 600; }
 
+/* Registrering i nytt design: nr, navn med måler og snitt, store knapper som fyller bredden */
+.kpis2 { display: grid; grid-template-columns: 128px repeat(5, minmax(0, 1fr)); gap: 8px; }
+.kpi2 { background: var(--surface); border-radius: 12px; padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.kpi2 .l { font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi2 .v { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.kpi2 .v b { font-family: var(--font-display); font-weight: 800; font-size: 24px; line-height: 1; }
+.kpi2 .v span { font-size: 11px; color: var(--muted); }
+.kpi2.scope { border: 1px solid var(--line); background: var(--sunk); color: var(--fg); text-align: left; justify-content: center; }
+.kpi2.scope b { font-size: 14px; } .kpi2.scope span { font-size: 10px; color: var(--muted); }
+/* Registreringsmodus: Enkel (som før) og Avansert (dempet rødtone: tynn ramme, lavt bånd, modusrad nederst) */
+#live-root.modus-av { border: 1px solid var(--av-kant); border-radius: 20px; padding: 8px; }
+.modusband { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-radius: 10px; padding: 6px 12px; background: var(--av-soft); }
+.modusband b { font-family: var(--font-display); font-size: 16px; letter-spacing: .06em; text-transform: uppercase; color: var(--av); }
+.modusband span { font-size: 12px; color: var(--muted); }
+#live-root.modus-av .panel:not(.opp) > .panel-head h2 { color: var(--av); }
+.modusrad { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.modusrad .mstatus { font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+.modusrad.av .mstatus { color: var(--av); }
+.mbytt { min-height: 46px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--sunk); font-weight: 600; font-size: 14px; white-space: nowrap; }
+.mbytt.av { border-color: var(--av-kant); color: var(--av); } .mbytt.en { border-color: var(--accent); color: var(--accent); }
+.mbekreft.av { border-top: 3px solid var(--av-kant); }
+.mvelger { gap: 12px; }
+.mvalg-rad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .mvalg-rad { grid-template-columns: 1fr; } }
+.mvalg { text-align: left; background: var(--sunk); border: 2px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 8px; color: var(--fg); }
+.mvalg[aria-pressed="true"].en { border-color: var(--accent); background: var(--accent-soft); }
+.mvalg[aria-pressed="true"].av { border-color: var(--av-kant); background: var(--av-soft); }
+.mvalg .mhode { font-family: var(--font-display); font-weight: 800; font-size: 24px; line-height: 1; text-transform: uppercase; letter-spacing: .03em; color: var(--accent); }
+.mvalg.av .mhode { color: var(--av); }
+.mvalg ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.msist { align-self: flex-start; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+.primary.mstart-av { background: var(--av-soft); color: var(--av); border: 1px solid var(--av-kant); }
+/* Poengmodus (V3 fase 3) */
+.poengrad { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--surface); border-radius: 14px; padding: 8px 10px; }
+.poengrad.av { justify-content: space-between; }
+.liten-p { font-size: 13px; color: var(--muted); }
+.pstill { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 38px; line-height: 1; font-variant-numeric: tabular-nums; }
+.pstill b { min-width: 40px; text-align: center; } .pstill span { color: var(--muted); }
+.sdot { width: 11px; height: 11px; border-radius: 50%; background: var(--lvl-mid); box-shadow: 0 0 0 3px rgba(255,201,74,.2); }
+.sdot.skjult { visibility: hidden; }
+.prot { font-size: 13px; color: var(--muted); background: var(--sunk); border-radius: 999px; padding: 4px 10px; }
+.prot b { color: var(--fg); }
+.pknapp { min-height: 52px; min-width: 104px; padding: 0 14px; border: 0; border-radius: 12px; font-family: var(--font-display); font-weight: 800; font-size: 20px; cursor: pointer; }
+.pknapp.oss { background: var(--accent); color: var(--accent-fg); } .pknapp.dem { background: var(--opp); color: #1A1203; }
+.pkvitt { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-radius: 12px; padding: 6px 12px; background: var(--accent-soft); border: 1px solid var(--accent); font-size: 14px; }
+.pkvitt.dem { background: var(--opp-soft); border-color: var(--opp); } .pkvitt.lik { background: var(--sunk); border-color: var(--line); color: var(--muted); }
+.pkvitt b { font-family: var(--font-display); font-size: 18px; }
+.pgrunner { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pgrunn { min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--sunk); color: var(--fg); font-weight: 600; font-size: 13px; }
+.pgrunn.oss { border-color: var(--accent); } .pgrunn.dem { border-color: var(--opp); } .pgrunn.hopp { background: transparent; color: var(--muted); }
+@media (max-width: 600px) { .pknapp { flex: 1 1 40%; } .pstill { font-size: 32px; } }
+.lvl-lo { color: var(--lvl-lo); } .lvl-mid { color: var(--lvl-mid); } .lvl-hi { color: var(--lvl-hi); } .lvl-na { color: var(--muted); }
+.court-chips { display: flex; gap: 4px; border: 0; background: transparent; padding: 0; }
+.cchip { width: 42px; height: 44px; border-radius: 10px; background: var(--sunk); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--fg); }
+.cchip b { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1; }
+.cchip i { font-style: normal; font-size: 9px; font-weight: 700; color: var(--accent); }
+.cchip i.r-O { color: var(--amber); } .cchip i.r-L { color: var(--lvl-hi); }
+#live-root .row { grid-template-columns: 150px minmax(0, 1fr); gap: 8px; }
+#live-root .who { grid-template-areas: "nr nm" "nr mini"; }
+#live-root .who .nr { width: 40px; height: 40px; font-size: 20px; }
+#live-root .nm { font-size: 13px; }
+#live-root .who .mini { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; white-space: nowrap; }
+#live-root .who .mini .avgbar { flex-basis: 100%; }
+#live-root .who .mini .weak-tag.reg { margin: 0; font-size: 9px; padding: 1px 6px; }
+#live-root .who .mini .avgbar.blk { width: 100%; height: 7px; border-radius: 4px; margin-top: 3px; background: var(--line); }
+#live-root .mt { font-size: 11px; color: var(--muted); } #live-root .mt b { font-weight: 700; }
+#live-root .codes { gap: 8px; }
+#live-root .code { flex: 1; width: auto; min-width: 0; height: 54px; border-radius: 12px; font-size: 26px; font-weight: 800; }
+#live-root .p-rec .code, #live-root .p-opp .code { height: 58px; font-size: 28px; }
+#live-root .code small { display: none; }
+#live-root .panel-head h2 { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+#live-root .panel.opp { background: var(--opp-soft); }
+#live-root .nr.opp { background: var(--opp-nr); }
+#live-root .weak-tag.reg { display: inline-block; margin: 2px 0 0; }
+.barbtn.primary-bar, .barbtn.amber { background: var(--amber); border-color: var(--amber); color: var(--amber-fg); font-weight: 700; }
+.ov-scrim { position: fixed; inset: 0; z-index: 55; background: rgba(5, 8, 12, .72); display: grid; place-items: center; padding: 16px; }
+.ov-modal { width: min(680px, 100%); max-height: calc(100vh - 32px); overflow: auto; border: 1px solid var(--line); border-radius: 20px; padding: 16px; gap: 10px; }
+.bytte-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.bytte-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bchip { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sunk); color: var(--fg); text-align: left; }
+.bchip .nr { width: 32px; height: 32px; font-size: 16px; }
+.bchip .nm { flex: 1; font-size: 14px; }
+.bchip i { font-style: normal; font-size: 11px; font-weight: 700; color: var(--accent); }
+.bchip.sel { border-color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+.ov-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.primary:disabled { opacity: .4; cursor: default; }
+@media (max-width: 1100px) { .kpis2 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .cchip { width: 36px; height: 40px; } .cchip b { font-size: 16px; } }
+@media (max-width: 759px) { .kpis2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .court-chips { display: none; } #live-root .row { grid-template-columns: minmax(0, 1fr); } .bytte-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Oppstillingsvelgeren (moduler/oppstilling) i mørk benkemodus, uansett innstilling i operativsystemet */
+html:not([data-theme="light"]) .ops-slot { background: rgba(22, 27, 36, .92); }
+html:not([data-theme="light"]) .ops-slot.tom { background: rgba(22, 27, 36, .6); }
+html:not([data-theme="light"]) .ops-slot.libero { background: #3A2E14; }
+html:not([data-theme="light"]) .ops-slot .lib { color: var(--amber); }
+html:not([data-theme="light"]) .ops-feil { background: #3A1614; color: #FFB4AB; }
+html:not([data-theme="light"]) .ops-info { background: #3A2614; color: #F2B27A; }
+html:not([data-theme="light"]) .ops-seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+
 /* Siste registreringer */
 .lastbar { background: var(--surface); border-radius: 14px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
 .chip { font-size: 13px; padding: 6px 10px; border-radius: 99px; background: var(--sunk); }
 .chip.first { background: var(--accent-soft); font-weight: 600; }
-.undo { height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--bad); background: var(--surface); color: var(--bad); font-weight: 600; }
+.undo { height: 46px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--lvl-lo); background: transparent; color: var(--lvl-lo); font-weight: 600; }
 .undo:disabled { opacity: .4; cursor: default; }
 
 /* Statistikk */
 .seg { display: flex; gap: 4px; flex-wrap: wrap; }
 .seg button { height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 500; }
-.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 700; }
 .tbl { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
 .tbl th { font-size: 11px; font-weight: 500; color: var(--muted); text-align: right; padding: 2px 4px 4px; }
 .tbl th:first-child, .tbl td:first-child { text-align: left; }
@@ -189,10 +326,11 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .listhead h1 { font-family: var(--font-display); font-size: 40px; font-weight: 700; line-height: 1; }
 .tabs { display: inline-flex; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 10px; }
 .tabs button { height: 38px; padding: 0 16px; border: 0; border-radius: 7px; background: transparent; font-weight: 500; }
-.tabs button[aria-pressed="true"] { background: var(--surface); font-weight: 600; }
+.tabs button[aria-pressed="true"] { background: var(--surface); color: var(--fg); font-weight: 700; }
+.tabs button { color: var(--muted); }
 .primary { height: 46px; padding: 0 18px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
 .secondary { height: 46px; padding: 0 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 600; }
-.next { background: var(--hero); color: #FFFFFF; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.next { background: linear-gradient(135deg, var(--accent-soft), var(--surface)); color: var(--fg); border-radius: 18px; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
 .next .nx-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
 .next .nx-top .label { color: inherit; opacity: .85; }
 .next .nx-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px; }
@@ -204,7 +342,8 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 @media (max-width: 640px) { .next .nx-teams { grid-template-columns: minmax(0, 1fr); gap: 10px; } .next .nx-vs { display: none; } .next .nx-team.r { flex-direction: row-reverse; justify-content: flex-end; text-align: left; } .next .nx-team .display { font-size: 24px; } .next .crest.lg { width: 40px; height: 47px; font-size: 17px; } .next .flag.lg { width: 48px; height: 32px; } }
 .next .display { font-size: 30px; }
 .next .meta { font-size: 13px; opacity: .85; }
-.next button { height: 48px; padding: 0 18px; border: 0; border-radius: 10px; background: #FFFFFF; color: var(--hero); font-weight: 600; }
+.next button { height: 56px; padding: 0 22px; border: 0; border-radius: 14px; background: var(--amber); color: var(--amber-fg); font-weight: 700; font-size: 16px; }
+.next .nx-top .label { color: var(--amber); opacity: 1; font-family: var(--font-display); font-size: 15px; font-weight: 700; }
 .rounds { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; align-items: start; }
 .round { display: flex; flex-direction: column; gap: 6px; }
 .match { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; background: var(--sunk); border: 0; border-radius: 10px; padding: 7px 12px; min-height: 46px; color: var(--muted); }
@@ -263,7 +402,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .avg { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .avgbar { width: 48px; height: 4px; border-radius: 2px; background: var(--sunk); overflow: hidden; display: block; }
 .avgbar i { display: block; height: 100%; border-radius: 2px; }
-.avgbar.lo i { background: var(--bad); } .avgbar.mid i { background: #D9A21B; } .avgbar.hi i { background: var(--good); }
+.avgbar.lo i { background: var(--lvl-lo); } .avgbar.mid i { background: var(--lvl-mid); } .avgbar.hi i { background: var(--lvl-hi); }
 .avgbar.wide { width: 100%; height: 6px; border-radius: 3px; margin-top: 4px; }
 .avgbar.inl { display: inline-block; vertical-align: middle; width: 32px; margin-left: 6px; }
 /* Søylen ved navnet i registreringen står på egen linje, så den aldri kuttes på smal skjerm */
@@ -339,9 +478,9 @@ html.dash [data-a="new-toggle"], html.dash [data-a="publish"], html.dash [data-a
 }
 @media (min-width: 1100px) {
   .live-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .p-rec { grid-column: 1; grid-row: 1; } .p-att { grid-column: 2; grid-row: 1; }
-  .p-srv { grid-column: 1; grid-row: 2; } .p-opp { grid-column: 2; grid-row: 2; }
-  .col.stats { grid-column: 1 / -1; grid-row: 3; }
+  .p-rec { grid-column: 1; grid-row: 1; } .p-att { grid-column: 2; grid-row: 1 / span 2; }
+  .p-srv { grid-column: 1; grid-row: 2 / span 2; } .p-opp { grid-column: 2; grid-row: 3; }
+  .col.stats { grid-column: 1 / -1; grid-row: 4; }
   .stats-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; }
   .codes { gap: 8px; }
   .code { width: 68px; height: 52px; font-size: 24px; }
@@ -485,6 +624,63 @@ html.is-fs .app { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: to
 @media (max-width: 820px) { .dir-ov.pres .dir-body { grid-template-columns: minmax(0, 1fr); } .dir-ov.pres .dir-court svg { height: auto; } }
 .dir-ov.ro .dir-court svg { touch-action: auto; }
 .dir-ov.ro [data-d="undo"], .dir-ov.ro #dir-form, .dir-ov.ro #dir-lastp, .dir-ov.ro .dir-court .code-legend { display: none; }
+/* Kamprapport (01.11.2026): etter-kamp-ark til spillerne, liggende A4. Kamparket med registreringer + nøkkeltall og summer.
+   Lyst ark også i mørk modus. Koder: 1 og I uten ring, 2 og E grønn ring, 0 og F rød ring, blokkert B mørkerød ring, blokkpoeng B grønn ring. */
+.rp-kontroll { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.rp-kontroll .chk { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; font-weight: 600; }
+.rp-kontroll .chk input { width: 20px; height: 20px; }
+.rp-wrap { background: var(--surface); border-radius: 14px; padding: 12px; overflow: hidden; }
+#rp-flate { margin: 0 auto; overflow: hidden; }
+#rp-flate .rp-ark { margin: 0; transform-origin: 0 0; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.rp-ark { --p: #FFFFFF; --b: #16181D; --bs: #5A6070; --pl: #DAD7CF; --blaa: #1B4592; --band: #DCE6F5; --sum: #FFF3CF; --k0: #C0392B; --kB: #7A1A14; --k2: #1F7A4D; --spor: #ECEAE4;
+  background: var(--p); color: var(--b); width: 1123px; min-height: 794px; margin: 0 auto; padding: 24px 30px; display: flex; flex-direction: column; gap: 9px; font: 11.5px/1.35 var(--font-body); box-shadow: 0 6px 28px rgba(0,0,0,.35);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.rp-ark p { margin: 0; }
+.rp-hode { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; border-bottom: 4px solid var(--b); padding-bottom: 8px; }
+.rp-hode h2 { margin: 0; font: 700 28px/1 var(--font-display); color: var(--b); letter-spacing: 0; text-transform: none; }
+.rp-hode .rp-sub { color: var(--bs); font-size: 12.5px; }
+.rp-hode .rp-res { font: 700 34px/1 var(--font-display); text-align: right; }
+.rp-settres { display: flex; gap: 5px; justify-content: flex-end; } .rp-settres span { font: 700 14px var(--font-display); padding: 2px 7px; border-radius: 5px; background: var(--spor); } .rp-settres span.v { background: var(--blaa); color: #FFFFFF; }
+.rp-kpi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.rp-kpi div { border: 1.5px solid var(--pl); border-radius: 8px; padding: 4px 9px; }
+.rp-kpi b { display: block; font: 700 20px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.rp-kpi span { font-size: 10px; color: var(--bs); }
+.rp-forkl { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 10px; color: var(--bs); }
+.rp-forkl span { display: inline-flex; gap: 4px; align-items: center; }
+table.rp-ka { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; table-layout: fixed; }
+.rp-ka th, .rp-ka td { padding: 2px 5px; border-bottom: 1px solid var(--pl); vertical-align: middle; color: var(--b); }
+.rp-ka .rp-band th { background: var(--band); text-align: left; font: 700 13px var(--font-display); letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--b); padding: 4px 6px; }
+.rp-ka .rp-band th small { font: 500 10.5px var(--font-body); text-transform: none; letter-spacing: 0; color: var(--bs); margin-left: 6px; }
+.rp-ka thead th { font-size: 9.5px; font-weight: 600; color: var(--bs); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-ka .n { text-align: right; white-space: nowrap; } .rp-ka .s { border-left: 1px solid var(--pl); }
+.rp-ka .sum { background: var(--sum); } .rp-ka .sum.f { border-left: 1.5px solid var(--b); }
+.rp-ka td.nv { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-ka td.nv .rp-nr { font: 700 13px var(--font-display); color: var(--bs); margin-right: 3px; }
+.rp-ka tr.lag td { font-weight: 700; border-top: 1.5px solid var(--b); border-bottom: 0; }
+.rp-ka tr.lag td.reg { font-weight: 600; color: var(--bs); font-size: 10px; }
+.rp-koder { display: flex; flex-wrap: wrap; gap: 1px 2px; align-items: center; }
+.rp-k { display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px; border-radius: 50%; font: 700 9px/1 var(--font-body); font-variant-numeric: tabular-nums; color: var(--b); border: 1.5px solid transparent; }
+.rp-k.c1, .rp-k.cI { color: #3A3F48; font-weight: 600; }
+.rp-k.c2, .rp-k.cE, .rp-k.cP { border-color: var(--k2); color: var(--k2); }
+.rp-k.c0, .rp-k.cF { border-color: var(--k0); color: var(--k0); }
+.rp-k.cB { border-color: var(--kB); color: var(--kB); }
+.rp-mell { width: 4px; }
+.rp-bar { display: inline-block; width: 30px; height: 5px; border-radius: 3px; background: var(--spor); vertical-align: middle; margin-right: 4px; position: relative; overflow: hidden; }
+.rp-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; } .rp-bar.lo i { background: #B3261E; } .rp-bar.mid i { background: #B07D0B; } .rp-bar.hi i { background: #1F7A4D; }
+.rp-to { display: grid; grid-template-columns: 1.08fr .92fr; gap: 14px; align-items: start; }
+.rp-to.en { grid-template-columns: minmax(0, 1fr); }
+.rp-fot { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; font-size: 9.5px; color: var(--bs); border-top: 1px solid var(--pl); padding-top: 5px; }
+@media print {
+  html.rp-printing .rp-ikke-utskrift, html.rp-printing #v2-status, html.rp-printing #v2-demo, html.rp-printing #v2-loggut, html.rp-printing #v2-tilgang, html.rp-printing .hn-kvitt, html.rp-printing .pub-foot { display: none !important; }
+  html.rp-printing, html.rp-printing body { background: #FFFFFF !important; height: auto !important; overflow: visible !important; }
+  html.rp-printing .app { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  html.rp-printing body { margin: 0 !important; padding: 0 !important; }
+  html.rp-printing .rp-wrap { margin: 0 !important; }
+  html.rp-printing .rp-ark { break-inside: avoid; page-break-inside: avoid; }
+  html.rp-printing .rp-wrap { padding: 0; background: none; border-radius: 0; overflow: visible; }
+  html.rp-printing .rp-ark { box-shadow: none; margin: 0; transform: none !important; }
+  html.rp-printing #rp-flate { width: auto !important; height: auto !important; overflow: visible; }
+}
 .dir-print { display: none; }
 @media print {
   @page { size: A4 portrait; margin: 12mm; }
@@ -864,16 +1060,16 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   let CTX = MAIN_CTX, PFX = '', OUR = 'Randaberg';
   // Hver sesong/lag har sin aksentfarge: Randaberg blå, landslaget rødt. Motstander er alltid oransje
   const THEMES = {
-    blue: { a: '#1B4592', soft: '#DCE4F5', ink: '#122F66', bar: '#2F63C4', hero: '#1B4592', aD: '#7FA3E8', softD: '#23314F', inkD: '#C9D6F0', heroD: '#203F7E' },
-    red: { a: '#B0162E', soft: '#F6D5DA', ink: '#7E0F21', bar: '#C8243C', hero: '#B0162E', aD: '#F0899A', softD: '#3E1B22', inkD: '#F6D5DA', heroD: '#8E1226' }
+    blue: { a: '#1B4592', soft: '#DCE4F5', ink: '#122F66', bar: '#2F63C4', hero: '#1B4592', aD: '#8FB3FF', softD: '#1E2A44', inkD: '#C9D6F0', heroD: '#2E4A86', barD: '#2E4A86' },
+    red: { a: '#B0162E', soft: '#F6D5DA', ink: '#7E0F21', bar: '#C8243C', hero: '#B0162E', aD: '#F4A0AD', softD: '#3E1B22', inkD: '#F6D5DA', heroD: '#9E1A2E', barD: '#9E1A2E' }
   };
   function ctxTheme(c) { return THEMES[c && c.theme] || (c && (c.our === 'Norge' || /^u\d/.test(c.id || '')) ? THEMES.red : THEMES.blue); }
   function applyTheme() {
     const t = ctxTheme(CTX); let el = document.getElementById('ctx-theme');
     if (!el) { el = document.createElement('style'); el.id = 'ctx-theme'; document.head.appendChild(el); }
     const light = '--accent:' + t.a + ';--accent-soft:' + t.soft + ';--accent-ink:' + t.ink + ';--accent-bar:' + t.bar + ';--hero:' + t.hero + ';';
-    const dark = '--accent:' + t.aD + ';--accent-soft:' + t.softD + ';--accent-ink:' + t.inkD + ';--accent-bar:' + t.bar + ';--hero:' + t.heroD + ';';
-    el.textContent = 'html:root{' + light + '}@media (prefers-color-scheme: dark){html:root:not([data-theme="light"]){' + dark + '}}html:root[data-theme="dark"]{' + dark + '}';
+    const dark = '--accent:' + t.aD + ';--accent-soft:' + t.softD + ';--accent-ink:' + t.inkD + ';--accent-bar:' + t.barD + ';--hero:' + t.heroD + ';';
+    el.textContent = 'html:root{' + dark + '}html:root[data-theme="light"]{' + light + '}';
   }
   applyTheme();
 
@@ -922,8 +1118,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
 
   const S = {
     db: null, dl: null, ready: false, offline: false,
-    roster: [], matches: [], logs: {}, logUnsub: null, opps: {}, contexts: [MAIN_CTX], ctxReady: false, showNewCtx: false,
-    view: 'list', matchId: null, filter: 'alle', statSet: 'all',
+    roster: [], matches: [], logs: {}, logUnsub: null, plogs: {}, plogUnsub: null, opps: {}, contexts: [MAIN_CTX], ctxReady: false, showNewCtx: false,
+    view: 'list', matchId: null, filter: 'alle', statSet: 'all', detSett: 'all',
     showNew: false, flash: null, error: '',
     // Dashboard: lesetilgang uten registrering (den åpne siden, eller personer med «Kan se»-tilgang)
     dash: !!window.PUBLIC, user: null, myId: null, canAdmin: false, grants: null, noAccess: false, names: {}, accHits: [], accPick: null
@@ -932,6 +1128,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   let deviceId = null;
   try { deviceId = localStorage.getItem('rv-device'); } catch (e) {}
   if (!deviceId) { deviceId = 'd' + Math.random().toString(36).slice(2, 10); try { localStorage.setItem('rv-device', deviceId); } catch (e) {} }
+  // Når tilgangen til notater er sjekket: tegn topplinjen på nytt (live-visningen tegnes ellers bare delvis)
+  if (window.Hurtignotat) window.Hurtignotat.settRender(() => { const r = document.getElementById('live-root'); if (r) r.dataset.sig = ''; render(); });
   try { const v = localStorage.getItem('rv-view'); if (v) { const o = JSON.parse(v); S.filter = o.filter === 'vare' ? 'vare' : 'alle'; } } catch (e) {}
 
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -992,6 +1190,16 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   const usName = (m) => (m && m.focus) || OUR;
   const canLive = (m) => isOurs(m) || !!(m && m.focus);
   const oppTeam = (m) => m.home === usName(m) ? m.away : m.home;
+  // Lagets slug i databasen (V2): hovedlaget på siden har slug fra config, andre lag har sin egen id
+  const ctxSlug = () => (CTX.id === 'main' ? ((window.V2_CONFIG && window.V2_CONFIG.mainSlug && !(window.__v2 && window.__v2.demo)) ? window.V2_CONFIG.mainSlug : 'main') : CTX.id);
+  // Hurtignotat (Observasjoner, V3): kamp, sett, stilling og rotasjon fylles inn
+  function notatKontekst(m) {
+    const c = m.current || { set: 1, home: 0, away: 0 }, hjemme = m.home === usName(m), t = poengPaa(m) ? poengTilstand(m) : null;
+    const oss = t ? t.oss : (hjemme ? c.home : c.away), dem = t ? t.dem : (hjemme ? c.away : c.home);
+    const rot = t && t.rot ? Number(String(t.rot).replace(/\D/g, '')) || null : null;
+    return { slug: ctxSlug(), kamp: m.id, motstander: oppTeam(m), sett: c.set || 1, stilling: (oss || dem) ? oss + '–' + dem : '', rotasjon: rot,
+      deres: (m.oppNumbers || []).map(String), vare: (m.onCourt || []).map((id) => player(id)).filter(Boolean).map((p) => ({ nr: String(p.nr || ''), navn: p.name || '' })).filter((p) => p.nr) };
+  }
   const rosterOf = (team) => ((S.opps[teamSlug(team)] || {}).players || []);
   const oppRoster = (m) => rosterOf(oppTeam(m));
   const teamRoster = (m) => m && m.focus ? rosterOf(m.focus).map((p) => ({ id: 'o:' + teamSlug(m.focus) + ':' + p.nr, nr: String(p.nr), name: p.name || '#' + p.nr, pos: p.pos || '' })) : S.roster;
@@ -1032,13 +1240,16 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     document.documentElement.classList.toggle('dash', S.dash);
     if (!S.db) { S.offline = true; S.ready = true; render(); return; }
     let saved = null; try { saved = localStorage.getItem('rv-ctx'); } catch (e) {}
+    // V2 (Supabase): tilgangen styres av medlemskap, og en lesebruker ser bare lagene den er medlem av.
+    // Den gamle tilgangslisten (config/access) finnes ikke der, så lesebrukere velger lag som alle andre.
+    const DASH_GRANTS = S.dash && !window.PUBLIC && !window.V2_CONFIG;
     if (!window.PUBLIC) S.db.doc('config/access').onSnapshot((snap) => {
-      S.grants = snap.exists ? (snap.data().grants || {}) : {}; if (S.dash) resolveDashCtx(); else render();
-    }, () => { S.grants = {}; if (S.dash) resolveDashCtx(); });
+      S.grants = snap.exists ? (snap.data().grants || {}) : {}; if (DASH_GRANTS) resolveDashCtx(); else render();
+    }, () => { S.grants = {}; if (DASH_GRANTS) resolveDashCtx(); });
     S.db.doc('config/contexts').onSnapshot((snap) => {
       const list = snap.exists ? (snap.data().list || []) : [];
       S.contexts = [MAIN_CTX].concat(list.filter((c) => c && c.id && c.id !== 'main'));
-      if (S.dash && !window.PUBLIC) { S.ctxLoaded = true; resolveDashCtx(); return; }
+      if (DASH_GRANTS) { S.ctxLoaded = true; resolveDashCtx(); return; }
       if (!S.ctxReady) { S.ctxReady = true; applyCtx(saved || 'main'); }
       else if (!S.contexts.some((c) => c.id === CTX.id)) applyCtx('main');
       else { CTX = S.contexts.find((c) => c.id === CTX.id); render(); }
@@ -1090,6 +1301,16 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     }, (e) => { S.error = 'Kunne ikke laste kamper (' + e.code + ').'; render(); }));
   }
 
+  // Felles toppmeny: lag/sesong, Kamper · Tabell · Dashboard · Analyse, og menyen med det som brukes sjeldnere
+  // Bare i V2-bygget (der analysesiden ligger ved siden av lagsiden); slås av med config.analyse = false
+  function analyseHref() { return (window.ForsvarKamp && !(window.V2_CONFIG && window.V2_CONFIG.analyse === false) && !window.PUBLIC) ? 'analyse/' + (location.search.indexOf('demo') >= 0 ? '?demo=1' : '') : null; }
+  function navHtml(aktiv) {
+    const tab = (k, a, l) => '<button class="navtab" data-a="' + a + '"' + (aktiv === k ? ' aria-current="page"' : '') + '>' + l + '</button>';
+    const an = analyseHref();
+    return '<nav class="topnav" aria-label="Hovedmeny"><div class="tn-id">' + crest(OUR, 'md') + ctxPicker() + '</div>'
+      + '<div class="navtabs">' + tab('kamper', 'back', 'Kamper') + tab('tabell', 'table', 'Tabell') + tab('dashboard', 'season', 'Dashboard')
+      + (an ? '<a class="navtab" href="' + an + '">Analyse</a>' : '') + '</div><span class="spacer"></span>' + menuHtml() + '</nav>';
+  }
   function ctxPicker() {
     if (window.PUBLIC || S.offline || S.dash) return '<span class="label">' + esc(CTX.name) + '</span>';
     return '<label class="ctx-pick" for="ctx-pick"><span class="sr">Sesong eller lag</span><select id="ctx-pick" data-a="ctx">'
@@ -1107,13 +1328,19 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
 
   function openLogs(id) {
     if (S.logUnsub) { S.logUnsub(); S.logUnsub = null; }
-    S.logs = {};
+    if (S.plogUnsub) { S.plogUnsub(); S.plogUnsub = null; }
+    S.logs = {}; S.logsFor = null; S.plogs = {};
     if (!S.db || !id) return;
+    // Poeng i Avansert (V3 fase 3): egne lister per enhet og sett, som registreringene
+    S.plogUnsub = S.db.collection(PFX + 'matches/' + id + '/poeng').onSnapshot((snap) => {
+      const p = {}; snap.docs.forEach((d) => { p[d.id] = (d.data().poeng || []).slice(); });
+      S.plogs = p; render();
+    }, () => {});
     S.logUnsub = S.db.collection(PFX + 'matches/' + id + '/log').onSnapshot((snap) => {
       const logs = {};
       snap.docs.forEach((d) => { logs[d.id] = (d.data().events || []).slice(); });
       Object.keys(OPPHINT).forEach((k) => delete OPPHINT[k]); Object.values(logs).forEach((evs) => learnNames(evs, OPPHINT));
-      S.logs = logs; render();
+      S.logs = logs; S.logsFor = id; render();
     }, (e) => { S.error = 'Registreringene kunne ikke lastes (' + e.code + ').'; render(); });
   }
 
@@ -1131,18 +1358,145 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     catch (e) { S.error = 'Troppen ble ikke lagret (' + e.code + ').'; render(); }
   }
 
+  // ---------- Poengmodus (V3 fase 3, variant D – til test) ----------
+  // Avgjørende registreringer gir poeng automatisk; resten tas med +1 oss / +1 dem (valgfri grunn).
+  // Slått på per kamp, og bare der siden tillater det (V2_CONFIG.poengmodus). Ellers føres det nøyaktig som før.
+  // Poengene lagres som egne registreringer (stats.poeng): én liste per enhet og sett, angre blir en egen rad. Stillingen lagres også i current.
+  const POENG_AV = { 'att-2': ['oss', 'Kill'], 'srv-E': ['oss', 'Ess'], 'blk-P': ['oss', 'Blokk'], 'opp-0': ['oss', 'Motstander mottaksfeil'],
+    'att-0': ['dem', 'Angrepsfeil'], 'att-B': ['dem', 'Blokkert'], 'srv-F': ['dem', 'Servefeil'], 'rec-0': ['dem', 'Mottaksfeil'] };
+  const POENG_PAR = { 'srv-E': 'opp-0', 'opp-0': 'srv-E' };   // samme ballveksling sett fra begge sider: telles én gang
+  const POENG_GRUNNER = { oss: ['Motstander servefeil', 'Motstander angrepsfeil', 'Blokk', 'Regelfeil hos dem'], dem: ['Motstander angrep', 'Regelfeil hos oss'] };
+  // Registreringsmodus (01.11.2026): Enkel = som før (mottak, angrep, serve). Avansert = oppstilling, bytter, rotasjon og poengtelling.
+  // Velges før registreringen starter, kan byttes nederst under live statistikk. Lagres på kampen (legacy «modus»).
+  // Kamper uten valg men med bekreftet oppstilling regnes som Avansert; pågående kamper uten noe av dette som Enkel.
+  function modus(m) {
+    if (!m) return 'enkel';
+    if (m.modus === 'enkel' || m.modus === 'avansert') return m.modus;
+    if (m.lineups && m.lineups.sets && Object.values(m.lineups.sets).some((x) => x && x.confirmed)) return 'avansert';
+    if (m.status === 'pågår' || m.status === 'ferdig' || (m.setScores || []).length) return 'enkel';
+    return null;   // ikke valgt ennå: velges før start
+  }
+  function erAv(m) { return modus(m) === 'avansert'; }
+  function sistModus() { try { return localStorage.getItem('rv-modus-' + CTX.id) || 'enkel'; } catch (e) { return 'enkel'; } }
+  function modusVelger(m) {
+    const valgt = S.modusValg || sistModus(), sist = sistModus();
+    const kort = (v, tittel, punkt) => '<button class="mvalg ' + (v === 'avansert' ? 'av' : 'en') + '" data-a="modus-valg" data-v="' + v + '" aria-pressed="' + (valgt === v) + '"><span class="mhode">' + (v === 'avansert' ? '★ ' : '○ ') + tittel + '</span><ul>' + punkt.map((x) => '<li>' + x + '</li>').join('') + '</ul>' + (sist === v ? '<span class="msist">Sist brukt</span>' : '') + '</button>';
+    return '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display tm">' + crest(m.home, 'sm') + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + crest(m.away, 'sm') + '</span><span class="sub">' + esc(fmtDate(m.date)) + '</span></div></header>'
+      + '<section class="panel mvelger"><div class="panel-head"><h2>Hvordan vil du føre denne kampen?</h2></div><div class="mvalg-rad">'
+      + kort('enkel', 'Enkel', ['Mottak, angrep og serve', 'Ingen oppstilling', 'Settresultat ved settslutt'])
+      + kort('avansert', 'Avansert', ['Alt i Enkel', 'Oppstilling, bytter og rotasjon', 'Poengtelling: sideout og breakpoint'])
+      + '</div><div><button class="primary' + (valgt === 'avansert' ? ' mstart-av' : '') + '" data-a="modus-start" data-v="' + valgt + '">Start registrering · ' + (valgt === 'avansert' ? 'Avansert' : 'Enkel') + '</button></div>'
+      + '<div class="code-legend">Modusen kan byttes nederst i registreringen, under live statistikk.</div></section>';
+  }
+  function modusRad(m) {
+    if (S.dash || window.PUBLIC) return '';
+    const av = erAv(m), hjemme = m.home === usName(m), c = m.current || {};
+    let h = '<section class="modusrad' + (av ? ' av' : '') + '" aria-label="Registreringsmodus"><span class="mstatus">' + (av ? '★ Avansert' : '○ Enkel') + '</span><span class="spacer"></span>';
+    if (!S.modusBytt) h += av ? '<button class="mbytt en" data-a="modus-bytt" data-v="enkel">○ Bytt til Enkel</button>' : '<button class="mbytt av" data-a="modus-bytt" data-v="avansert">★ Bytt til Avansert</button>';
+    h += '</section>';
+    if (S.modusBytt === 'avansert') h += '<section class="panel mbekreft av"><div class="panel-head"><h2>Bytt til Avansert?</h2></div><div class="status">Poengtellingen starter fra stillingen nå. Rett den hvis den ikke stemmer, og velg hvem som server. Deretter bekrefter du oppstillingen.</div>'
+      + '<form id="modusform" class="setform" style="flex-wrap:wrap"><label class="setin"><span>' + esc(shortName(usName(m))) + '</span><input id="mb-oss" type="text" inputmode="numeric" maxlength="2" value="' + (hjemme ? (c.home || 0) : (c.away || 0)) + '"></label><span class="dash">–</span>'
+      + '<label class="setin"><span>' + esc(shortName(oppTeam(m))) + '</span><input id="mb-dem" type="text" inputmode="numeric" maxlength="2" value="' + (hjemme ? (c.away || 0) : (c.home || 0)) + '"></label>'
+      + '<div class="seg" role="group" aria-label="Hvem server nå"><button type="button" data-a="mb-serve" data-v="oss" aria-pressed="' + (S.mbServe !== 'dem') + '">Vi server</button><button type="button" data-a="mb-serve" data-v="dem" aria-pressed="' + (S.mbServe === 'dem') + '">De server</button></div>'
+      + '<button class="primary mstart-av" type="submit">Bytt og åpne oppstilling</button><button class="secondary" type="button" data-a="modus-avbryt">Avbryt</button></form></section>';
+    if (S.modusBytt === 'enkel') h += '<section class="panel mbekreft"><div class="panel-head"><h2>Bytt til Enkel?</h2></div><div class="status">Poengtellingen stopper, og oppstilling og bytter skjules. Poeng og oppstilling som er ført, beholdes.</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" data-a="modus-til" data-v="enkel">Bytt til Enkel</button><button class="secondary" data-a="modus-avbryt">Avbryt</button></div></section>';
+    return h;
+  }
+  function poengTillatt() { return !S.dash && !window.PUBLIC; }
+  function poengPaa(m) { return poengTillatt() && !!m && erAv(m); }
+  function poengSett(m) { return (m.current && m.current.set) || 1; }
+  const pUuid = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16)));
+  const pKey = (set) => deviceId + '-s' + set;
+  function pEgen(set) { return (S.plogs[pKey(set)] || []).slice(); }
+  // Alle enheters poeng i settet, i tidsrekkefølge. Siste «start» (Avansert slått på midt i settet) er utgangspunktet.
+  function poengAlle(set) {
+    const alle = []; Object.entries(S.plogs || {}).forEach(([k, l]) => { if (k.endsWith('-s' + set)) alle.push(...l); });
+    alle.sort((a, b) => a.t - b.t);
+    let base = null; alle.forEach((x) => { if (x.type === 'start') base = x; });
+    return { base, poeng: alle.filter((x) => x.type !== 'start' && (!base || x.t >= base.t)) };
+  }
+  function poengListe(m, set) { return poengAlle(set).poeng; }
+  function egneSistePoeng(set) { const l = pEgen(set), { base } = poengAlle(set); for (let i = l.length - 1; i >= 0; i--) { if (l[i].type === 'start') return -1; if (!base || l[i].t >= base.t) return i; } return -1; }
+  async function poengSkriv(m, set, liste) {
+    S.plogs = Object.assign({}, S.plogs, { [pKey(set)]: liste });
+    const vent = S.loggSkriv;   // autopoeng: registreringen lagres først, så poenget kan peke på den
+    try { if (vent) await vent; await S.db.doc(PFX + 'matches/' + m.id + '/poeng/' + pKey(set)).set({ device: deviceId, set, poeng: liste }); }
+    catch (e) { S.error = 'Poenget ble ikke lagret (' + (e.code || e.message) + ').'; render(); }
+  }
+  function poengTilstand(m) {
+    const set = poengSett(m), st = (m.lineups && m.lineups.sets && m.lineups.sets[String(set)] && m.lineups.sets[String(set)].start) || null;
+    const a = poengAlle(set), base = a.base ? { oss: a.base.so, dem: a.base.sd, server: a.base.ss } : null;
+    const t = { set, oss: base ? base.oss : 0, dem: base ? base.dem : 0, server: base ? base.server : (st && st.firstServe === 'motstander' ? 'dem' : 'oss'), rot: (st && st.rotation) || null, auto: 0, n: 0, egne: egneSistePoeng(set) >= 0, kjentStart: !!st };
+    a.poeng.forEach((x) => {
+      t.n++; if (x.k === 'auto') t.auto++;
+      if (x.v === 'oss') { t.oss++; if (t.server === 'dem' && t.rot && window.Oppstilling) t.rot = Oppstilling.rotasjonEtter(t.rot, 1); t.server = 'oss'; }
+      else { t.dem++; t.server = 'dem'; }
+    });
+    return t;
+  }
+  function poengLagre(m) {
+    const t = poengTilstand(m), hjemme = m.home === usName(m);
+    m.current = { set: t.set, home: hjemme ? t.oss : t.dem, away: hjemme ? t.dem : t.oss };
+    saveMatch(m.id, { current: m.current });
+  }
+  function poengLegg(m, v, k, g, e) {
+    const set = poengSett(m), l = pEgen(set).concat([{ id: pUuid(), t: Date.now(), type: 'poeng', v, k, g: g || null, e: e || null }]);
+    poengSkriv(m, set, l); poengLagre(m);
+  }
+  // Angre poeng: denne enhetens siste poeng i settet (som «Angre» for registreringer)
+  function poengAngre(m) {
+    const set = poengSett(m), i = egneSistePoeng(set); if (i < 0) return;
+    const l = pEgen(set); l.splice(i, 1);
+    S.poengKv = null; S.poengGrunn = null; S.poengSiste = null; poengSkriv(m, set, l); poengLagre(m); render();
+  }
+  function poengNr(m, ev) { return ev.type === 'opp' ? ev.p : ((player(ev.p) || {}).nr || ''); }
+  function poengFraReg(m, ev) {
+    if (!poengPaa(m)) return;
+    const key = ev.type + '-' + ev.c, a = POENG_AV[key];
+    S.poengGrunn = null;
+    if (!a) { S.poengSiste = key; S.poengKv = null; return; }   // ballvekslingen fortsetter
+    const tekst = a[1] + (poengNr(m, ev) ? ' #' + poengNr(m, ev) : '');
+    if (S.poengSiste && POENG_PAR[key] === S.poengSiste) { S.poengKv = { lik: true, tekst: tekst + ' hører til samme ballveksling. Telt én gang.' }; S.poengSiste = null; return; }
+    poengLegg(m, a[0], 'auto', tekst, ev.t); S.poengSiste = key; S.poengKv = { v: a[0], tekst };
+  }
+  // Angre siste registrering: et poeng som kom fra den registreringen, angres også
+  function poengVedAngre(m, ev) {
+    if (!poengPaa(m) || !ev) return;
+    const set = poengSett(m), i = egneSistePoeng(set), l = pEgen(set), x = l[i];
+    if (x && x.k === 'auto' && x.e === ev.t) { l.splice(i, 1); poengSkriv(m, set, l); poengLagre(m); }
+    S.poengKv = null; S.poengSiste = null;
+  }
+  function poengRad(m) {
+    if (!poengPaa(m)) return '';
+    const t = poengTilstand(m), hjemme = m.home === usName(m);
+    const venstre = hjemme ? t.oss : t.dem, hoyre = hjemme ? t.dem : t.oss, sv = (hjemme ? t.server === 'oss' : t.server === 'dem');
+    let h = '<div class="poengrad"><div class="pstill"><span class="sdot' + (sv ? '' : ' skjult') + '" title="Server"></span><b>' + venstre + '</b><span>–</span><b>' + hoyre + '</b><span class="sdot' + (sv ? ' skjult' : '') + '" title="Server"></span></div>'
+      + '<span class="prot">' + (t.rot ? 'Rotasjon <b>' + esc(t.rot) + '</b> · ' : '') + (t.server === 'oss' ? 'vi server' : 'vi mottar') + (t.kjentStart ? '' : ' · <span title="Bekreft oppstilling for å følge rotasjonen">uten oppstilling</span>') + '</span>'
+      + '<span class="spacer"></span><button class="pknapp oss" data-a="poeng" data-v="oss">+1 ' + esc(shortName(usName(m))) + '</button><button class="pknapp dem" data-a="poeng" data-v="dem">+1 ' + esc(shortName(oppTeam(m))) + '</button>'
+      + '<button class="barbtn" data-a="poeng-angre"' + (t.egne ? '' : ' disabled') + '>Angre poeng</button></div>';
+    if (S.poengKv && S.poengKv.lik) h += '<div class="pkvitt lik" role="status">' + esc(S.poengKv.tekst) + '</div>';
+    else if (S.poengKv) h += '<div class="pkvitt' + (S.poengKv.v === 'dem' ? ' dem' : '') + '" role="status"><b>+1 ' + esc(shortName(S.poengKv.v === 'oss' ? usName(m) : oppTeam(m))) + '</b><span>' + esc(S.poengKv.tekst) + ' · telt automatisk</span><span class="spacer"></span><button class="barbtn" data-a="poeng-angre">Angre</button></div>';
+    else if (S.poengGrunn) h += '<div class="pgrunner" role="group" aria-label="Grunn for poenget"><span class="liten-p">Poeng til ' + esc(shortName(S.poengGrunn === 'oss' ? usName(m) : oppTeam(m))) + '. Grunn (valgfritt):</span>'
+      + POENG_GRUNNER[S.poengGrunn].map((g) => '<button class="pgrunn ' + S.poengGrunn + '" data-a="poeng-grunn" data-v="' + esc(g) + '">' + esc(g) + '</button>').join('') + '<button class="pgrunn hopp" data-a="poeng-grunn" data-v="">Hopp over</button></div>';
+    return h;
+  }
+
   async function logEvent(type, who, code, extra) {
     const m = cur(); if (!m || !S.db) return;
     const set = (m.current && m.current.set) || 1;
     const key = deviceId + '-s' + set;
     const own = (S.logs[key] || []).slice();
     const ev = Object.assign({ t: Date.now(), set, type, p: who, c: code }, extra || {});
-    const nm = type === 'opp' || type === 'dir' ? ((oppP(m, who) || {}).name || '') : (((type === 'rec' || type === 'att' || type === 'srv') && player(who)) || {}).name;
+    const nm = type === 'opp' || type === 'dir' ? ((oppP(m, who) || {}).name || '') : (((type === 'rec' || type === 'att' || type === 'srv' || type === 'blk') && player(who)) || {}).name;
     if (nm && !String(nm).startsWith('#')) ev.n = nm;
     own.push(ev);
     S.logs[key] = own;
+    const lagre = S.db.doc(PFX + 'matches/' + m.id + '/log/' + key).set({ device: deviceId, set, events: own });
+    S.loggSkriv = lagre.catch(() => {});
+    poengFraReg(m, ev);
     render();
-    try { await S.db.doc(PFX + 'matches/' + m.id + '/log/' + key).set({ device: deviceId, set, events: own }); }
+    try { await lagre; }
     catch (e) { S.error = 'Registreringen ble ikke lagret (' + e.code + ').'; render(); }
     if (m.status !== 'pågår' && m.status !== 'ferdig') saveMatch(m.id, { status: 'pågår' });
   }
@@ -1152,28 +1506,42 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     let bestKey = null, bestT = -1;
     Object.entries(S.logs).forEach(([k, evs]) => { if (k.startsWith(deviceId + '-') && evs.length && evs[evs.length - 1].t > bestT) { bestT = evs[evs.length - 1].t; bestKey = k; } });
     if (!bestKey) return;
+    const ut = S.logs[bestKey][S.logs[bestKey].length - 1];
     const own = S.logs[bestKey].slice(0, -1);
-    S.logs[bestKey] = own; render();
+    S.logs[bestKey] = own; poengVedAngre(m, ut); render();
     try { await S.db.doc(PFX + 'matches/' + m.id + '/log/' + bestKey).set({ device: deviceId, set: Number(bestKey.split('-s')[1]), events: own }); }
     catch (e) { S.error = 'Angre ble ikke lagret (' + e.code + ').'; render(); }
   }
 
   // ---------- Statistikk ----------
   function computeStats(events) {
-    const rec = {}, att = {}, srv = {}, opp = {};
+    const rec = {}, att = {}, srv = {}, opp = {}, blk = {};
     const bump = (o, k) => (o[k] ||= { n: 0, s: 0, c0: 0, c1: 0, c2: 0, B: 0, F: 0, I: 0, E: 0 });
     events.forEach((e) => {
+      if (e.type === 'blk') blk[e.p] = (blk[e.p] || 0) + 1;   // egen blokk (blokkpoeng); egen type, påvirker ikke 0–2-snittene
       if (e.type === 'rec') { const r = bump(rec, e.p); r.n++; r['c' + e.c]++; r.s += Number(e.c); }
       if (e.type === 'opp') { const r = bump(opp, e.p); r.n++; r['c' + e.c]++; r.s += Number(e.c); }
       if (e.type === 'att') { const r = bump(att, e.p); r.n++; if (e.c === 'B') r.B++; else r['c' + e.c]++; }
       if (e.type === 'srv') { const r = bump(srv, e.p); r.n++; r[e.c]++; }
     });
     const sum = (o) => Object.values(o).reduce((a, r) => { Object.keys(r).forEach((k) => a[k] = (a[k] || 0) + r[k]); return a; }, { n: 0, s: 0, c0: 0, c1: 0, c2: 0, B: 0, F: 0, I: 0, E: 0 });
-    return { rec, att, srv, opp, tRec: sum(rec), tAtt: sum(att), tSrv: sum(srv), tOpp: sum(opp) };
+    return { rec, att, srv, opp, blk, tBlk: Object.values(blk).reduce((a, n) => a + n, 0), tRec: sum(rec), tAtt: sum(att), tSrv: sum(srv), tOpp: sum(opp) };
   }
 
   // ---------- Visninger ----------
+  // Nedtrekksmenyer og skjema skal ikke hoppe ut når data oppdateres (sanntid/polling hvert 4. sekund):
+  // - mens en nedtrekksmeny er åpen (fokus, ikke valgt ennå) utsettes tegningen til valget er gjort eller fokus forlater den
+  // - verdier brukeren har fylt inn i et skjema (ny kamp, resultat, nytt lag …) beholdes når siden tegnes på nytt
+  const UI = { velger: null, utsatt: false, utkast: {} };
+  app.addEventListener('focusin', (ev) => { if (ev.target.tagName === 'SELECT') UI.velger = ev.target; });
+  app.addEventListener('focusout', (ev) => { if (ev.target === UI.velger) { UI.velger = null; if (UI.utsatt) { UI.utsatt = false; setTimeout(render, 0); } } });
+  const huskUtkast = (ev) => { const el = ev.target; if (el.tagName === 'SELECT' && el === UI.velger && ev.type === 'change') { UI.velger = null; if (UI.utsatt) { UI.utsatt = false; setTimeout(render, 0); } }
+    if (el.id && el.closest && el.closest('form')) UI.utkast[el.id] = el.type === 'checkbox' ? { c: el.checked } : { v: el.value }; };
+  app.addEventListener('input', huskUtkast, true); app.addEventListener('change', huskUtkast, true);
+  app.addEventListener('submit', (ev) => { ev.target.querySelectorAll('[id]').forEach((el) => { delete UI.utkast[el.id]; }); }, true);
   function render() {
+    if (UI.velger && UI.velger.isConnected && document.activeElement === UI.velger) { UI.utsatt = true; return; }
+    if (window.Oppstilling) setTimeout(opsAuto, 0);
     if (S.view === 'live' && !S.offline && cur()) {
       const root = document.getElementById('live-root');
       if (root && root.dataset.sig === liveSig(cur())) { updateLive(); return; }
@@ -1186,11 +1554,13 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     if (S.offline) html = offlineView();
     else if (S.dash && S.noAccess) html = noAccessView();
     else if (!S.ready) html = '<div class="panel"><div class="empty">Laster kamper …</div></div>';
+    else if (S.view === 'live' && cur() && modus(cur()) === null && !S.dash && !window.PUBLIC) html = modusVelger(cur());
     else if (S.view === 'live' && cur()) html = liveView();
     else if (S.view === 'scout' && cur()) html = scoutView();
     else if (S.view === 'squad' && cur()) html = squadView();
     else if (S.view === 'detail' && cur()) html = detailView();
     else if (S.view === 'sheet' && cur()) html = sheetView();
+    else if (S.view === 'rapport' && cur()) html = rapportView();
     else if (S.view === 'season') html = seasonView();
     else if (S.view === 'table') html = tableView();
     else if (S.view === 'access' && S.canAdmin) html = accessView();
@@ -1202,6 +1572,10 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     if (S.view === 'live') fillMini();
     dirSync();
     if (S.menuOpen) { const pop = app.querySelector('.menu-pop'); if (pop) { const r = pop.getBoundingClientRect(); if (r.left < 8) { pop.style.right = 'auto'; pop.style.left = '0'; } } }
+    // Utfylte skjemafelt beholdes; felt som ikke lenger finnes (skjemaet er lukket) glemmes
+    Object.keys(UI.utkast).forEach((id) => { const el = document.getElementById(id), u = UI.utkast[id];
+      if (!el || !el.closest('form')) { delete UI.utkast[id]; return; }
+      if ('c' in u) el.checked = u.c; else if (el.value !== u.v && (el.tagName !== 'SELECT' || [...el.options].some((o) => o.value === u.v))) el.value = u.v; });
     if (keepId) { const el = document.getElementById(keepId); if (el) { if (keepVal != null && el.tagName === 'INPUT') el.value = keepVal; el.focus(); try { if (selStart != null && el.setSelectionRange) el.setSelectionRange(selStart, selStart); } catch (e) {} } }
   }
 
@@ -1323,10 +1697,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     const upcoming = S.matches.filter((m) => isOurs(m) && m.status !== 'ferdig').sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
     const rounds = {};
     ms.forEach((m) => { const r = m.custom ? roundLabel(m) + '|' + m.id : roundLabel(m); (rounds[r] ||= []).push(m); });
-    let h = '<div class="listhead"><div class="lh-ctx">' + ctxPicker() + '</div><div class="lh-id">' + crest(OUR, 'md') + '<h1>Kamper</h1>' + (window.PUBLIC ? '<span class="status">Oppdatert ' + window.PUBLIC_UPDATED + '</span>' : '') + '</div>' + '</div>'
-      + '<div class="list-controls"><div class="tabs" role="group" aria-label="Filter">'
-      + [['alle', 'Alle'], ['vare', OUR]].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + esc(l) + '</button>').join('')
-      + '</div><button class="secondary" data-a="table">Tabell</button><button class="primary" data-a="season">Dashboard</button><span class="lc-break"></span>' + menuHtml() + '</div>';
+    let h = navHtml('kamper');
     if (S.showNewCtx) h += newCtxForm();
     if (S.showNew) h += newMatchForm();
     if (S.showShare && siteUrl()) h += sharePanel();
@@ -1334,6 +1705,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       h += nextHero(upcoming, upcoming.status === 'pågår');
     }
     if (!ms.length) h += '<div class="panel"><div class="empty">Ingen kamper her ennå. Legg til en med «Ny kamp».</div></div>';
+    h += '<div class="list-controls"><h2 class="sec-h">Terminliste</h2><span class="spacer"></span><div class="tabs" role="group" aria-label="Filter">'
+      + [['alle', 'Alle'], ['vare', OUR]].map(([k, l]) => '<button data-a="filter" data-v="' + k + '" aria-pressed="' + (S.filter === k) + '">' + esc(l) + '</button>').join('') + '</div></div>';
     h += '<div class="rounds">' + Object.entries(rounds).map(([r, list]) => '<section class="round"><h2 class="label">' + esc(r.split('|')[0]) + '</h2>' + list.map(matchRow).join('') + '</section>').join('') + '</div>';
     return h;
   }
@@ -1380,21 +1753,23 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       + '<button class="primary" type="submit">Opprett kamp</button></div></form>';
   }
 
-  function scoreBar(m) {
+  function scoreBar(m, opsO) {
     const c = m.current || { set: 1, home: 0, away: 0 };
     const sets = (m.setScores || []).map((s) => s[0] + '–' + s[1]).join(' · ');
     return '<header class="bar"><button class="link" data-a="back">‹ Kamper</button>'
       + '<div class="title"><span class="display tm">' + crest(m.home, 'sm') + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + crest(m.away, 'sm') + '</span><span class="sub" id="bar-sub">' + esc(barSub(m)) + '</span></div>'
-      + '<span class="spacer"></span><div class="score-wrap"><span class="setpill">Sett ' + c.set + '</span></div><span class="spacer"></span><div class="bar-actions">'
+      + '<div class="score-wrap"><span class="setpill">Sett ' + c.set + '</span></div>' + (opsO && !S.endingSet ? courtChips(m, opsO) : '') + '<span class="spacer"></span><div class="bar-actions">'
       + (S.endingSet
         ? '<form id="setform" class="setform"><span class="sub">Resultat sett ' + c.set + '</span>'
-          + '<label class="setin"><span>' + esc(shortName(m.home)) + '</span><input id="sv-home" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="25" autocomplete="off"></label>'
+          + '<label class="setin"><span>' + esc(shortName(m.home)) + '</span><input id="sv-home" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="25" autocomplete="off"' + (poengPaa(m) && (c.home || c.away) ? ' value="' + c.home + '"' : '') + '></label>'
           + '<span class="dash">–</span>'
-          + '<label class="setin"><span>' + esc(shortName(m.away)) + '</span><input id="sv-away" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="23" autocomplete="off"></label>'
+          + '<label class="setin"><span>' + esc(shortName(m.away)) + '</span><input id="sv-away" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="23" autocomplete="off"' + (poengPaa(m) && (c.home || c.away) ? ' value="' + c.away + '"' : '') + '></label>'
           + '<button class="barbtn win" type="submit">Lagre og start sett ' + (c.set + 1) + '</button><button class="barbtn" type="button" data-a="setcancel">Avbryt</button></form>'
         : '<button class="barbtn primary-bar" data-a="endset">Avslutt sett ' + c.set + '</button>'
           + ((m.setScores || []).length ? '<button class="barbtn" data-a="setback">Tilbake til sett ' + (c.set - 1) + '</button>' : '')
-          + '<button class="barbtn" data-a="dir">Slagretning</button><button class="barbtn" data-a="squad">Tropp</button><button class="barbtn" data-a="sheet">Kampark</button>' + fsBtn('barbtn')
+          + (window.Hurtignotat && m.status !== 'ferdig' ? window.Hurtignotat.knapp(ctxSlug()) : '')
+          + (opsOk() && m.status !== 'ferdig' ? '<button class="barbtn" data-a="bytte">Bytte</button>' : '')
+          + (opsOk() ? '<button class="barbtn" data-a="lineup">' + esc(opsKnapp(m)) + '</button>' : '') + '<button class="barbtn" data-a="dir">Slagretning</button><button class="barbtn" data-a="squad">Tropp</button>' + fsBtn('barbtn')
           + (m.status !== 'ferdig' ? '<button class="barbtn" data-a="endmatch">Avslutt kamp</button>' : '<button class="barbtn primary-bar" data-a="toview">Ferdig med endringer</button>'))
       + '</div></header>';
   }
@@ -1415,7 +1790,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
 
   function playerRows(ids, type, codes) {
     if (!ids.length) return '<div class="empty">Ingen valgt. Åpne Tropp og velg spillere.</div>';
-    return ids.map((id) => { const p = player(id); if (!p) return ''; return '<div class="row"><div class="who"><span class="nr">' + esc(p.nr || '–') + '</span><span class="nm">' + esc(p.name.split(' ')[0]) + '</span><span class="mini" data-mini="' + type + '|' + esc(id) + '"></span></div><div class="codes">' + codes.map((c) => codeBtn(type, id, c[0], c[1], c[2], c[3])).join('') + '</div></div>'; }).join('');
+    return ids.map((id) => { const p = player(id); if (!p) return ''; return '<div class="row"><div class="who"><span class="nr">' + esc(p.nr || '–') + '</span><span class="nm">' + esc(p.name) + '</span><span class="mini" data-mini="' + type + '|' + esc(id) + '"></span></div><div class="codes">' + codes.map((c) => codeBtn(type, id, c[0], c[1], c[2], c[3])).join('')
+      + (type === 'att' ? codeBtn('blk', id, 'P', 'c-blkp', 'B', 'Blokkpoeng') : '') + '</div></div>'; }).join('');
   }
 
   const REC = [['0', 'c-bad', '0', 'Feil'], ['1', 'c-mid', '1', 'Spillbart'], ['2', 'c-good', '2', 'Perfekt']];
@@ -1426,28 +1802,89 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     const m = cur();
     const oppName = m.home === usName(m) ? m.away : m.home;
     const receivers = (m.receivers || []).map(player).filter((p) => p && !p.archived);
-    const onCourt = (m.onCourt || []).map(player).filter((p) => p && !p.archived);
+    // Angrep og serve: grunnspillerne. Med bekreftet oppstilling hentes de fra oppstillingen (liberoen er aldri med; midten står der).
+    const opsO = window.Oppstilling && opsBekreftet(m) ? Oppstilling.aktuelt(Oppstilling.settFor(m, (m.current && m.current.set) || 1)) : null;
+    const onCourt = (opsO ? Oppstilling.ider(opsO.positions) : (m.onCourt || [])).map(player).filter((p) => p && !p.archived);
     const oppNums = m.oppNumbers || [];
     const evs = allEvents();
 
-    let h = '<div id="live-root" data-sig="' + esc(liveSig(m)) + '" style="display:flex;flex-direction:column;gap:12px">' + scoreBar(m);
+    let h = '<div id="live-root" class="' + (erAv(m) ? 'modus-av' : 'modus-en') + '" data-sig="' + esc(liveSig(m)) + '" style="display:flex;flex-direction:column;gap:10px">'
+      + (erAv(m) ? '<div class="modusband"><b>★ Avansert</b><span>Oppstilling, bytter, rotasjon og poengtelling er på</span></div>' : '') + scoreBar(m, erAv(m) ? opsO : null);
+    if (poengPaa(m)) h += '<div id="poeng-root">' + poengRad(m) + '</div>';
+    h += '<div class="kpis2" id="live-kpis">' + kpiRow(m, evs, oppName) + '</div>';
+    if (S.bytte && opsO) h += bytteHtml(m);
+    if (opsOk() && !opsBekreftet(m) && !(m.lineups && m.lineups.uten) && m.status !== 'ferdig' && opsHarHendelser(m, (m.current && m.current.set) || 1)) h += '<div class="notice">Oppstillingen for sett ' + ((m.current && m.current.set) || 1) + ' er ikke bekreftet. <button class="textbtn" data-a="lineup">Sett opp oppstilling</button></div>';
     h += '<div class="lastbar"><span class="label">Siste</span><div class="chips" id="last-chips">' + lastChips(evs, oppName) + '</div><button class="undo" id="undo-btn" data-a="undo"' + (ownCount() ? '' : ' disabled') + '>Angre siste</button></div>';
 
     const noCourt = '<div class="empty">Ingen på banen. Åpne Tropp og velg seks spillere.</div>';
     const courtBtn = '<button class="textbtn" data-a="squad">' + onCourt.length + ' på banen · endre</button>';
     h += '<div class="live-grid">'
-      + '<section class="panel p-rec" aria-label="Eget mottak"><div class="panel-head"><h2><span class="step">1</span>Eget mottak</h2><button class="textbtn" data-a="squad">' + receivers.length + ' i mottak · endre</button></div>' + playerRows(receivers.map((p) => p.id), 'rec', REC) + (receivers.length && (receivers.length < 4 || receivers.length > 6) ? '<div class="code-legend warn">Velg 4–6 mottakere.</div>' : '') + '</section>'
-      + '<section class="panel p-att" aria-label="Angrep"><div class="panel-head"><h2><span class="step">2</span>Angrep</h2>' + courtBtn + '</div>' + (onCourt.length ? playerRows(onCourt.map((p) => p.id), 'att', ATT) + '<div class="code-legend">0 feil · B blokkert · 1 i spill · 2 poeng</div>' : noCourt) + '</section>'
+      + '<section class="panel p-rec" aria-label="Eget mottak"><div class="panel-head"><h2><span class="step">1</span>Eget mottak</h2><button class="textbtn" data-a="squad">' + receivers.length + ' i mottak · endre</button></div>' + playerRows(receivers.map((p) => p.id), 'rec', REC) + (receivers.length && (receivers.length < 4 || receivers.length > 6) && !opsBekreftet(m) ? '<div class="code-legend warn">Velg 4–6 mottakere.</div>' : '') + '</section>'
+      + '<section class="panel p-att" aria-label="Angrep"><div class="panel-head"><h2><span class="step">2</span>Angrep</h2>' + courtBtn + '</div>' + (onCourt.length ? playerRows(onCourt.map((p) => p.id), 'att', ATT) + '<div class="code-legend">0 feil · B blokkert · 1 i spill · 2 poeng · <b style="color:var(--good)">grønn B</b> = egen blokk (blokkpoeng)</div>' : noCourt) + '</section>'
       + '<section class="panel p-srv" aria-label="Vår serve"><div class="panel-head"><h2><span class="step">3</span>Vår serve</h2>' + courtBtn + '</div>' + (onCourt.length ? playerRows(onCourt.map((p) => p.id), 'srv', SRV) + '<div class="code-legend">F feil · I i spill · E ess</div>' : noCourt) + '</section>'
       + '<section class="panel opp p-opp" aria-label="Motstanderens mottak"><div class="panel-head"><h2><span class="step">4</span>' + esc(oppName) + ' mottak</h2><span style="display:flex;gap:14px"><button class="textbtn" data-a="scout" style="color:var(--accent)">Serveplan ›</button><button class="textbtn" data-a="dir" style="color:var(--opp)">Slagretning ›</button></span></div>'
       + (oppNums.length ? oppNums.map((n) => '<div class="row"><div class="who"><span class="nr opp">' + esc(n) + '</span>' + ((oppP(m, n) || {}).name ? '<span class="nm">' + esc(oppP(m, n).name.split(' ')[0]) + '</span>' : '') + '<span class="mini" data-mini="opp|' + esc(n) + '"></span></div><div class="codes">' + REC.map((c) => codeBtn('opp', n, c[0], c[1], c[2], c[3])).join('') + '</div></div>').join('') : '<div class="empty">Legg til draktnummer på mottakerne deres.</div>')
       + '<form class="addopp" id="oppform"><label for="opp-nr" class="label" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Draktnummer</label><input id="opp-nr" type="text" inputmode="numeric" placeholder="Nr" maxlength="3"><button type="submit">+ Nummer</button></form></section>'
-      + '<div class="col stats" id="stats">' + statsPanel(m, evs, oppName) + '</div></div></div>';
+      + '<div class="col stats" id="stats">' + statsPanel(m, evs, oppName) + '</div></div>' + modusRad(m) + '</div>';
     return h;
   }
 
+  // Nøkkeltall over registreringen: mottak, angrep, serve i spill, motstanderens mottak og hvem vi bør serve på
+  function kpiRow(m, evs, oppName) {
+    const set = (m.current && m.current.set) || 1, sett = S.kpiScope !== 'kamp';
+    const st = computeStats(sett ? evs.filter((e) => Number(e.set) === Number(set)) : evs);
+    const tile = (l, v, cls, extra) => '<div class="kpi2"><span class="l">' + l + '</span><span class="v"><b class="num lvl-' + cls + '">' + v + '</b><span>' + extra + '</span></span></div>';
+    const ra = st.tRec.n ? st.tRec.s / st.tRec.n : null, aa = st.tAtt.n ? attAvg(st.tAtt) : null, sa = st.tSrv.n ? srvAvg(st.tSrv) : null, oa = st.tOpp.n ? st.tOpp.s / st.tOpp.n : null;
+    const lvl = (v, k) => v == null ? 'na' : avgLvl(v, k);
+    const weak = (Object.entries(st.opp).filter(([, r]) => r.n >= 3).sort((a, b) => (a[1].s / a[1].n) - (b[1].s / b[1].n) || b[1].n - a[1].n)[0]);
+    return '<button class="kpi2 scope" data-a="kpiscope" aria-label="Bytt mellom tall for settet og hele kampen"><b>' + (sett ? 'Sett ' + set : 'Hele kampen') + '</b><span>Trykk for ' + (sett ? 'hele kampen' : 'settet') + ' ⇄</span></button>'
+      + tile('Mottak 0–2', ra == null ? '–' : dec(ra), lvl(ra, 'rec'), st.tRec.n + ' mottak')
+      + tile('Angrep 0–2', aa == null ? '–' : dec(aa), lvl(aa, 'att'), st.tAtt.n + ' angrep')
+      + tile('Serve i spill', st.tSrv.n ? pct(st.tSrv.n - st.tSrv.F, st.tSrv.n) : '–', lvl(sa, 'srv'), 'E ' + st.tSrv.E + ' · F ' + st.tSrv.F)
+      + tile(esc(shortName(oppName)) + ' mottak', oa == null ? '–' : dec(oa), lvl(oa, 'rec'), st.tOpp.n + ' mottak')
+      + tile('Server på', weak ? '#' + esc(weak[0]) : '–', weak ? lvl(weak[1].s / weak[1].n, 'rec') : 'na', weak ? 'snitt ' + dec(weak[1].s / weak[1].n) + ' · n ' + weak[1].n : 'minst 3 mottak');
+  }
+  // Spillerne på banen øverst (fra bekreftet oppstilling): forrekke 4-3-2, bakrekke 5-6-1, liberoen der hun står
+  function courtChips(m, o) {
+    if (!o) return '';
+    const L = o.libero || {}, inne = Oppstilling.liberoInne(o);
+    return '<button class="court-chips" data-a="lineup-chips" aria-label="Spillerne på banen. Trykk for å åpne oppstillingen">' + [4, 3, 2, 5, 6, 1].map((pl) => {
+      let id = o.positions[pl], rolle = (o.roles || {})[id] || '';
+      if (inne && String(L.erstatter) === String(id)) { id = L.aktiv; rolle = 'L'; }
+      const p = player(id) || {};
+      return '<span class="cchip"><b>' + esc(p.nr || '?') + '</b><i class="r-' + esc(rolle.charAt(0)) + '">' + esc(rolle) + '</i></span>';
+    }).join('') + '</button>';
+  }
+  // Bytte under settet: én ut og én inn på samme plass. Innbytteren tar plassen og rollen (logges som bytte i oppstillingen)
+  function bytteHtml(m) {
+    const O = window.Oppstilling, nr = (m.current && m.current.set) || 1, st = O.settFor(m, nr), o = O.aktuelt(st);
+    if (!o) return '';
+    const paa = O.ider(o.positions).map(String), L = o.libero || {};
+    const brukt = (st.endringer || []).filter((e) => e.type === 'bytte').length;
+    const erLib = (p) => /^libero/i.test(p.pos || '') || String(p.id) === String(L.aktiv);
+    const inn = teamRoster(m).filter((p) => !p.archived && !paa.includes(String(p.id)) && !erLib(p));
+    const knapp = (p, a, valgt) => '<button class="bchip' + (valgt ? ' sel' : '') + '" data-a="' + a + '" data-id="' + esc(p.id) + '"><span class="nr">' + esc(p.nr || '–') + '</span><span class="nm">' + esc(p.name) + '</span><i>' + esc((o.roles || {})[p.id] || p.pos || '') + '</i></button>';
+    return '<div class="ov-scrim"><section class="panel ov-modal" role="dialog" aria-modal="true" aria-labelledby="bytte-h"><div class="panel-head"><h2 id="bytte-h">Bytte · sett ' + nr + '</h2><span class="status">Bytter i settet: ' + brukt + ' av 6</span></div>'
+      + '<div class="status">Velg hvem som går ut og hvem som kommer inn. Innbytteren tar plassen og rollen. Libero byttes i Oppstilling.</div>'
+      + '<div class="bytte-grid"><div class="bytte-col"><span class="label">Ut (på banen)</span>' + paa.map((id) => player(id)).filter(Boolean).map((p) => knapp(p, 'bytte-ut', S.bytte.ut === p.id)).join('') + '</div>'
+      + '<div class="bytte-col"><span class="label">Inn (benken)</span>' + (S.bytte.ut ? (inn.length ? inn.map((p) => knapp(p, 'bytte-inn', S.bytte.inn === p.id)).join('') : '<div class="empty">Ingen ledige spillere i troppen.</div>') : '<div class="empty">Velg først hvem som går ut.</div>') + '</div></div>'
+      + (brukt >= 6 ? '<div class="notice">Alle seks bytter i settet er brukt.</div>' : '')
+      + '<div class="ov-actions"><button class="secondary" data-a="bytte-lukk">Avbryt</button><button class="primary" data-a="bytte-ok"' + (S.bytte.ut && S.bytte.inn && brukt < 6 ? '' : ' disabled') + '>Bytt</button></div></section></div>';
+  }
+  async function bytteLagre(m) {
+    const O = window.Oppstilling, nr = (m.current && m.current.set) || 1, st = O.settFor(m, nr), o = O.aktuelt(st);
+    const ut = String(S.bytte.ut), inn = String(S.bytte.inn);
+    const onCourt = O.ider(o.positions).map((id) => String(id) === ut ? inn : id);
+    const receivers = (m.receivers || []).map((id) => String(id) === ut ? inn : id);
+    const ny = O.fraToggles(st, onCourt, receivers, { enhet: deviceId }), lu = { v: 1, sets: { [nr]: ny } };
+    m.lineups = O.slaSammen(m.lineups, lu); m.onCourt = onCourt; m.receivers = ny.naa.receivers;
+    const navn = (id) => { const p = player(id); return p ? '#' + p.nr : id; };
+    const msg = 'Bytte: ' + navn(inn) + ' inn for ' + navn(ut) + '.';
+    S.bytte = null; S.info = msg; render(); setTimeout(() => { if (S.info === msg) { S.info = null; render(); } }, 4000);
+    saveMatch(m.id, { onCourt, receivers: m.receivers, lineups: lu });
+  }
   function liveSig(m) {
-    return JSON.stringify([oppRoster(m), !!fsEl(), m.id, m.status, (m.current || {}).set, (m.setScores || []).length, S.endingSet, m.receivers, m.onCourt, m.oppNumbers, teamRoster(m).map((p) => [p.id, p.nr, p.name])]);
+    return JSON.stringify([S.kpiScope, S.bytte, opsBekreftet(m), opsKnapp(m), oppRoster(m), !!fsEl(), m.id, m.status, (m.current || {}).set, (m.setScores || []).length, S.endingSet, modus(m), S.modusBytt || '', S.mbServe || '', m.receivers, m.onCourt, m.oppNumbers, teamRoster(m).map((p) => [p.id, p.nr, p.name])]);
   }
   function ownCount() { return Object.entries(S.logs).filter(([k]) => k.startsWith(deviceId + '-')).reduce((a, [, v]) => a + v.length, 0); }
   function lastChips(evs, oppName) {
@@ -1461,6 +1898,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     const chips = document.getElementById('last-chips'); if (chips) chips.innerHTML = lastChips(evs, oppName);
     const u = document.getElementById('undo-btn'); if (u) u.disabled = !ownCount();
     const st = document.getElementById('stats'); if (st) st.innerHTML = statsPanel(m, evs, oppName);
+    const kp = document.getElementById('live-kpis'); if (kp) kp.innerHTML = kpiRow(m, evs, oppName);
+    const pr = document.getElementById('poeng-root'); if (pr) pr.innerHTML = poengRad(m);
     const er = document.getElementById('err'); if (er) er.innerHTML = errHtml();
     fillMini(); dirSync();
   }
@@ -1532,11 +1971,12 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     app.querySelectorAll('[data-mini]').forEach((el) => {
       const i = el.dataset.mini.indexOf('|'); const t = el.dataset.mini.slice(0, i), id = el.dataset.mini.slice(i + 1);
       const r = ({ rec: st.rec, att: st.att, srv: st.srv, opp: st.opp })[t][id];
-      let txt = '';
+      let txt = '<span class="avgbar blk" aria-hidden="true"></span><span class="mt">0 · snitt –</span>';
+      const lv = (v, k, ps) => '<b class="lvl-' + avgLvl(v, k, ps) + '">' + dec(v) + '</b>';
       if (r && r.n) {
-        if (t === 'rec' || t === 'opp') txt = r.n + ' · snitt ' + dec(r.s / r.n) + avgBarOnly(r.s / r.n, 'blk');
-        else if (t === 'att') txt = r.n + ' · snitt ' + dec(1 + (r.c2 - r.c0 - r.B) / r.n) + avgBarOnly(1 + (r.c2 - r.c0 - r.B) / r.n, 'blk', 'att', posOf(id));
-        else txt = esc(r.n + ' · ' + r.E + ' ess ' + r.F + ' feil') + avgBarOnly(srvAvg(r), 'blk', 'srv');
+        if (t === 'rec' || t === 'opp') txt = avgBarOnly(r.s / r.n, 'blk') + '<span class="mt">' + r.n + ' · snitt ' + lv(r.s / r.n) + '</span>';
+        else if (t === 'att') txt = avgBarOnly(attAvg(r), 'blk', 'att', posOf(id)) + '<span class="mt">' + r.n + ' · snitt ' + lv(attAvg(r), 'att', posOf(id)) + '</span>';
+        else txt = avgBarOnly(srvAvg(r), 'blk', 'srv') + '<span class="mt">' + r.n + ' · ' + lv(srvAvg(r), 'srv') + ' · E ' + r.E + ' F ' + r.F + '</span>';
       }
       if (t === 'opp') txt = scoutMarks(id, txt);
       const weak = t === 'opp' ? id === weakOpp : !!ex[t] && id === ex[t].lo, strong = t !== 'opp' && !!ex[t] && id === ex[t].hi;
@@ -1574,7 +2014,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     if (!hasSite()) return;
     if (!force && Date.now() - lastPub < 120000) return;
     let mcp = null; try { mcp = await window.claude?.use?.('mcp'); } catch (e) { mcp = null; }
-    if (!mcp) { if (force) { S.info = 'Publisering er ikke tilgjengelig i denne visningen. Åpne appen på claude.ai eller i Claude-appen.'; render(); } return; }
+    if (!mcp) { if (force && !window.V2_CONFIG) { S.info = 'Publisering er ikke tilgjengelig i denne visningen. Åpne appen på claude.ai eller i Claude-appen.'; render(); } return; }
     lastPub = Date.now(); const site = PUBLISH.sites[CTX.id];
     S.info = site + ' oppdateres …'; render();
     try {
@@ -1593,6 +2033,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
 
   function evLabel(e, oppName) {
     if (e.type === 'dir') return oppName + ' #' + e.p + ' · slag ' + dirKind(e) + (e.c ? ' ' + (DRES[e.c] || '').toLowerCase() : '');
+    if (e.type === 'blk') return pname(e.p) + ' · blokkpoeng';
     const lbl = { rec: 'mottak', att: 'angrep', srv: 'serve', opp: 'mottak' }[e.type];
     const code = e.type === 'srv' ? ({ F: 'feil', I: 'i spill', E: 'ess' }[e.c]) : e.type === 'att' && e.c === 'B' ? 'blokkert' : e.c;
     const who = e.type === 'opp' ? oppName + ' ' + oppLabel(cur(), e.p) : pname(e.p);
@@ -1621,10 +2062,12 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     const exAtt = extremes(st.att, attAvg, 5);
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Angrep</div>';
     if (!attRows.length) h += '<div class="empty">Ingen angrep registrert.</div>';
-    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th>Blokk</th><th>Uttelling</th></tr></thead><tbody>'
+    else h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Spiller</th><th>Ant.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th>Blokkert</th><th>Uttelling</th></tr></thead><tbody>'
       + attRows.map(([id, r]) => '<tr' + loHi(id, exAtt)[0] + '><td class="key">' + esc(pname(id)) + loHi(id, exAtt)[1] + '</td><td>' + r.n + '</td><td class="key">' + avgBar(1 + (r.c2 - r.c0 - r.B) / r.n, null, 'att', posOf(id)) + '</td><td>' + r.c2 + '</td><td>' + r.c0 + '</td><td>' + r.B + '</td><td>' + pct(r.c2, r.n) + '</td></tr>').join('')
       + '<tr class="total"><td>Lag</td><td>' + st.tAtt.n + '</td><td>' + avgBar(1 + (st.tAtt.c2 - st.tAtt.c0 - st.tAtt.B) / st.tAtt.n, null, 'att') + '</td><td>' + st.tAtt.c2 + '</td><td>' + st.tAtt.c0 + '</td><td>' + st.tAtt.B + '</td><td>' + pct(st.tAtt.c2, st.tAtt.n) + '</td></tr></tbody></table></div>';
 
+    const blkRows = Object.entries(st.blk).sort((a, b) => b[1] - a[1]);
+    h += '<div class="code-legend">Blokkpoeng: <b>' + st.tBlk + '</b>' + (blkRows.length ? ' · ' + blkRows.map(([id, n]) => esc(pname(id)) + ' ' + n).join(' · ') : '') + '</div>';
     const t = st.tSrv;
     h += '</div><div class="stat-block"><div class="label" style="color:var(--accent)">Serve</div><div class="kpis">'
       + '<div class="kpi"><div class="display num">' + t.n + '</div><div class="k">Server</div></div>'
@@ -1647,7 +2090,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
 
     h += '</div></div>';
     if (m.legacy) h += legacyBlock(m.legacy);
-    h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (S.dl ? '<button class="secondary" data-a="export">Eksporter til regneark (CSV)</button>' : '') + '</div>';
+    // Kampark og CSV-eksport samlet nederst i statistikken (01.11.2026: Kampark flyttet hit fra topplinjen i registreringen)
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (S.view === 'live' && !S.dash && !window.PUBLIC ? '<button class="secondary" data-a="sheet">Kampark</button>' : '') + (S.dl ? '<button class="secondary" data-a="export">Eksporter til regneark (CSV)</button>' : '') + '</div>';
     h += '<div class="code-legend">Egenført 0–1–2-score. Angrep: feil og blokkert = 0, i spill = 1, poeng = 2. ' + legendLink() + '</div></section>';
     return h;
   }
@@ -1682,7 +2126,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   function focusSquadView(m) {
     const ros = teamRoster(m), rec = new Set(m.receivers || []), court = new Set(m.onCourt || []);
     let h = '<header class="bar"><button class="link" data-a="to-live">‹ Tilbake til kampen</button><div class="title"><span class="display">Tropp</span><span class="sub">Fører for ' + esc(m.focus) + ' · ' + esc(m.home) + ' – ' + esc(m.away) + ' · ' + court.size + ' på banen · ' + rec.size + ' i mottak</span></div><span class="spacer"></span></header>';
-    h += '<section class="panel"><div class="panel-head"><h2>' + esc(m.focus) + ' i denne kampen</h2><span class="status">Velg hvem som er på banen og i mottak. Nummer og navn endrer du i listen under.</span></div>'
+    h += '<section class="panel"><div class="panel-head"><h2>' + esc(m.focus) + ' i denne kampen</h2><span class="status">Velg hvem som er på banen og i mottak. Nummer og navn endrer du i listen under.</span></div>' + (opsBekreftet(m) ? '<div class="notice">Oppstillingen for sett ' + ((m.current && m.current.set) || 1) + ' er bekreftet. Endringer her registreres som bytte i settet. <button class="textbtn" data-a="lineup">Endre oppstilling</button></div>' : '')
       + (ros.length ? '<div class="tbl-wrap"><table class="squad"><thead><tr><th>Nr</th><th>Navn</th><th>Posisjon</th><th class="c">På banen</th><th class="c">I mottak</th></tr></thead><tbody>'
         + ros.map((p) => '<tr><td class="key">' + esc(p.nr) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.pos || '–') + '</td>'
           + '<td class="c"><button class="tog" data-a="court" data-id="' + esc(p.id) + '" aria-pressed="' + court.has(p.id) + '" aria-label="På banen ' + esc(p.name) + '">' + (court.has(p.id) ? '✓' : '') + '</button></td>'
@@ -1691,6 +2135,22 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" data-a="to-live">Ferdig</button>' + (Object.keys(S.logs).some((k) => (S.logs[k] || []).length) ? '' : '<button class="secondary" data-a="unfocus">Ikke før statistikk i denne kampen</button>') + '</div></section>';
     h += oppSquadPanel(m, m.focus, false);
     h += oppSquadPanel(m);
+    return h;
+  }
+
+  // Settkorrigering (V3 fase 2): rett poeng per sett i egen kamp. Lagres samlet i databasen (stats.korriger_sett) med historikk.
+  // Registreringene endres ikke. Fjernes et sett som har registreringer, må det bekreftes.
+  function regIUtovSett(m, n) {
+    if (S.logsFor !== m.id) return 0;
+    return Object.entries(S.logs || {}).reduce((a, [k, evs]) => { const sn = parseInt((String(k).match(/-s(\d+)$/) || [])[1], 10); return a + (sn > n ? (evs || []).filter((e) => e.type !== 'undo').length : 0); }, 0);
+  }
+  function retteForm(m) {
+    const sc = S.retteUtkast || m.setScores || [];
+    let h = '<section class="panel" id="rettepanel"><div class="panel-head"><h2>Rett resultat</h2><span class="status">Poeng per sett. Tomme sett telles ikke. Registreringene endres ikke.</span></div><form id="retteform" class="resform">'
+      + '<div class="res-set res-head"><span></span><span class="label">' + esc(shortName(m.home)) + '</span><span></span><span class="label">' + esc(shortName(m.away)) + '</span></div>';
+    for (let i = 0; i < 5; i++) h += '<div class="res-set"><span class="label">Sett ' + (i + 1) + '</span><input id="rt-h-' + i + '" type="text" inputmode="numeric" maxlength="2" value="' + (sc[i] ? sc[i][0] : '') + '" aria-label="' + esc(m.home) + ' sett ' + (i + 1) + '"><span>–</span><input id="rt-a-' + i + '" type="text" inputmode="numeric" maxlength="2" value="' + (sc[i] ? sc[i][1] : '') + '" aria-label="' + esc(m.away) + ' sett ' + (i + 1) + '"></div>';
+    if (S.retteVarsel) h += '<div class="status" id="rette-varsel" style="color:var(--amber)">' + esc(S.retteVarsel) + '</div>';
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" type="submit">' + (S.retteVarsel ? 'Lagre likevel' : 'Lagre rettet resultat') + '</button><button class="secondary" type="button" data-a="rett-res">Avbryt</button></div></form></section>';
     return h;
   }
 
@@ -1738,7 +2198,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   function tableView() {
     const st = standings(), q = (a, b) => b ? (Math.round(a / b * 1000) / 1000).toFixed(3).replace('.', ',') : (a ? 'MAX' : '–');
     const all = tableMatches(), done = all.filter((m) => m.status === 'ferdig').length;
-    let h = '<header class="bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display">Tabell</span><span class="sub">' + esc(CTX.name) + ' · ' + done + ' av ' + all.length + ' kamper spilt</span></div><span class="spacer"></span></header>';
+    let h = navHtml('tabell') + '<header class="bar"><div class="title"><span class="display">Tabell</span><span class="sub">' + esc(CTX.name) + ' · ' + done + ' av ' + all.length + ' kamper spilt</span></div><span class="spacer"></span></header>';
     h += '<section class="panel"><div class="tbl-wrap"><table class="tbl standings"><thead><tr><th>#</th><th class="l-al">Lag</th><th>K</th><th>V</th><th>T</th><th>Poeng</th><th>Sett</th><th class="hide-sm">Settkv.</th><th class="hide-sm">Ballkv.</th></tr></thead><tbody>'
       + st.map((r, i) => '<tr' + (r.team === OUR ? ' class="us"' : '') + '><td>' + (i + 1) + '</td><td class="key l-al">' + teamTag(r.team, 'sm', shortName(r.team)) + '</td><td>' + r.k + '</td><td>' + r.v + '</td><td>' + r.tap + '</td><td class="key">' + r.p + '</td><td>' + r.sv + '–' + r.st + '</td><td class="hide-sm">' + q(r.sv, r.st) + '</td><td class="hide-sm">' + q(r.bv, r.bt) + '</td></tr>').join('')
       + '</tbody></table></div><div class="code-legend">Rangering: seire, poeng (3–0 og 3–1 gir 3 poeng, 3–2 gir 2 og 2–3 gir 1), settkvotient, ballkvotient.</div></section>';
@@ -1751,16 +2211,15 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     return h;
   }
 
-  // Topplister for serien/turneringen: NVBF-statistikk der den finnes, ellers egen føring (også kamper der vi har ført for et annet lag)
+  // Topplister for serien/turneringen: bare NVBF-statistikk (01.11.2026), så utregningen er lik for alle lag. Egen føring brukes ikke her.
   // Kilden for offisiell statistikk: NVBF for serien, CEV for landslagsturneringer
   function srcName(n) { return (n && n.src) || 'NVBF'; }
   function topListsData() {
     const P = {}, pn = (v) => v == null ? null : parseFloat(String(v).replace('−', '-').replace('%', '').replace(',', '.'));
-    let src = 0;
+    let src = 0, kilde = 'NVBF';
     seasonMatches().filter((m) => m.status === 'ferdig').forEach((m) => {
       let n = m.nvbf && m.nvbf.teams && m.nvbf.teams.length && !m.nvbf.partial ? m.nvbf : null;
-      if (!n && canLive(m) && SEASON.logs[m.id] && SEASON.logs[m.id].length) n = ownStats(m, SEASON.logs[m.id]);
-      if (!n) return; src++; addRecAvg(n);
+      if (!n) return; src++; kilde = srcName(n); addRecAvg(n);
       n.teams.forEach((t) => (t.players || []).forEach((p) => {
         const key = t.name + '|' + (p.name ? String(p.name).replace(/ \(L\)$/, '') : '#' + p.nr);
         const r = (P[key] ||= { team: t.name, name: p.name ? String(p.name).replace(/ \(L\)$/, '') : '#' + p.nr, nr: p.nr, games: new Set(), rec: 0, recSum: 0, att: 0, kills: 0, attErr: 0, blocked: 0, srv: 0, aces: 0, srvErr: 0, srvKnown: 0, pts: 0 });
@@ -1771,11 +2230,11 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
         r.aces += p.aces || 0; r.srvErr += p.srvErr || 0; r.pts += p.pts || 0;
       }));
     });
-    return { players: Object.values(P), matches: src };
+    return { players: Object.values(P), matches: src, kilde };
   }
   function topListsView() {
-    const { players, matches } = topListsData(), mode = S.topMode || 'snitt';
-    if (!matches) return '<section class="panel"><div class="panel-head"><h2>Topplister</h2></div><div class="empty">Ingen spilte kamper med statistikk ennå.</div></section>';
+    const { players, matches, kilde } = topListsData(), mode = S.topMode || 'snitt';
+    if (!matches) return '<section class="panel"><div class="panel-head"><h2>Topplister</h2></div><div class="empty">Ingen spilte kamper med ' + srcName(null) + '-statistikk ennå. Topplistene bruker bare offisielle tall.</div></section>';
     const minOf = (f) => Math.max(10, Math.round(0.25 * Math.max(0, ...players.map(f))));
     const lists = [
       { t: 'Angrep', kind: 'att', n: (r) => r.att, v: (r) => 1 + (r.kills - r.attErr - r.blocked) / r.att, vol: (r) => r.kills, volL: 'poeng', unit: 'angrep' },
@@ -1794,7 +2253,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     };
     return '<section class="panel"><div class="panel-head"><h2>Topplister · topp 5</h2><div class="seg" role="group" aria-label="Rangering"><button data-a="topmode" data-v="snitt" aria-pressed="' + (mode === 'snitt') + '">Beste snitt</button><button data-a="topmode" data-v="volum" aria-pressed="' + (mode === 'volum') + '">Flest</button></div></div>'
       + '<div class="top-grid">' + lists.map(card).join('') + '</div>'
-      + '<div class="code-legend">Fra ' + matches + ' spilte kamper i ' + esc(CTX.name) + '. NVBF-statistikk der den finnes, ellers egen føring fra benken. Serve med snitt krever at serve i spill er ført. ' + legendLink() + '</div></section>';
+      + '<div class="code-legend">Fra ' + matches + ' spilte kamper i ' + esc(CTX.name) + ' med ' + kilde + '-statistikk. Bare offisielle tall, så alle lag regnes likt (mottakssnitt regnet ut fra prosentene: perfekt = 2, feil = 0, resten = 1). Egen føring fra benken er ikke med. ' + legendLink() + '</div></section>';
   }
 
   async function saveOpp(m, players, team) {
@@ -1811,6 +2270,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     try {
       const logs = await S.db.collection(PFX + 'matches/' + m.id + '/log').get();
       for (const d of logs.docs) await S.db.doc(PFX + 'matches/' + m.id + '/log/' + d.id).delete();
+      const pl = await S.db.collection(PFX + 'matches/' + m.id + '/poeng').get();
+      for (const d of pl.docs) await S.db.doc(PFX + 'matches/' + m.id + '/poeng/' + d.id).delete();
       await S.db.doc(PFX + 'matches/' + m.id).delete();
       closeSeasonLogs(); openLogs(null); S.view = 'list'; S.matchId = null; render(); toTop();
     } catch (e) { S.error = 'Kampen ble ikke slettet (' + e.code + ').'; render(); }
@@ -1822,7 +2283,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     const rec = new Set(m.receivers || []), court = new Set(m.onCourt || []);
     let h = '<header class="bar"><button class="link" data-a="to-live">‹ Tilbake til kampen</button><div class="title"><span class="display">Tropp</span><span class="sub">' + esc(m.home) + ' – ' + esc(m.away) + ' · ' + court.size + ' på banen · ' + rec.size + ' i mottak</span></div><span class="spacer"></span></header>';
     h += '<section class="panel"><div class="panel-head"><h2>Spillere</h2><span class="status">Draktnummer, navn og posisjon gjelder alle kamper. «På banen» og «I mottak» gjelder denne kampen.</span></div>'
-      + (rec.size && (rec.size < 4 || rec.size > 6) ? '<div class="notice">Velg 4–6 spillere i mottak (nå ' + rec.size + ').</div>' : '')
+      + (rec.size && (rec.size < 4 || rec.size > 6) && !opsBekreftet(m) ? '<div class="notice">Velg 4–6 spillere i mottak (nå ' + rec.size + ').</div>' : '')
+      + (opsBekreftet(m) ? '<div class="notice">Oppstillingen for sett ' + ((m.current && m.current.set) || 1) + ' er bekreftet. Endringer her registreres som bytte i settet. <button class="textbtn" data-a="lineup">Endre oppstilling</button></div>' : '')
       + (court.size > 6 ? '<div class="notice">Det er valgt ' + court.size + ' spillere på banen. Maks 6, libero føres i mottak.</div>' : '')
       + '<div class="tbl-wrap"><table class="squad"><thead><tr><th>Nr</th><th>Navn</th><th>Posisjon</th><th class="c">På banen</th><th class="c">I mottak</th><th class="hide-sm"></th></tr></thead><tbody>'
       + S.roster.filter((p) => !p.archived).map((p, i) => '<tr><td><input class="nrin" type="text" inputmode="numeric" maxlength="3" id="nr-' + esc(p.id) + '" data-a="nr" data-id="' + esc(p.id) + '" value="' + esc(p.nr || '') + '" placeholder="Nr" aria-label="Draktnummer ' + esc(p.name) + '"></td>'
@@ -1891,6 +2353,92 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     return '<header class="bar"><button class="link" data-a="to-live">‹ Tilbake til kampen</button><div class="title"><span class="display">Kampark</span><span class="sub">' + esc(m.home) + ' – ' + esc(m.away) + '</span></div><span class="spacer"></span>'
       + '<div class="bar-actions"><button class="barbtn primary-bar" data-a="xlsx">Last ned Excel</button><button class="barbtn" data-a="pdf">PDF</button>' + (S.dl ? '<button class="barbtn" data-a="export">CSV</button>' : '') + '</div></header>'
       + '<div class="sk-wrap"><div id="sk-sheet" class="sk-sheet">' + t + '</div></div>';
+  }
+
+  // ---------- Kamprapport (01.11.2026, godkjent «ett ark»): statistikk etter kamp til spillerne, liggende A4 ----------
+  // Kamparket (alle registreringer sett for sett) + nøkkeltall og summer per spiller. Bare egen føring. Hele kampen eller ett sett.
+  function rapportView() {
+    const m = cur(), alle = allEvents().filter((e) => e.type !== 'dir');
+    const settAlle = [...new Set(alle.map((e) => e.set))].sort((a, b) => a - b);
+    const valg = S.rapSett !== 'all' && settAlle.includes(Number(S.rapSett)) ? Number(S.rapSett) : 'all';
+    const sett = valg === 'all' ? settAlle : [valg], evs = alle.filter((e) => sett.includes(e.set));
+    const T = (t) => evs.filter((e) => e.type === t), rec = T('rec'), att = T('att'), srv = T('srv'), blk = T('blk'), opp = T('opp');
+    const visMot = S.rapMot !== false && opp.length > 0;
+    const oppName = oppTeam(m), our = usName(m);
+    const verdi = (e) => (e.c === 'B' ? 0 : Number(e.c) || 0);
+    const snitt = (l) => (l.length ? l.reduce((x, e) => x + verdi(e), 0) / l.length : null);
+    const tall = (v) => (v == null ? '–' : dec(v));
+    const bar = (v, kind, pos) => (v == null ? '' : '<span class="rp-bar ' + avgLvl(v, kind, pos) + '"><i style="width:' + Math.max(3, Math.min(100, v / 2 * 100)) + '%"></i></span>');
+    const kode = (e) => { const c = e.type === 'blk' ? 'P' : String(e.c); return '<span class="rp-k c' + esc(c) + '">' + (e.type === 'blk' ? 'B' : esc(c)) + '</span>'; };
+    const ord = (ids) => { const r = teamRoster(m).map((p) => p.id).filter((id) => ids.includes(id)); ids.forEach((id) => { if (!r.includes(id)) r.push(id); }); return r; };
+    const navn = (id) => { const p = player(id); return '<span class="rp-nr">#' + esc((p && p.nr) || '?') + '</span>' + esc(p ? p.name : pname(id)); };
+    const sc = (n) => (m.setScores || [])[n - 1];
+    function seksjon(tittel, under, liste, ider, navnAv, hode, sumAv, bredder, ekstra, kind) {
+      ekstra = ekstra || [];
+      let h = '<table class="rp-ka"><colgroup><col style="width:' + bredder[0] + 'px">' + sett.map(() => '<col>').join('') + hode.map((_, i) => '<col style="width:' + (bredder[1 + i] || 48) + 'px">').join('') + '</colgroup>'
+        + '<thead><tr class="rp-band"><th colspan="' + (1 + sett.length + hode.length) + '">' + tittel + (under ? '<small>' + under + '</small>' : '') + '</th></tr><tr><th></th>'
+        + sett.map((n) => '<th class="s">' + (bredder.kort && sett.length > 2 ? 'S' + n : 'Sett ' + n + (scoreStr(sc(n)) ? ' · ' + scoreStr(sc(n)) : '')) + '</th>').join('')
+        + hode.map((x, i) => '<th class="n sum' + (i ? '' : ' f') + '">' + x + '</th>').join('') + '</tr></thead><tbody>';
+      ider.forEach((id) => {
+        const mine = liste.filter((e) => String(e.p) === String(id)), ek = ekstra.filter((e) => String(e.p) === String(id)); if (!mine.length && !ek.length) return;
+        h += '<tr><td class="nv">' + navnAv(id) + '</td>' + sett.map((n) => { const e2 = ek.filter((e) => e.set === n); return '<td class="s"><span class="rp-koder">' + mine.filter((e) => e.set === n).map(kode).join('') + (e2.length ? '<span class="rp-mell"></span>' + e2.map(kode).join('') : '') + '</span></td>'; }).join('')
+          + sumAv(mine, ek, id).map((v, i) => '<td class="n sum' + (i ? '' : ' f') + '">' + v + '</td>').join('') + '</tr>';
+      });
+      h += '<tr class="lag"><td>' + (kind === 'opp' ? esc(shortName(oppName)) : 'Laget') + '</td>' + sett.map((n) => { const l = liste.filter((e) => e.set === n);
+        return '<td class="s reg">' + (kind ? (l.length ? bar(snitt(l), kind === 'opp' ? 'rec' : kind) + tall(snitt(l)) : '–') : l.length + ' reg.') + '</td>'; }).join('')
+        + sumAv(liste, ekstra).map((v, i) => '<td class="n sum' + (i ? '' : ' f') + '">' + v + '</td>').join('') + '</tr></tbody></table>';
+      return h;
+    }
+    const ids = (l) => ord([...new Set(l.map((e) => e.p))]);
+    const mottak = (l, _e, id) => [l.length, l.length ? bar(snitt(l), 'rec') + tall(snitt(l)) : '–', l.length ? pct(l.filter((e) => e.c === '2').length, l.length) : '–', l.filter((e) => e.c === '0').length];
+    const angrep = (l, ek, id) => [l.length || '–', l.length ? bar(snitt(l), 'att', id ? posOf(id) : '') + tall(snitt(l)) : '–', l.filter((e) => e.c === '2').length, l.filter((e) => e.c === '0').length, l.filter((e) => e.c === 'B').length, (ek || []).length || '–'];
+    const serve = (l) => [l.length, l.filter((e) => e.c === 'E').length, l.filter((e) => e.c === 'F').length];
+    const motMottak = (l) => [l.length, bar(snitt(l), 'rec') + tall(snitt(l))];
+    const kill = att.filter((e) => e.c === '2').length, ess = srv.filter((e) => e.c === 'E').length, sf = srv.filter((e) => e.c === 'F').length;
+    const hjemme = m.home === our, us = hjemme ? m.setsHome : m.setsAway, de = hjemme ? m.setsAway : m.setsHome;
+    let a = '<article class="rp-ark" id="rp-ark"><div class="rp-hode"><div><h2>' + esc(m.home) + ' – ' + esc(m.away) + '</h2><p class="rp-sub">' + esc(fmtDate(m.date)) + (m.venue ? ' · ' + esc(m.venue) : '') + (valg === 'all' ? '' : ' · <b>bare sett ' + valg + '</b>') + '</p></div>'
+      + '<div><div class="rp-res">' + (m.setsHome || 0) + '–' + (m.setsAway || 0) + '</div><div class="rp-settres">' + (m.setScores || []).map((x, i) => '<span class="' + ((hjemme ? x[0] > x[1] : x[1] > x[0]) ? 'v' : '') + '">' + x[0] + '–' + x[1] + '</span>').join('') + '</div></div></div>'
+      + '<div class="rp-kpi"><div><b>' + tall(snitt(rec)) + '</b><span>Mottak snitt (0–2) · ' + rec.length + '</span></div><div><b>' + pct(rec.filter((e) => e.c === '2').length, rec.length) + '</b><span>Perfekt mottak</span></div>'
+      + '<div><b>' + tall(snitt(att)) + '</b><span>Angrep snitt (0–2) · ' + att.length + '</span></div><div><b>' + pct(kill, att.length) + '</b><span>Uttelling · ' + kill + ' poeng</span></div>'
+      + '<div><b>' + ess + ' / ' + sf + '</b><span>Ess / servefeil · ' + srv.length + ' server</span></div><div><b>' + blk.length + '</b><span>Blokkpoeng</span></div></div>'
+      + '<div class="rp-forkl"><span><span class="rp-k c0">0</span>feil</span><span><span class="rp-k cB">B</span>blokkert angrep</span><span><span class="rp-k c1">1</span>i spill / spillbart</span><span><span class="rp-k c2">2</span>perfekt / poeng</span>'
+      + '<span><span class="rp-k cF">F</span><span class="rp-k cI">I</span><span class="rp-k cE">E</span>serve feil · i spill · ess</span><span><span class="rp-k cP">B</span>blokkpoeng</span></div>';
+    if (rec.length) a += seksjon('Mottak', '', rec, ids(rec), navn, ['Ant.', 'Snitt', 'Perf.', 'Feil'], mottak, [140, 40, 72, 52, 40], null, 'rec');
+    if (att.length || blk.length) a += seksjon('Angrep og blokk', 'mørkerød B = blokkert angrep · grønn B = blokkpoeng', att, ids(att.concat(blk)), navn, ['Ant.', 'Snitt', 'Poeng', 'Feil', 'Blokkert', 'Blokkp.'], angrep, [140, 40, 72, 44, 38, 52, 50], blk, 'att');
+    const serveDel = srv.length ? seksjon('Serve', 'F feil · I i spill · E ess', srv, ids(srv), navn, ['Ant.', 'Ess', 'Feil'], serve, Object.assign([124, 34, 30, 30], { kort: true })) : '';
+    const motDel = visMot ? seksjon(esc(shortName(oppName)) + ' mottak', '', opp, [...new Set(opp.map((e) => String(e.p)))].sort((x, y) => Number(x) - Number(y)), (n) => esc(oppLabel(m, n)), ['Ant.', 'Snitt'], motMottak, Object.assign([90, 30, 72], { kort: true }), null, 'opp') : '';
+    if (serveDel || motDel) a += '<div class="rp-to' + (serveDel && motDel ? '' : ' en') + '">' + (serveDel ? '<div>' + serveDel + '</div>' : '') + (motDel ? '<div>' + motDel + '</div>' : '') + '</div>';
+    if (!evs.length) a += '<p>Ingen registreringer' + (valg === 'all' ? '' : ' i sett ' + valg) + '.</p>';
+    a += '<div class="rp-fot"><span>0–2: mottak 0 feil · 1 spillbart · 2 perfekt. Angrep: feil og blokkert = 0, i spill = 1, poeng = 2. Egen føring fra benken.</span><span>' + esc(CTX.name || our) + ' · Statistikk V2</span></div></article>';
+    const kontroll = '<div class="rp-kontroll rp-ikke-utskrift"><div class="seg" role="group" aria-label="Sett"><button data-a="rp-sett" data-v="all" aria-pressed="' + (valg === 'all') + '">Hele kampen</button>'
+      + settAlle.map((n) => '<button data-a="rp-sett" data-v="' + n + '" aria-pressed="' + (valg === n) + '">Sett ' + n + '</button>').join('') + '</div>'
+      + (opp.length || alle.some((e) => e.type === 'opp') ? '<label class="chk" for="rp-mot"><input id="rp-mot" type="checkbox" data-a="rp-mot"' + (S.rapMot !== false ? ' checked' : '') + '> ' + esc(shortName(oppName)) + ' mottak</label>' : '') + '</div>';
+    requestAnimationFrame(rapportTilpass);
+    return '<header class="bar rp-ikke-utskrift"><button class="link" data-a="rp-tilbake">‹ Tilbake</button><div class="title"><span class="display">Kamprapport</span><span class="sub">' + esc(m.home) + ' – ' + esc(m.away) + '</span></div><span class="spacer"></span>'
+      + '<div class="bar-actions"><button class="barbtn primary-bar" data-a="rp-skriv">Skriv ut</button></div></header>' + kontroll + '<div class="rp-wrap"><div id="rp-flate">' + a + '</div></div>';
+  }
+  // Arket er 1123 × 794 px (A4 liggende). På skjermen skaleres det ned til bredden; ved utskrift til sidens skrivbare flate.
+  function rapportTilpass(utskrift) {
+    const ark = document.getElementById('rp-ark'); if (!ark) return;
+    const flate = ark.parentElement;
+    ark.style.zoom = 1; ark.style.transform = ''; flate.style.width = ''; flate.style.height = '';
+    if (utskrift === true) { ark.style.zoom = String(Math.min(1062 / ark.offsetWidth, 718 / ark.offsetHeight)); return; } // litt luft under 733 px, så bunnteksten ikke glir over på side 2
+    // Forhåndsvisning (01.11.2026): hele det liggende A4-arket skalert ned med transform, så det ser ut som utskriften.
+    // CSS-zoom brukes ikke her, fordi Safari på iPhone da forstørrer teksten igjen og tabellene sprekker.
+    const z = Math.min(1, (flate.parentElement.clientWidth - 24) / ark.offsetWidth);
+    ark.style.transform = 'scale(' + z + ')';
+    flate.style.width = Math.floor(ark.offsetWidth * z) + 'px'; flate.style.height = Math.ceil(ark.offsetHeight * z) + 'px';
+  }
+  window.addEventListener('resize', () => { if (S.view === 'rapport') rapportTilpass(); });
+  function rapportSkriv() {
+    const html = document.documentElement;
+    // Sist i dokumentet, så regelen for liggende A4 vinner over appens stående @page-regel
+    let st = document.getElementById('rp-side'); if (!st) { st = document.createElement('style'); st.id = 'rp-side'; } document.body.appendChild(st);
+    st.textContent = '@media print { @page { size: A4 landscape; margin: 8mm; } }';
+    html.classList.add('rp-printing'); rapportTilpass(true);
+    const done = () => { html.classList.remove('rp-printing'); st.textContent = ''; rapportTilpass(); window.removeEventListener('afterprint', done); document.removeEventListener('pointerdown', done, true); };
+    window.addEventListener('afterprint', done);
+    setTimeout(() => { try { window.print(); } catch (e) {} setTimeout(() => document.addEventListener('pointerdown', done, true), 800); }, 50);
   }
 
   function loadScript(src) {
@@ -2006,8 +2554,11 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   }
 
   // Mottakssnitt (0–2) for NVBF-kamper, regnet fra antall, feil og perfekt %: perfekt = 2, feil = 0, resten = 1
+  // Per lag/sesong: nvbfFyll = false (contexts.innstillinger.nvbf_fyll) slår av utregnet 0–2 og utfylling fra NVBF-prosenter.
+  // Standard (alle eksisterende kontekster) er uendret.
+  const nvbfFyll = () => CTX.nvbfFyll !== false;
   function addRecAvg(n) {
-    if (!n || !n.teams) return;
+    if (!n || !n.teams || !nvbfFyll()) return;
     const num = (v) => { const x = parseFloat(String(v ?? '').replace('%', '').replace(',', '.').replace('−', '-')); return isNaN(x) ? null : x; };
     n.teams.forEach((t) => {
       let N = 0, Pf = 0, F = 0;
@@ -2028,6 +2579,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   const NVCAT = { rec: 'mottak', att: 'angrep', srv: 'serve', opp: 'motstanders mottak' };
   function nvbfFill(m, evs) {
     const out = { extra: [], cats: [] };
+    if (!nvbfFyll()) return out;
     if (!m || m.status !== 'ferdig' || !(m.nvbf && m.nvbf.teams && m.nvbf.teams.length)) return out;
     const us = usName(m), has = (t) => evs.some((e) => e.type === t);
     const tUs = m.nvbf.teams.find((t) => t.name === us), tOpp = m.nvbf.teams.find((t) => t.name !== us);
@@ -2049,25 +2601,25 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   const withNvbf = (m, evs) => { const f = nvbfFill(m, evs); return f.extra.length ? evs.concat(f.extra) : evs; };
 
   function ownStats(m, evs) {
-    const E = evs.filter((e) => e.type === 'rec' || e.type === 'att' || e.type === 'srv' || e.type === 'opp');
+    const E = evs.filter((e) => e.type === 'rec' || e.type === 'att' || e.type === 'srv' || e.type === 'opp' || e.type === 'blk');
     if (!E.length) return null;
     const cnt = (a, v) => a.filter((x) => x === v).length;
     const avg = (a) => a.length ? dec(a.reduce((s, x) => s + (Number(x) || 0), 0) / a.length) : undefined;
-    const sp = {}; const get = (id) => (sp[id] ||= { id, rec: [], att: [], srv: [] });
+    const sp = {}; const get = (id) => (sp[id] ||= { id, rec: [], att: [], srv: [], blk: [] });
     E.forEach((e) => { if (e.type !== 'opp') get(e.p)[e.type].push(String(e.c)); });
     const inServe = E.some((e) => e.type === 'srv' && String(e.c) === 'I');
     const ord = teamRoster(m).map((p) => p.id); const ix = (id) => { const i = ord.indexOf(id); return i < 0 ? 999 : i; };
-    const T = { rec: [], att: [], srv: [] };
+    const T = { rec: [], att: [], srv: [], blk: [] };
     const players = Object.values(sp).sort((a, b) => ix(a.id) - ix(b.id)).map((p) => {
       const pl = player(p.id) || {}; const o = { nr: pl.nr || '', name: pl.name || pname(p.id) };
       if (p.rec.length) Object.assign(o, { rec: p.rec.length, recErr: cnt(p.rec, '0'), recAvg: avg(p.rec), recPlay: pct(cnt(p.rec, '1'), p.rec.length), recPerf: pct(cnt(p.rec, '2'), p.rec.length) });
       if (p.att.length) { const k = cnt(p.att, '2'); Object.assign(o, { att: p.att.length, kills: k, attErr: cnt(p.att, '0'), blocked: cnt(p.att, 'B'), kp: pct(k, p.att.length) }); }
-      if (p.srv.length || p.att.length) { Object.assign(o, { aces: cnt(p.srv, 'E'), srvErr: cnt(p.srv, 'F'), pts: cnt(p.att, '2') + cnt(p.srv, 'E') }); if (inServe) o.srv = p.srv.length; }
-      T.rec.push(...p.rec); T.att.push(...p.att); T.srv.push(...p.srv);
+      if (p.srv.length || p.att.length || p.blk.length) { Object.assign(o, { aces: cnt(p.srv, 'E'), srvErr: cnt(p.srv, 'F'), blocks: p.blk.length, pts: cnt(p.att, '2') + cnt(p.srv, 'E') + p.blk.length }); if (inServe) o.srv = p.srv.length; }
+      T.rec.push(...p.rec); T.att.push(...p.att); T.srv.push(...p.srv); T.blk.push(...p.blk);
       return o;
     });
     const k = cnt(T.att, '2'), f = cnt(T.att, '0'), b = cnt(T.att, 'B');
-    const totals = { recAvg: avg(T.rec), recPerf: T.rec.length ? pct(cnt(T.rec, '2'), T.rec.length) : undefined, aces: cnt(T.srv, 'E'), srvErr: cnt(T.srv, 'F'), pts: k + cnt(T.srv, 'E') };
+    const totals = { recAvg: avg(T.rec), recPerf: T.rec.length ? pct(cnt(T.rec, '2'), T.rec.length) : undefined, aces: cnt(T.srv, 'E'), srvErr: cnt(T.srv, 'F'), blocks: T.blk.length || undefined, pts: k + cnt(T.srv, 'E') + T.blk.length };
     if (T.att.length) Object.assign(totals, { kp: pct(k, T.att.length), eff: pct1(k - f - b, T.att.length) });
     if (inServe) totals.srv = T.srv.length;
     const oppTeamName = m.home === usName(m) ? m.away : m.home;
@@ -2085,10 +2637,14 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
 
   function detailView() {
     const m = cur(); const ours = canLive(m);
-    const ownEvs = allEvents(), fill = ours && ownEvs.length ? nvbfFill(m, ownEvs) : { extra: [], cats: [] };
+    // Settvalg (01.11.2026): hele kampen eller ett sett. Tall hentet fra NVBF gjelder hele kampen og brukes bare for hele kampen.
+    const alleEvs = allEvents(), settene = [...new Set(alleEvs.filter((e) => e.type !== 'dir').map((e) => e.set))].sort((a, b) => a - b);
+    if (S.detSett !== 'all' && !settene.includes(Number(S.detSett))) S.detSett = 'all';
+    const helKamp = S.detSett === 'all', ownEvs = helKamp ? alleEvs : alleEvs.filter((e) => String(e.set) === String(S.detSett));
+    const fill = ours && ownEvs.length && helKamp ? nvbfFill(m, ownEvs) : { extra: [], cats: [] };
     const own = ours ? ownStats(m, ownEvs.concat(fill.extra)) : null; const hasNvbf = !!(m.nvbf && m.nvbf.teams && m.nvbf.teams.length);
     // Motstanderens angrep, serve og poeng føres aldri fra benken, så de hentes fra NVBF når statistikken finnes
-    if (own && hasNvbf && m.status === 'ferdig') {
+    if (own && hasNvbf && m.status === 'ferdig' && helKamp) {
       const nOpp = m.nvbf.teams.find((t) => t.name !== usName(m)), oOpp = own.teams[1], F = ['att', 'attErr', 'blocked', 'kills', 'kp', 'eff', 'srv', 'srvErr', 'aces', 'blocks', 'pts'];
       if (nOpp && oOpp && (nOpp.players || []).some((p) => F.some((f) => p[f] != null))) {
         (nOpp.players || []).forEach((p) => {
@@ -2101,31 +2657,44 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
         fill.cats.push('angrep, serve og poeng for ' + shortName(nOpp.name));
       }
     }
-    const egen = !!own && !(S.detailSrc === 'nvbf' && hasNvbf); const n = egen ? own : m.nvbf;
+    // Kildevalget (01.11.2026) vises på alle spilte kamper, også når en av kildene mangler tall. Standard: egen føring hvis den finnes, ellers NVBF.
+    const visKilde = m.status !== 'kommende' && !isSlot(m.home) && !isSlot(m.away);
+    const egen = S.detailSrc === 'egen' || S.detailSrc === 'nvbf' ? S.detailSrc === 'egen' : !!own || !hasNvbf;
+    const n = egen ? own : hasNvbf ? m.nvbf : null;
     addRecAvg(n);
     const oc = outcome(m);
     let h = '<header class="bar det-bar"><button class="link" data-a="back">‹ Kamper</button><div class="title"><span class="display tm" style="flex-wrap:wrap">' + crest(m.home, 'sm') + esc(shortName(m.home)) + ' – ' + esc(shortName(m.away)) + crest(m.away, 'sm') + ' ' + (m.setsHome != null && m.status !== 'kommende' ? m.setsHome + '–' + m.setsAway : '') + (oc ? ' <span class="badge ' + (oc === 'win' ? 'b-win">Seier' : 'b-loss" style="color:#F0A774;box-shadow:inset 0 0 0 1.5px #F0A774">Tap') + '</span>' : '') + '</span><span class="sub">' + esc(fmtDate(m.date)) + ((m.setScores || []).length ? ' · ' + m.setScores.map((s) => s[0] + '–' + s[1]).join(' · ') : '') + '</span></div><span class="spacer"></span>'
-      + (n && n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">Åpne hos ' + srcName(n) + ' ›</a>' : '') + (ours ? (!window.PUBLIC && ownEvs.some((e) => e.type === 'dir') ? '<button class="barbtn" data-a="dir">Slagretning</button>' : '') + '<div class="bar-actions"><span class="sub" style="align-self:center">Kampark:</span><button class="barbtn primary-bar" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button></div>' : '') + (ours && m.custom && !S.dash ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
+      + (ours ? '<div class="bar-actions">' + (!window.PUBLIC && alleEvs.some((e) => e.type === 'dir') ? '<button class="barbtn" data-a="dir">Slagretning</button>' : '') + '<span class="sub" style="align-self:center">Kampark:</span><button class="barbtn" data-a="xlsx">Excel</button><button class="barbtn" data-a="pdf">PDF</button>' + (alleEvs.length ? '<button class="barbtn" data-a="rapport">Kamprapport</button>' : '') + (!S.dash && !window.PUBLIC ? '<button class="barbtn" data-a="rett-res">' + (S.retting === m.id ? 'Lukk retting' : 'Rett resultat') + '</button>' : '') + '</div>' : '') + (ours && m.custom && !S.dash ? '<button class="barbtn" data-a="delmatch">Slett kamp</button>' : '') + '</header>';
+    if (ours && S.retting === m.id && !S.dash && !window.PUBLIC) h += retteForm(m);
     if (!ours && !S.dash) h += othersPanel(m);
-    if (own && hasNvbf) h += '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">' + srcName(n) + '</button></div>';
+    // Lenken til kilden står ved siden av kildevalget (01.11.2026), ikke i toppfeltet
+    const lk = m.nvbf && m.nvbf.url ? m.nvbf : n && n.url ? n : null;
+    const lenke = lk ? '<a class="det-lenke" href="' + esc(lk.url) + '" target="_blank" rel="noopener">Åpne hos ' + srcName(lk) + ' ›</a>' : '';
+    if (visKilde || lenke) h += '<div class="det-kilde">' + (visKilde ? '<div class="seg" role="group" aria-label="Kilde"><button data-a="dsrc" data-v="egen" aria-pressed="' + egen + '">Egen føring</button><button data-a="dsrc" data-v="nvbf" aria-pressed="' + !egen + '">' + srcName(m.nvbf) + '</button></div>' : '') + lenke + '</div>';
+    if (own && egen && settene.length > 1) h += '<div class="seg det-sett" role="group" aria-label="Sett"><button data-a="detsett" data-v="all" aria-pressed="' + helKamp + '">Hele kampen</button>'
+      + settene.map((x) => { const sc = scoreStr((m.setScores || [])[x - 1]); return '<button data-a="detsett" data-v="' + x + '" aria-pressed="' + (String(S.detSett) === String(x)) + '">Sett ' + x + (sc ? ' · ' + sc : '') + '</button>'; }).join('') + '</div>';
+    if (visKilde && (!n || !n.teams || !n.teams.length)) return h + '<div class="panel"><div class="empty">' + (egen
+      ? (ours && !S.dash && !window.PUBLIC ? 'Det er ikke ført egen statistikk i denne kampen. Trykk «Åpne for endring» for å føre statistikk.' : 'Det er ikke ført egen statistikk i denne kampen.')
+      : 'Statistikken fra ' + srcName(m.nvbf) + ' er ikke hentet inn for denne kampen ennå.') + '</div></div>';
     if (!n || !n.teams || !n.teams.length) return h + '<div class="panel"><div class="empty">' + (ours ? (S.dash && !window.PUBLIC ? 'Det er ikke ført statistikk i denne kampen ennå.' : 'Statistikken fra denne kampen er ikke lagt ut ennå.') : CTX.id !== 'main' ? (m.status === 'ferdig' ? 'Resultatet er registrert. Det er ikke ført statistikk i denne kampen.' : 'Kampen er ikke spilt ennå.') : m.status === 'ferdig' ? 'Kampstatistikken fra NVBF er ikke hentet inn ennå. Be Claude hente den, så dukker den opp her.' : 'Kampen er ikke spilt ennå. Statistikken kan hentes fra NVBF når den er publisert.') + '</div></div>';
-    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' + (fill.cats.length ? ' Ikke ført, hentet fra ' + srcName(n) + ': ' + fill.cats.join(', ') + '.' : '') : 'Offisiell ' + srcName(n) + '-statistikk' + (n.coverage ? ' · <b>' + esc(n.coverage) + '</b>' : '') + ' · ' + (n.src ? '' : 'kontrollert ') + esc(n.checked || 'ukjent tid')) + ' ' + legendLink() + '</div>';
+    h += '<div class="status">' + (egen ? 'Egen føring fra benken. Mottak og angrep på skala 0–2.' + (helKamp ? '' : ' <b>Viser bare sett ' + esc(S.detSett) + '.</b>') + (fill.cats.length ? ' Ikke ført, hentet fra ' + srcName(n) + ': ' + fill.cats.join(', ') + '.' : '') : 'Offisiell ' + srcName(n) + '-statistikk' + (n.coverage ? ' · <b>' + esc(n.coverage) + '</b>' : '') + ' · ' + (n.src ? '' : 'kontrollert ') + esc(n.checked || 'ukjent tid')) + ' ' + legendLink() + '</div>';
     h += '<div class="rounds">' + n.teams.map((t) => {
       const T = t.totals || {};
       let s = '<section class="panel"><div class="panel-head"><h2>' + esc(t.name) + '</h2></div>';
       if (t.missing) s += '<div class="empty">' + esc(t.missing) + '</div>';
-      const k = [['Angrep uttelling', T.kp], ['Angrep snitt (0–2)', T.eff != null ? dec(1 + parseFloat(String(T.eff).replace('−', '-').replace(',', '.')) / 100) : null], ['Mottak snitt (0–2)', T.recAvg], ['Positivt mottak', egen ? null : T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
+      const k = [['Angrep uttelling', T.kp], ['Angrep snitt (0–2)', T.eff != null ? dec(1 + parseFloat(String(T.eff).replace('−', '-').replace(',', '.')) / 100) : null], [egen ? 'Mottak snitt (0–2)' : 'Mottak snitt (0–2) · ' + srcName(n) + '-tall', T.recAvg], ['Positivt mottak', egen ? null : T.recPos], ['Perfekt mottak', T.recPerf], ['Ess / servefeil', T.aces != null ? T.aces + ' / ' + T.srvErr : null], ['Blokkpoeng', T.blocks]].filter((x) => x[1] != null);
       if (k.length) s += '<div class="kpis">' + k.map((x) => '<div class="kpi"><div class="display num">' + esc(x[1]) + '</div>' + (/snitt/.test(x[0]) ? avgBarOnly(x[1], 'wide', /Angrep/.test(x[0]) ? 'att' : 'rec') : '') + '<div class="k">' + esc(x[0]) + '</div></div>').join('') + '</div>';
       const pr = (t.players || []).filter((p) => p.rec != null).sort((a, b) => b.rec - a.rec);
       const recTot = pr.reduce((a, p) => a + p.rec, 0), minRec = Math.max(8, Math.round(recTot * 0.15));
       const pnum = (v) => v == null ? 0 : parseFloat(String(v).replace(',', '.')) || 0;
       const pick = (arr, cnt, f, minN) => { const el = arr.filter((p) => cnt(p) >= minN).sort((a, b) => f(a) - f(b) || cnt(b) - cnt(a)); return el.length > 1 && f(el[0]) !== f(el[el.length - 1]) ? { lo: el[0], hi: el[el.length - 1] } : {}; };
       const exR = pick(pr, (p) => p.rec, (p) => pnum(p.recAvg), minRec);
-      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Snitt</th><th>Feil</th>' + (egen ? '<th>Spillb.</th>' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + loHi(p, exR)[0] + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + loHi(p, exR)[1] + '</td><td>' + p.rec + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td><td>' + (p.recErr ?? '–') + '</td>' + (egen ? '<td>' + esc(p.recPlay ?? '–') + '</td>' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
+      if (pr.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mottak</th><th>Ant.</th><th>Snitt' + (egen ? '' : ' (' + srcName(n) + ')') + '</th><th>Feil</th>' + (egen ? '<th>Spillb.</th>' : '<th>Pos.</th>') + '<th>Perf.</th></tr></thead><tbody>' + pr.map((p) => '<tr' + loHi(p, exR)[0] + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + loHi(p, exR)[1] + '</td><td>' + p.rec + '</td><td class="key">' + avgBar(p.recAvg, esc(p.recAvg ?? '–')) + '</td><td>' + (p.recErr ?? '–') + '</td>' + (egen ? '<td>' + esc(p.recPlay ?? '–') + '</td>' : '<td>' + esc(p.recPos ?? '–') + '</td>') + '<td>' + esc(p.recPerf ?? '–') + '</td></tr>').join('') + '</tbody></table></div>';
       const pa = (t.players || []).filter((p) => p.att != null).sort((a, b) => b.att - a.att);
       const attTot = pa.reduce((a, p) => a + (p.att || 0), 0), minAtt = Math.max(5, Math.round(attTot * 0.1));
       const exA = pick(pa, (p) => p.att || 0, (p) => 1 + (p.kills - p.attErr - p.blocked) / p.att, minAtt);
-      if (pa.length) s += '<div class="tbl-wrap"><table class="tbl t-att"><thead><tr><th>Angrep</th><th>Fors.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th>Blokk.</th><th>Utt.</th></tr></thead><tbody>' + pa.map((p) => '<tr' + loHi(p, exA)[0] + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + loHi(p, exA)[1] + '</td><td>' + p.att + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att, null, 'att', t.name === OUR ? posByNr(p.nr) : '') : '–') + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td></tr>').join('') + '</tbody></table></div>';
+      if (pa.length) s += '<div class="tbl-wrap"><table class="tbl t-att"><thead><tr><th>Angrep</th><th>Fors.</th><th>Snitt</th><th>Poeng</th><th>Feil</th><th title="Angrepet ble blokkert">Blokkert</th><th>Utt.</th></tr></thead><tbody>' + pa.map((p) => '<tr' + loHi(p, exA)[0] + '><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + loHi(p, exA)[1] + '</td><td>' + p.att + '</td><td class="key">' + (p.att ? avgBar(1 + (p.kills - p.attErr - p.blocked) / p.att, null, 'att', t.name === OUR ? posByNr(p.nr) : '') : '–') + '</td><td>' + p.kills + '</td><td>' + p.attErr + '</td><td>' + p.blocked + '</td><td>' + esc(p.kp ?? pct(p.kills, p.att)) + '</td></tr>').join('') + '</tbody></table></div>';
+      if (!egen && pr.some((p) => p.recAvg != null)) s += '<div class="code-legend">Mottakssnitt (0–2) er regnet ut fra ' + srcName(n) + '-tallene: perfekt = 2, feil = 0, resten = 1. Ikke egen føring fra benken.</div>';
       if (exR.lo || exA.lo) s += '<div class="code-legend"><span class="weak-tag">Lav</span> <span class="weak-tag strong">Høy</span> lavest og høyest snitt blant spillere med minst ' + minRec + ' mottak eller ' + minAtt + ' angrep.</div>';
       const ps = (t.players || []).filter((p) => p.srv != null || p.pts != null || p.blocks != null);
       if (ps.length) s += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Poeng og serve</th><th>Poeng</th><th>Serve</th><th>Ess</th><th>Feil</th><th>Blokk</th></tr></thead><tbody>' + ps.slice().sort((a, b) => (b.pts || 0) - (a.pts || 0) || (b.srv || 0) - (a.srv || 0)).map((p) => '<tr><td class="key">' + esc(p.nr ? '#' + p.nr + ' ' : '') + esc(p.name) + '</td><td class="key">' + (p.pts ?? '–') + '</td><td>' + (p.srv ?? '–') + '</td><td>' + (p.aces ?? '–') + '</td><td>' + (p.srvErr ?? '–') + '</td><td>' + (p.blocks ?? '–') + '</td></tr>').join('') + (T.pts != null ? '<tr class="total"><td>Lag</td><td>' + T.pts + '</td><td>' + (T.srv ?? '–') + '</td><td>' + (T.aces ?? '–') + '</td><td>' + (T.srvErr ?? '–') + '</td><td>' + (T.blocks ?? '–') + '</td></tr>' : '') + '</tbody></table></div>';
@@ -2187,10 +2756,10 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(metric.l) + ' kamp for kamp">';
     // Fargesoner for snitt: rød, gul og grønn bak kurven, med samme grenser som søylene
     const pos = metric.kind === 'att' && SEASON.player !== 'team' ? posOf(SEASON.player) : '';
-    const LV = { lo: 'var(--bad)', mid: '#D9A21B', hi: 'var(--good)' };
+    const LV = { lo: 'var(--lvl-lo)', mid: 'var(--lvl-mid)', hi: 'var(--lvl-hi)' };
     if (metric.kind) {
       const [t0, t1] = thr(metric.kind, pos), cl = (v) => Math.max(lo, Math.min(hi, v));
-      [[lo, t0, 'lo'], [t0, t1, 'mid'], [t1, hi, 'hi']].forEach(([a, b, k]) => { if (cl(b) > cl(a)) s += '<rect x="' + ml + '" width="' + (W - ml - mr) + '" y="' + y(cl(b)) + '" height="' + (y(cl(a)) - y(cl(b))) + '" fill="' + LV[k] + '" opacity=".09"></rect>'; });
+      [[t0, 'lo'], [t1, 'hi']].forEach(([t, k]) => { if (t > lo && t < hi) s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(t) + '" y2="' + y(t) + '" stroke="' + LV[k] + '" stroke-width="1.5" stroke-dasharray="6 5" opacity=".85"></line>'; });
       [[t0, 11], [t1, -3]].forEach(([t, dy]) => { s += '<text x="' + (ml + 4) + '" y="' + (y(t) + dy) + '" font-size="10" fill="var(--muted)">' + esc(metric.fmt(t)) + '</text>'; });
     }
     ticks.forEach((t) => { s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(t) + '" y2="' + y(t) + '" stroke="var(--line)" stroke-width="1"></line><text x="' + (ml - 8) + '" y="' + (y(t) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + esc(metric.fmt(t)) + '</text>'; });
@@ -2242,7 +2811,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
         + (s1 ? ' · serve ' + s1.n + ' (' + s1.E + ' ess, ' + s1.F + ' feil)' : '') + '</div>';
     }
 
-    let h = '<div class="season"><header class="bar"><button class="link" data-a="back">‹ Kamper</button>'
+    let h = '<div class="season">' + navHtml('dashboard') + '<header class="bar">'
       + '<div class="title"><span class="display">Dashboard</span><span class="sub">' + esc(CTX.name) + ' · ' + done.length + ' av ' + rows.length + ' kamper spilt</span></div><span class="spacer"></span>'
       + '<div class="bar-actions">' + (hasTest ? '<button class="barbtn' + (SEASON.inclTest ? ' primary-bar' : '') + '" data-a="incltest" aria-pressed="' + SEASON.inclTest + '">' + (SEASON.inclTest ? 'Testkampen er med' : 'Vis testkampen') + '</button>' : '') + '</div></header>';
 
@@ -2265,7 +2834,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       + pickIds.map((id) => '<option value="' + esc(id) + '"' + (String(SEASON.player) === String(id) ? ' selected' : '') + '>' + esc(pickLabel(id)) + (withRegs.has(String(id)) ? '' : ' (ingen reg.)') + '</option>').join('') + '</select></div>'
       + '<div class="seg" role="group" aria-label="Velg nøkkeltall">' + metricsShown.map((x) => '<button data-a="metric" data-v="' + x.k + '" aria-pressed="' + (x.k === M.k) + '">' + x.l + '</button>').join('') + '</div></div>'
       + soloLine
-      + '<div class="chart-box" id="kk-chart">' + lineChart(chartRows, M) + '</div><div class="code-legend">Hele terminplanen langs aksen. Stiplet linje er ' + (solo ? 'spillerens snitt' : 'lagets snitt') + ' for alle førte kamper.' + (solo ? ' Motstanders mottak gjelder bare laget.' : '') + (M.kind ? ' Fargesonene og prikkene viser nivået: grønn, gul og rød etter samme grenser som søylene. ' + legendLink() : '') + '</div></section>';
+      + '<div class="chart-box" id="kk-chart">' + lineChart(chartRows, M) + '</div><div class="code-legend">Hele terminplanen langs aksen. Blå stiplet linje er ' + (solo ? 'spillerens snitt' : 'lagets snitt') + ' for alle førte kamper.' + (solo ? ' Motstanders mottak gjelder bare laget.' : '') + (M.kind ? ' Grønn og rød stiplet linje er grensene, og prikkene viser nivået: grønn, gul og rød etter samme grenser som søylene. ' + legendLink() : '') + '</div></section>';
 
     h += '<section class="panel" aria-labelledby="h-termin"><div class="panel-head"><h2 id="h-termin">Terminplan</h2><span class="status">' + (window.PUBLIC ? 'Trykk en kamp for å se statistikken' : 'Trykk en kamp for å føre eller se den') + '</span></div><div class="fixtures">'
       + rows.map((r) => {
@@ -2308,7 +2877,10 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     else h += '<div class="tbl-wrap"><table class="tbl t-players"><thead><tr>' + cols.map(([c, l]) => '<th aria-sort="' + (c === k ? (dir < 0 ? 'descending' : 'ascending') : 'none') + '"><button data-a="psort" data-k="' + c + '">' + l + '</button></th>').join('') + '</tr></thead><tbody>'
       + prow.map((p) => '<tr class="clickrow" data-a="kkpick" data-id="' + esc(p.id) + '" title="Vis kamp for kamp"><td class="key">' + (p.nr ? '#' + esc(p.nr) + ' ' : '') + esc(p.name) + '</td><td>' + p.games + '</td><td>' + p.recN + '</td><td class="key">' + avgBar(p.recAvg, d2(p.recAvg)) + '</td><td>' + p0(p.recPerf) + '</td><td>' + p.attN + '</td><td class="key">' + avgBar(p.attEff, d2(p.attEff), 'att', posOf(p.id)) + '</td><td>' + p.attK + '</td><td>' + p.srvN + '</td><td>' + p.srvE + '</td><td>' + p.srvF + '</td></tr>').join('')
       + '</tbody></table></div><div class="code-legend">Trykk en spiller for å se henne kamp for kamp. Snitt og prosent er regnet av summen av alle registreringer, ikke snitt av kampsnitt.</div>';
-    h += '</section><div class="code-legend">Egenført 0–1–2-koding fra benken. Kamper som ikke er ført i appen telles i resultatet, men ikke i snittene. Ikke det samme som NVBF/DataProject-tallene. ' + legendLink() + '</div></div>';
+    const medNv = rows.filter((r) => r.nvN).length;
+    h += '</section><div class="code-legend">' + (medNv
+      ? 'Egenført 0–1–2-koding fra benken. Der vi ikke har ført selv, brukes NVBF-tall (' + medNv + ' kamp' + (medNv === 1 ? '' : 'er') + ', merket NVBF i terminplanen). Mottakssnitt fra NVBF er regnet ut fra prosentene: perfekt = 2, feil = 0, resten = 1. '
+      : 'Egenført 0–1–2-koding fra benken. Kamper som ikke er ført i appen telles i resultatet, men ikke i snittene. Ikke det samme som NVBF/DataProject-tallene. ') + legendLink() + '</div></div>';
     return h;
   }
 
@@ -2358,6 +2930,50 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
   // Lagres som vanlige registreringer med type 'dir' i samme logg: x1,y1 treffpunkt, x2,y2 landing, k = 'line' | 'dip', c = K/F/B/D
   const DCOL = ['#2F6FE0', '#2FAE52', '#D9473E', '#E8891C', '#8B4FD6', '#18A3B2', '#D64F9A', '#5C6270'];
   const DRES = { K: 'Kill', F: 'Feil', B: 'Blokk', D: 'Forsvart' };
+  // ---------- Oppstilling (issue #20) ----------
+  // Velgeren åpnes automatisk én gang per ubekreftet sett (start av sett 1 og hvert nye sett), ikke for et bekreftet sett.
+  // Én bekreftelse lagrer oppstillingen (lineups) og oppdaterer onCourt og receivers i samme kampoppdatering.
+  // Registreringene (0–2) røres ikke. Modulen (moduler/oppstilling) bygges inn i V2-sidene; uten den er appen som før.
+  const OPS = { el: null, avvist: {} };
+  function opsOk() { return !!window.Oppstilling && !window.PUBLIC && !S.dash && erAv(cur()); }
+  function opsBekreftet(m) { const st = window.Oppstilling && m ? Oppstilling.settFor(m, (m.current && m.current.set) || 1) : null; return !!(st && st.confirmed); }
+  function opsKnapp(m) { const O = window.Oppstilling, st = O && m ? O.settFor(m, (m.current && m.current.set) || 1) : null, o = st && st.confirmed ? O.aktuelt(st) : null;
+    return o ? 'Oppstilling ' + (O.rotasjonAv(o.positions, o.roles) || '') : 'Oppstilling'; }
+  function opsHarHendelser(m, nr) { return allEvents().some((e) => Number(e.set) === Number(nr)); }
+  function opsAapne(m) {
+    if (!opsOk() || !m || OPS.el) return;
+    const nr = (m.current && m.current.set) || 1, roster = teamRoster(m), st = Oppstilling.settFor(m, nr);
+    const under = !!(st && st.confirmed && opsHarHendelser(m, nr));
+    let utkast, kilde = null;
+    if (st && st.confirmed) utkast = Object.assign(JSON.parse(JSON.stringify(Oppstilling.aktuelt(st))), { receptionPositions: st.receptionPositions || {} });
+    else { const u = Oppstilling.utkastFor(m, nr, roster, S.matches.filter((x) => canLive(x))); utkast = u.oppsett; kilde = u.kilde; }
+    OPS.el = Oppstilling.monter({ roster, setNr: nr, lagNavn: usName(m), motstander: m.home === usName(m) ? m.away : m.home, utkast, utkastKilde: kilde, underSett: under,
+      onBekreft: (o) => opsLagre(m, nr, o),
+      // Uten oppstilling: hele kampen føres som før (På banen og I mottak manuelt), ingen automatisk velger
+      onUten: async () => { if (!S.db) throw new Error('ikke tilkoblet'); const lu = { v: 1, sets: {}, uten: true };
+        await S.db.doc(PFX + 'matches/' + m.id).update({ lineups: lu }); m.lineups = Oppstilling.slaSammen(m.lineups, lu); OPS.el = null; S.view = 'squad'; render(); toTop(); },
+      onLukk: () => { OPS.el = null; if (!opsBekreftet(m)) OPS.avvist[m.id + '|' + nr] = true; render(); } });
+  }
+  async function opsLagre(m, nr, o) {
+    if (!S.db) throw new Error('ikke tilkoblet');
+    const ny = Oppstilling.bekreft(o, { t: new Date().toISOString(), enhet: deviceId }, Oppstilling.settFor(m, nr), opsHarHendelser(m, nr));
+    const { onCourt, receivers } = Oppstilling.onCourtOgMottak(ny.naa);
+    const lu = { v: 1, sets: { [nr]: ny } };
+    // Én oppdatering: lineups + onCourt + receivers. Feiler den, endres ingenting lokalt og velgeren blir stående.
+    await S.db.doc(PFX + 'matches/' + m.id).update({ lineups: lu, onCourt, receivers });
+    m.lineups = Oppstilling.slaSammen(m.lineups, lu); m.onCourt = onCourt; m.receivers = receivers;
+    OPS.el = null; render();
+  }
+  function opsAuto() {
+    const m = cur();
+    if (!opsOk() || OPS.el || S.view !== 'live' || !m || !canLive(m) || m.status === 'ferdig' || S.endingSet || S.logsFor !== m.id || DIR.open) return;
+    const nr = (m.current && m.current.set) || 1;
+    if (!erAv(m) || opsBekreftet(m) || OPS.avvist[m.id + '|' + nr] || (m.lineups && m.lineups.uten)) return;
+    // Settet er allerede i gang uten oppstilling (f.eks. før denne funksjonen fantes): ikke tving velgeren fram
+    if (opsHarHendelser(m, nr)) return;
+    opsAapne(m);
+  }
+
   const DIR = { open: false, el: null, active: null, view: 'lines', who: 'all', set: 'all', kind: 'all', drawing: null };
   const NS = 'http://www.w3.org/2000/svg';
   const svgEl = (t, attrs) => { const n = document.createElementNS(NS, t); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
@@ -2676,10 +3292,13 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     else if (a === 'open') {
       const mm = S.matches.find((x) => x.id === b.dataset.id); if (!mm) return;
       closeSeasonLogs();
-      S.matchId = mm.id; S.statSet = 'all';
-      S.view = S.dash ? 'detail' : canLive(mm) && mm.status !== 'ferdig' && !(mm.source === 'annen' && mm.nvbf && mm.nvbf.src) ? 'live' : 'detail'; S.detailSrc = 'egen';
+      S.matchId = mm.id; S.statSet = 'all'; S.detSett = 'all';
+      S.view = S.dash ? 'detail' : canLive(mm) && mm.status !== 'ferdig' && !(mm.source === 'annen' && mm.nvbf && mm.nvbf.src) ? 'live' : 'detail'; S.detailSrc = null;
       if (canLive(mm)) openLogs(mm.id);
       render(); toTop();
+      // Kamp som ikke er startet: rett inn i oppstillingsvelgeren (sett 1 har ingen registreringer ennå)
+      if (S.view === 'live' && mm.status === 'kommende' && opsOk() && !opsBekreftet(mm) && !(mm.lineups && mm.lineups.uten)) opsAapne(mm);
+      S.modusValg = null; S.modusBytt = null;
     }
     else if (a === 'back') { S.view = 'list'; S.matchId = null; openLogs(null); closeSeasonLogs(); render(); }
     else if (a === 'season') { S.view = 'season'; S.matchId = null; openLogs(null); openSeasonLogs(); render(); toTop(); }
@@ -2689,10 +3308,12 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     else if (a === 'psort') { const k = b.dataset.k; if (SEASON.sortK === k) SEASON.sortDir = -SEASON.sortDir; else { SEASON.sortK = k; SEASON.sortDir = k === 'name' ? 1 : -1; } render(); }
     else if (a === 'dir' && m) { dirOpen(S.view === 'detail' ? { ro: true } : null); }
     else if (a === 'squad') { S.view = 'squad'; render(); toTop(); }
+    else if ((a === 'lineup' || a === 'lineup-chips') && m) { opsAapne(m, true); }
     else if (a === 'to-live') { S.view = S.view === 'sheet' && S.sheetBack === 'detail' ? 'detail' : 'live'; render(); toTop(); }
     else if (a === 'edit' && m) { S.view = 'live'; S.endingSet = false; render(); toTop(); }
     else if (a === 'toview' && m) { S.view = 'detail'; render(); toTop(); }
     else if (a === 'dsrc') { S.detailSrc = b.dataset.v; render(); }
+    else if (a === 'detsett') { S.detSett = b.dataset.v === 'all' ? 'all' : Number(b.dataset.v); render(); }
     else if (a === 'ctx-cancel') { S.showNewCtx = false; render(); }
     else if (a === 'publish') { publishOpen('manuelt', true); }
     else if (a === 'share') { S.showShare = !S.showShare; S.copied = false; render(); }
@@ -2727,6 +3348,13 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     else if (a === 'log') { logEvent(b.dataset.t, b.dataset.p, b.dataset.c); b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 300); }
     else if (a === 'undo') { undo(); }
     else if (a === 'statset') { S.statSet = b.dataset.v; render(); }
+    else if (a === 'kpiscope') { S.kpiScope = S.kpiScope === 'kamp' ? 'sett' : 'kamp'; render(); }
+    else if (a === 'notat' && m && window.Hurtignotat) { window.Hurtignotat.apne(notatKontekst(m)); }
+    else if (a === 'bytte' && m) { if (opsBekreftet(m)) { S.bytte = { ut: null, inn: null }; render(); } else { S.view = 'squad'; render(); toTop(); } }
+    else if (a === 'bytte-ut') { S.bytte = { ut: b.dataset.id, inn: null }; render(); }
+    else if (a === 'bytte-inn') { S.bytte = Object.assign({}, S.bytte, { inn: b.dataset.id }); render(); }
+    else if (a === 'bytte-lukk') { S.bytte = null; render(); }
+    else if (a === 'bytte-ok' && m && S.bytte && S.bytte.ut && S.bytte.inn) { bytteLagre(m); }
     else if (a === 'endset') { S.endingSet = true; render(); }
     else if (a === 'setcancel') { S.endingSet = false; render(); }
     else if (a === 'setwin-unused' && m) {
@@ -2745,13 +3373,39 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       saveMatch(m.id, { setScores, setsHome, setsAway, current: nc });
     }
     else if (a === 'endmatch' && m) { m.status = 'ferdig'; S.view = 'detail'; S.endingSet = false; render(); toTop(); saveMatch(m.id, { status: 'ferdig' }).then(() => setTimeout(() => publishOpen('kampen ferdig', true), 1500)); }
+    else if (a === 'modus-valg') { S.modusValg = b.dataset.v; render(); }
+    else if (a === 'modus-start' && m) {
+      const v = b.dataset.v === 'avansert' ? 'avansert' : 'enkel'; m.modus = v; S.modusValg = null;
+      try { localStorage.setItem('rv-modus-' + CTX.id, v); } catch (e) {}
+      saveMatch(m.id, { modus: v }); render(); toTop();
+      if (v === 'avansert' && opsOk() && !opsBekreftet(m) && !(m.lineups && m.lineups.uten)) opsAapne(m);
+    }
+    else if (a === 'modus-bytt') { S.modusBytt = b.dataset.v; S.mbServe = 'oss'; render(); }
+    else if (a === 'modus-avbryt') { S.modusBytt = null; render(); }
+    else if (a === 'mb-serve') { S.mbServe = b.dataset.v; const o = document.getElementById('mb-oss'), d = document.getElementById('mb-dem'); S.mbUtkast = o && d ? [o.value, d.value] : null; render(); if (S.mbUtkast) { const o2 = document.getElementById('mb-oss'), d2 = document.getElementById('mb-dem'); if (o2) o2.value = S.mbUtkast[0]; if (d2) d2.value = S.mbUtkast[1]; } }
+    else if (a === 'modus-til' && m) { m.modus = b.dataset.v; S.modusBytt = null; try { localStorage.setItem('rv-modus-' + CTX.id, m.modus); } catch (e) {} saveMatch(m.id, { modus: m.modus }); render(); }
+    else if (a === 'poeng-paa' && m) { m.poengmodus = true; S.poengKv = null; S.poengGrunn = null; S.poengSiste = null; saveMatch(m.id, { poengmodus: true }); poengLagre(m); render(); }
+    else if (a === 'poeng-av' && m) { m.poengmodus = false; S.poengKv = null; S.poengGrunn = null; saveMatch(m.id, { poengmodus: false }); render(); }
+    else if (a === 'poeng' && m && poengPaa(m)) { poengLegg(m, b.dataset.v, 'manuell', null); S.poengKv = null; S.poengSiste = null; S.poengGrunn = b.dataset.v; render(); }
+    else if (a === 'poeng-grunn' && m) { const set = poengSett(m), i = egneSistePoeng(set); if (i >= 0 && b.dataset.v) { const l = pEgen(set); l[i] = Object.assign({}, l[i], { g: b.dataset.v }); poengSkriv(m, set, l); } S.poengGrunn = null; render(); }
+    else if (a === 'poeng-angre' && m) { poengAngre(m); }
+    else if (a === 'rett-res' && m) { S.retting = S.retting === m.id ? null : m.id; S.retteVarsel = null; S.retteBekreftet = null; S.retteUtkast = null; render(); }
     else if (a === 'reopen' && m) { m.status = 'pågår'; render(); saveMatch(m.id, { status: 'pågår' }); }
     else if ((a === 'court' || a === 'recv') && m) {
       const key = a === 'court' ? 'onCourt' : 'receivers';
       const set = new Set(m[key] || []);
       if (set.has(b.dataset.id)) set.delete(b.dataset.id); else set.add(b.dataset.id);
       const order = teamRoster(m).map((p) => p.id).filter((id) => set.has(id));
-      m[key] = order; render(); saveMatch(m.id, { [key]: order });
+      m[key] = order;
+      const opsNr = (m.current && m.current.set) || 1, opsSt = window.Oppstilling ? Oppstilling.settFor(m, opsNr) : null;
+      if (opsSt && opsSt.confirmed) {
+        // Bekreftet oppstilling: endringen blir bytte/libero i settet (startoppstillingen og registreringer endres ikke)
+        // Ingen mottaker utenfor banen: tas en mottaker av banen, tas hun også ut av mottak (samme oppdatering)
+        // Tas en spiller av banen, tas hun også ut av mottak (liberoen er ikke i «På banen», men blir stående i mottak)
+        if (key === 'onCourt' && !m.onCourt.includes(b.dataset.id)) m.receivers = (m.receivers || []).filter((id) => id !== b.dataset.id);
+        const ny = Oppstilling.fraToggles(opsSt, m.onCourt, m.receivers, { enhet: deviceId }), lu = { v: 1, sets: { [opsNr]: ny } };
+        m.lineups = Oppstilling.slaSammen(m.lineups, lu); render(); saveMatch(m.id, { [key]: order, receivers: m.receivers, lineups: lu });
+      } else { render(); saveMatch(m.id, { [key]: order }); }
     }
     else if (a === 'addp') { const id = 'p' + Math.random().toString(36).slice(2, 8); saveRoster(S.roster.concat([{ id, nr: '', name: 'Ny spiller', pos: '' }])); }
     else if (a === 'delp') {
@@ -2761,6 +3415,11 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     }
     else if (a === 'export' && m) exportCsv(m);
     else if (a === 'sheet') { S.sheetBack = S.view; S.view = 'sheet'; render(); toTop(); }
+    else if (a === 'rapport' && m) { S.rapSett = S.detSett || 'all'; S.view = 'rapport'; render(); toTop(); }
+    else if (a === 'rp-tilbake') { S.view = 'detail'; render(); toTop(); }
+    else if (a === 'rp-sett') { S.rapSett = b.dataset.v === 'all' ? 'all' : Number(b.dataset.v); render(); }
+    else if (a === 'rp-mot') { S.rapMot = b.checked; render(); }
+    else if (a === 'rp-skriv') { rapportSkriv(); }
     else if (a === 'pdf' && m) { if (window.PUBLIC && !document.getElementById('sk-sheet')) { const hold = document.createElement('div'); hold.style.cssText = 'position:absolute;left:-30000px;top:0'; hold.innerHTML = sheetView(); document.body.appendChild(hold); exportPdf(m, b).finally(() => hold.remove()); } else exportPdf(m, b); }
     else if (a === 'xlsx' && m) exportXlsx(m, b);
   });
@@ -2820,6 +3479,8 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       const setsHome = setScores.filter((x) => x[0] > x[1]).length, setsAway = setScores.length - setsHome;
       const nc = { set: c.set + 1, home: 0, away: 0 };
       Object.assign(m, { setScores, setsHome, setsAway, current: nc }); S.endingSet = false; S.error = ''; S.statSet = 'all'; render();
+      // Nytt sett: rett inn i oppstillingsvelgeren (med utkast fra forrige sett)
+      if (opsOk() && !opsBekreftet(m) && !(m.lineups && m.lineups.uten)) opsAapne(m);
       saveMatch(m.id, { setScores, setsHome, setsAway, current: nc, status: m.status === 'ferdig' ? 'ferdig' : 'pågår' })
         .then(() => setTimeout(() => publishOpen('sett ' + setScores.length + ' ferdig'), 1500));
       return;
@@ -2846,6 +3507,41 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
       if (p) { if (nm) p.name = nm; } else ros.push(nm ? { nr: v, name: nm } : { nr: v });
       saveOpp(m, ros, tm); if (tm === oppTeam(m)) setOppNumbers(m, (m.oppNumbers || []).concat([v]));
       const inp = document.getElementById('opp-add-nr-' + sl); if (inp) { inp.value = ''; inp.focus(); }
+      return;
+    }
+    if (f.id === 'modusform' && m) {
+      const o = parseInt(document.getElementById('mb-oss').value, 10), d = parseInt(document.getElementById('mb-dem').value, 10);
+      if (isNaN(o) || isNaN(d) || o < 0 || d < 0) { S.error = 'Skriv inn stillingen med tall.'; render(); return; }
+      const set = poengSett(m);
+      m.modus = 'avansert'; S.modusBytt = null; S.error = '';
+      poengSkriv(m, set, pEgen(set).concat([{ id: pUuid(), t: Date.now(), type: 'start', so: o, sd: d, ss: S.mbServe === 'dem' ? 'dem' : 'oss' }]));
+      try { localStorage.setItem('rv-modus-' + CTX.id, 'avansert'); } catch (e) {}
+      saveMatch(m.id, { modus: 'avansert' }); poengLagre(m); render();
+      if (opsOk() && !opsBekreftet(m)) opsAapne(m);
+      return;
+    }
+    if (f.id === 'retteform' && m) {
+      const sc = [];
+      for (let i = 0; i < 5; i++) {
+        const h = document.getElementById('rt-h-' + i).value.trim(), a = document.getElementById('rt-a-' + i).value.trim();
+        if (h === '' && a === '') continue;
+        const hn = parseInt(h, 10), an = parseInt(a, 10);
+        if (isNaN(hn) || isNaN(an) || hn === an || hn < 0 || an < 0) { S.error = 'Sett ' + (i + 1) + ': skriv inn poeng for begge lag, og ikke likt.'; render(); return; }
+        sc.push([hn, an]);
+      }
+      const før = (m.setScores || []).length, reg = sc.length < før ? regIUtovSett(m, sc.length) : 0;
+      const nøkkel = JSON.stringify(sc);
+      if (reg && S.retteBekreftet !== nøkkel) {
+        S.retteVarsel = 'Sett ' + (sc.length + 1) + (før > sc.length + 1 ? '–' + før : '') + ' har ' + reg + ' registreringer. De blir liggende, men settet forsvinner fra resultatet. Trykk «Lagre likevel» for å bekrefte.';
+        S.retteBekreftet = nøkkel; S.retteUtkast = sc; render(); return;
+      }
+      const sh = sc.filter((x) => x[0] > x[1]).length, sa = sc.length - sh;
+      const status = m.status === 'pågår' ? 'pågår' : sc.length ? 'ferdig' : 'kommende';
+      const patch = { setScores: sc, setsHome: sh, setsAway: sa, status, _grunn: 'rett resultat' };
+      if (status === 'pågår') { const c = m.current || {}; if ((c.set || 1) <= sc.length) patch.current = { set: Math.min(5, sc.length + 1), home: 0, away: 0 }; }
+      Object.assign(m, { setScores: sc, setsHome: sh, setsAway: sa, status }, patch.current ? { current: patch.current } : {});
+      S.retting = null; S.retteVarsel = null; S.retteBekreftet = null; S.retteUtkast = null; S.error = ''; S.info = 'Resultatet er rettet. Registreringene er uendret.'; render();
+      saveMatch(m.id, patch).then(() => setTimeout(() => publishOpen('resultat rettet'), 1500));
       return;
     }
     if (f.id === 'resform' && m) {
@@ -2888,7 +3584,7 @@ window.PUBLIC_CTX = {"id": "randaberg-herrer", "name": "Randaberg · Mizunoligae
     const rows = [['sett', 'type', 'spiller', 'nr', 'kode', 'tid']];
     allEvents().forEach((e) => {
       const p = (e.type === 'opp' || e.type === 'dir') ? null : player(e.p);
-      rows.push([e.set,{ rec: 'Mottak', att: 'Angrep', srv: 'Serve', opp: oppName + ' mottak', dir: oppName + ' slagretning' }[e.type], p ? p.name : ((e.type === 'opp' || e.type === 'dir') ? oppName : ''), p ? (p.nr || '') : e.p, e.type === 'dir' ? dirKind(e) + ' sone ' + (dirZone(e) || '–') + (e.c ? ' ' + DRES[e.c] : '') : e.c, new Date(e.t).toLocaleTimeString('nb-NO')]);
+      rows.push([e.set,{ rec: 'Mottak', att: 'Angrep', srv: 'Serve', blk: 'Blokkpoeng', opp: oppName + ' mottak', dir: oppName + ' slagretning' }[e.type], p ? p.name : ((e.type === 'opp' || e.type === 'dir') ? oppName : ''), p ? (p.nr || '') : e.p, e.type === 'dir' ? dirKind(e) + ' sone ' + (dirZone(e) || '–') + (e.c ? ' ' + DRES[e.c] : '') : e.c, new Date(e.t).toLocaleTimeString('nb-NO')]);
     });
     const csv = rows.map((r) => r.map((x) => '"' + String(x).replace(/"/g, '""') + '"').join(';')).join('\r\n');
     try { await S.dl.save({ filename: ('kamp-' + m.home + '-' + m.away).replace(/[^\wæøåÆØÅ-]+/g, '-') + '.csv', data: '﻿' + csv }); }
